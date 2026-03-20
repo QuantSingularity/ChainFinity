@@ -29,42 +29,42 @@ infrastructure/
 │       └── nginx.conf.j2              # Nginx configuration template
 ├── jenkins/                           # CI/CD pipeline configuration
 │   └── Jenkinsfile                    # Security pipeline
-├── k8s/                              # Legacy Kubernetes configurations
-│   └── risk-engine-deployment.yaml   # Risk engine deployment
+├── k8s/                               # Legacy Kubernetes configurations
+│   └── risk-engine-deployment.yaml    # Risk engine deployment
 ├── kubernetes/                        # Kubernetes configurations
-│   ├── deployment.yaml               # Comprehensive application deployment
+│   ├── deployment.yaml                # Comprehensive application deployment
 │   ├── backup/
-│   │   └── cronjob.yaml             # Backup automation
+│   │   └── cronjob.yaml               # Backup automation
 │   ├── logging/
-│   │   └── elasticsearch.yaml       # Log aggregation
+│   │   └── elasticsearch.yaml         # Log aggregation
 │   └── monitoring/
-│       └── prometheus-config.yaml   # Comprehensive monitoring
-├── terraform/                        # Infrastructure as Code
-│   ├── main.tf                      # infrastructure configuration
-│   ├── variables.tf                 # Comprehensive variable definitions
-│   ├── outputs.tf                   # Infrastructure outputs
-│   ├── terraform.tfvars             # Production configuration
+│       └── prometheus-config.yaml     # Comprehensive monitoring
+├── terraform/                         # Infrastructure as Code
+│   ├── main.tf                        # infrastructure configuration
+│   ├── variables.tf                   # Comprehensive variable definitions
+│   ├── outputs.tf                     # Infrastructure outputs
+│   ├── terraform.tfvars               # Production configuration
 │   └── templates/
-│       └── user_data.sh.tpl         # Secure node initialization
-├── security/                         # Security configurations
-│   ├── vault/                       # HashiCorp Vault configuration
-│   │   ├── vault-config.hcl         # Vault server configuration
-│   │   ├── init-vault.sh            # Vault initialization script
-│   │   └── policies/                # Vault access policies
-│   │       ├── admin-policy.hcl     # Administrator access
-│   │       ├── developer-policy.hcl # Developer access
+│       └── user_data.sh.tpl           # Secure node initialization
+├── security/                          # Security configurations
+│   ├── vault/                         # HashiCorp Vault configuration
+│   │   ├── vault-config.hcl           # Vault server configuration
+│   │   ├── init-vault.sh              # Vault initialization script
+│   │   └── policies/                  # Vault access policies
+│   │       ├── admin-policy.hcl       # Administrator access
+│   │       ├── developer-policy.hcl   # Developer access
 │   │       ├── application-policy.hcl # Application access
-│   │       └── readonly-policy.hcl  # Read-only access
-│   ├── policies/                    # Security policies
-│   │   ├── rbac-policies.yaml       # Kubernetes RBAC
-│   │   └── network-policies.yaml   # Network security policies
-│   ├── certificates/                # Certificate management
-│   │   └── cert-manager-config.yaml # TLS certificate automation
-│   └── compliance/                  # Compliance frameworks
-│       └── compliance-framework.yaml # SOC2, PCI-DSS, GDPR configuration
-├── networking/                       # Network configurations
-└── monitoring/                       # Monitoring
-    └── security/                    # Security monitoring
+│   │       └── readonly-policy.hcl    # Read-only access
+│   ├── policies/                      # Security policies
+│   │   ├── rbac-policies.yaml         # Kubernetes RBAC
+│   │   └── network-policies.yaml      # Network security policies
+│   ├── certificates/                  # Certificate management
+│   │   └── cert-manager-config.yaml   # TLS certificate automation
+│   └── compliance/                    # Compliance frameworks
+│       └── compliance-framework.yaml  # SOC2, PCI-DSS, GDPR configuration
+├── networking/                        # Network configurations
+└── monitoring/                        # Monitoring
+    └── security/                      # Security monitoring
 ```
 
 ## 🚀 Quick Start
@@ -233,69 +233,6 @@ ansible-playbook -i inventory.ini playbook.yml
 - **Right to Erasure**: Data deletion capabilities
 - **Data Portability**: Export functionality
 - **Privacy by Design**: Built-in privacy controls
-
-## 🔧 Operational Procedures
-
-### Backup and Recovery
-
-- **Automated Backups**: Daily database backups with 7-year retention
-- **Point-in-Time Recovery**: RDS automated backups
-- **Cross-Region Replication**: Disaster recovery capabilities
-- **Backup Testing**: Monthly restore testing
-
-### Monitoring and Alerting
-
-- **Application Metrics**: Custom business metrics
-- **Infrastructure Metrics**: System and network monitoring
-- **Security Metrics**: Security event monitoring
-- **Compliance Metrics**: Regulatory compliance tracking
-
-### Incident Response
-
-1. **Detection**: Automated monitoring and alerting
-2. **Assessment**: Severity classification and impact analysis
-3. **Containment**: Immediate threat isolation
-4. **Eradication**: Root cause elimination
-5. **Recovery**: Service restoration
-6. **Lessons Learned**: Post-incident review and improvement
-
-## 🛠️ Maintenance
-
-### Regular Tasks
-
-- **Security Updates**: Automated patching with testing
-- **Certificate Renewal**: Automated via cert-manager
-- **Backup Verification**: Monthly restore testing
-- **Compliance Audits**: Quarterly compliance reviews
-- **Performance Tuning**: Monthly performance analysis
-
-### Scaling
-
-- **Horizontal Pod Autoscaling**: Automatic pod scaling based on metrics
-- **Cluster Autoscaling**: Automatic node scaling
-- **Database Scaling**: RDS read replicas and vertical scaling
-- **Storage Scaling**: Automatic EBS volume expansion
-
-## 📈 Cost Optimization
-
-### Estimated Monthly Costs (Production)
-
-- **EKS Cluster**: ~$73/month (control plane)
-- **EC2 Instances**: ~$300-600/month (depending on load)
-- **RDS Database**: ~$400-800/month (depending on instance size)
-- **Load Balancers**: ~$50-100/month
-- **Storage**: ~$100-300/month
-- **Data Transfer**: Variable based on usage
-- **Monitoring**: ~$50-150/month
-- **Total Estimated**: ~$1,000-2,000/month
-
-### Cost Optimization Strategies
-
-- **Reserved Instances**: 30-60% savings on predictable workloads
-- **Spot Instances**: Up to 90% savings for fault-tolerant workloads
-- **Storage Optimization**: Lifecycle policies for S3 and EBS
-- **Right-sizing**: Regular instance size optimization
-- **Monitoring**: Cost anomaly detection and budgets
 
 ## 🚨 Troubleshooting
 
