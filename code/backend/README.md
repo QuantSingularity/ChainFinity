@@ -2,7 +2,7 @@
 
 A production-ready, enterprise-grade backend for the ChainFinity cryptocurrency portfolio management platform. Built with financial industry standards, comprehensive security, and regulatory compliance.
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ### Core Features
 
@@ -27,7 +27,7 @@ A production-ready, enterprise-grade backend for the ChainFinity cryptocurrency 
 | **Monitoring**     | Prometheus metrics, structured logging         |
 | **Deployment**     | Docker with production-ready configuration     |
 
-## 📋 Prerequisites
+## Prerequisites
 
 The following software is required to run the backend:
 
@@ -36,7 +36,7 @@ The following software is required to run the backend:
 - Redis 7+
 - Docker & Docker Compose (for containerized deployment)
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Environment Setup
 
@@ -83,7 +83,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
-## 🐳 Docker Deployment
+## Docker Deployment
 
 ### Full Stack Deployment
 
@@ -109,7 +109,7 @@ docker-compose up -d --scale api=3
 | **Prometheus** | Metrics collection              |
 | **Grafana**    | Monitoring dashboard            |
 
-## 📊 Database Schema
+## Database Schema
 
 ### Core Models
 
@@ -131,7 +131,7 @@ docker-compose up -d --scale api=3
 | **Encryption**   | Field-level encryption for sensitive data     |
 | **Versioning**   | Optimistic locking for data consistency       |
 
-## 🔐 Security Features
+## Security Features
 
 ### Authentication & Authorization
 
@@ -163,7 +163,7 @@ docker-compose up -d --scale api=3
 | **API Keys** | API key management               |
 | **Logging**  | Audit logging for all operations |
 
-## 📈 Compliance & Risk Management
+## Compliance & Risk Management
 
 ### KYC/AML Integration
 
@@ -195,7 +195,7 @@ docker-compose up -d --scale api=3
 | **Testing**  | Stress testing capabilities  |
 | **Alerting** | Risk-based alerting          |
 
-## 🔧 API Endpoints
+## API Endpoints
 
 ### Authentication
 
@@ -231,7 +231,7 @@ docker-compose up -d --scale api=3
 - `GET /api/v1/compliance/audit-logs` - Audit trail
 - `POST /api/v1/compliance/reports` - Generate reports
 
-## 📊 Monitoring & Observability
+## Monitoring & Observability
 
 ### Health Checks
 
@@ -256,7 +256,7 @@ docker-compose up -d --scale api=3
 - Performance logging
 - Error tracking
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -287,7 +287,7 @@ AML_ENABLED=true
 TRANSACTION_MONITORING_ENABLED=true
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Run Tests
 
@@ -313,6 +313,6 @@ pytest tests/test_auth.py
 - Security tests for authentication
 - Performance tests for critical paths
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

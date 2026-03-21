@@ -4,7 +4,7 @@
 [![Test Coverage](https://img.shields.io/badge/coverage-79%25-yellow)](https://github.com/quantsingularity/ChainFinity/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## 🔄 Cross-Chain DeFi Risk Management Platform
+## Cross-Chain DeFi Risk Management Platform
 
 ChainFinity is an advanced cross-chain DeFi risk management platform that leverages AI and quantitative models to analyze, predict, and mitigate risks across multiple blockchain networks.
 
