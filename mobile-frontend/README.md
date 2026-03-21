@@ -16,14 +16,14 @@ A modern, responsive web application for managing cross-chain DeFi portfolios wi
 
 ## Features
 
-- 🔐 **Authentication**: Email/password and Web3 wallet authentication
-- 📊 **Dashboard**: Real-time portfolio monitoring and risk analytics
-- 💼 **Portfolio Management**: Track assets across multiple chains
-- 📈 **Risk Assessment**: AI-powered risk analysis and alerts
-- 🔄 **Transactions**: View and manage cross-chain transactions
-- ⚙️ **Settings**: Comprehensive user preferences and security settings
-- 🌓 **Dark Mode**: Full dark mode support
-- 📱 **Responsive**: Mobile-first responsive design
+- **Authentication**: Email/password and Web3 wallet authentication
+- **Dashboard**: Real-time portfolio monitoring and risk analytics
+- **Portfolio Management**: Track assets across multiple chains
+- **Risk Assessment**: AI-powered risk analysis and alerts
+- **Transactions**: View and manage cross-chain transactions
+- **Settings**: Comprehensive user preferences and security settings
+- **Dark Mode**: Full dark mode support
+- **Responsive**: Mobile-first responsive design
 
 ## Prerequisites
 
