@@ -691,7 +691,7 @@ class RiskService:
         self, portfolio_id: UUID, user_id: Optional[UUID]
     ) -> Optional[Portfolio]:
         """Get portfolio with assets loaded"""
-        conditions = [Portfolio.id == portfolio_id, Portfolio.is_deleted == False]
+        conditions = [Portfolio.id == portfolio_id, not Portfolio.is_deleted]
         if user_id:
             conditions.append(Portfolio.user_id == user_id)
         stmt = select(Portfolio).where(and_(*conditions))

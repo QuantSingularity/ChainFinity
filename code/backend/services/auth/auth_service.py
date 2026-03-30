@@ -44,7 +44,7 @@ class AuthService:
         """
         try:
             result = await db.execute(
-                select(User).where(User.email == email, User.is_deleted == False)
+                select(User).where(User.email == email, not User.is_deleted)
             )
             user = result.scalar_one_or_none()
             if not user:
@@ -183,7 +183,7 @@ class AuthService:
                     detail="Invalid refresh token",
                 )
             result = await db.execute(
-                select(User).where(User.id == UUID(user_id), User.is_deleted == False)
+                select(User).where(User.id == UUID(user_id), not User.is_deleted)
             )
             user = result.scalar_one_or_none()
             if not user or not user.can_login():
@@ -273,7 +273,7 @@ class AuthService:
                     status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
                 )
             result = await db.execute(
-                select(User).where(User.id == UUID(user_id), User.is_deleted == False)
+                select(User).where(User.id == UUID(user_id), not User.is_deleted)
             )
             user = result.scalar_one_or_none()
             if not user or not user.can_login():

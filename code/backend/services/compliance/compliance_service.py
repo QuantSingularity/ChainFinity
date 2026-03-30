@@ -490,7 +490,7 @@ class ComplianceService:
                 user_id=user.id,
                 transaction_ids=[str(transaction.id)],
                 activity_type="suspicious_transaction",
-                activity_description=f"Transaction flagged by compliance system",
+                activity_description="Transaction flagged by compliance system",
                 suspicious_indicators=compliance_results,
                 total_amount=transaction.amount_usd,
                 currency="USD",

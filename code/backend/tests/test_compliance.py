@@ -492,14 +492,6 @@ class TestRiskService:
 
     async def test_portfolio_risk_assessment(self, risk_service: RiskService):
         """Test portfolio risk assessment"""
-        portfolio_data = {
-            "assets": [
-                {"symbol": "BTC", "allocation": 0.5, "value_usd": 50000},
-                {"symbol": "ETH", "allocation": 0.3, "value_usd": 30000},
-                {"symbol": "USDC", "allocation": 0.2, "value_usd": 20000},
-            ],
-            "total_value": 100000,
-        }
 
         result = await risk_service.assess_portfolio_risk("portfolio_id", "user_id")
 

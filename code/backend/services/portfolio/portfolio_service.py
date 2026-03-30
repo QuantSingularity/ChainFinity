@@ -94,7 +94,7 @@ class PortfolioService:
                     and_(
                         Portfolio.id == portfolio_id,
                         Portfolio.user_id == user_id,
-                        Portfolio.is_deleted == False,
+                        not Portfolio.is_deleted,
                     )
                 )
             )
@@ -121,7 +121,7 @@ class PortfolioService:
             offset = (page - 1) * size
             conditions = [Portfolio.user_id == user_id]
             if not include_deleted:
-                conditions.append(Portfolio.is_deleted == False)
+                conditions.append(not Portfolio.is_deleted)
             count_stmt = select(func.count(Portfolio.id)).where(and_(*conditions))
             count_result = await self.db.execute(count_stmt)
             total = count_result.scalar()
@@ -319,7 +319,7 @@ class PortfolioService:
 
     async def _get_active_user(self, user_id: UUID) -> User:
         """Get active user or raise error"""
-        stmt = select(User).where(and_(User.id == user_id, User.is_deleted == False))
+        stmt = select(User).where(and_(User.id == user_id, not User.is_deleted))
         result = await self.db.execute(stmt)
         user = result.scalar_one_or_none()
         if not user:
@@ -331,7 +331,7 @@ class PortfolioService:
     async def _validate_portfolio_limits(self, user_id: UUID) -> None:
         """Validate user portfolio limits"""
         stmt = select(func.count(Portfolio.id)).where(
-            and_(Portfolio.user_id == user_id, Portfolio.is_deleted == False)
+            and_(Portfolio.user_id == user_id, not Portfolio.is_deleted)
         )
         result = await self.db.execute(stmt)
         portfolio_count = result.scalar()
