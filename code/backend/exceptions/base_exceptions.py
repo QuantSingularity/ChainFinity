@@ -49,7 +49,7 @@ class BaseChainFinityException(Exception):
         user_message: Optional[str] = None,
         suggestions: Optional[List[str]] = None,
         correlation_id: Optional[str] = None,
-    ) -> Any:
+    ) -> None:
         super().__init__(message)
         self.message = message
         self.error_code = error_code
@@ -101,7 +101,7 @@ class ValidationException(BaseChainFinityException):
         value: Optional[Any] = None,
         validation_errors: Optional[List[Dict[str, Any]]] = None,
         **kwargs,
-    ) -> Any:
+    ) -> None:
         details = kwargs.get("details", {})
         if field:
             details["field"] = field
@@ -145,7 +145,7 @@ class AuthorizationException(BaseChainFinityException):
         required_permission: Optional[str] = None,
         user_permissions: Optional[List[str]] = None,
         **kwargs,
-    ) -> Any:
+    ) -> None:
         details = kwargs.get("details", {})
         if required_permission:
             details["required_permission"] = required_permission
@@ -184,7 +184,7 @@ class ExternalServiceException(BaseChainFinityException):
         status_code: Optional[int] = None,
         response_body: Optional[str] = None,
         **kwargs,
-    ) -> Any:
+    ) -> None:
         details = kwargs.get("details", {})
         if service_name:
             details["service_name"] = service_name
@@ -215,7 +215,7 @@ class DatabaseException(BaseChainFinityException):
         operation: Optional[str] = None,
         table: Optional[str] = None,
         **kwargs,
-    ) -> Any:
+    ) -> None:
         details = kwargs.get("details", {})
         if operation:
             details["operation"] = operation
@@ -243,7 +243,7 @@ class NetworkException(BaseChainFinityException):
         url: Optional[str] = None,
         timeout: Optional[float] = None,
         **kwargs,
-    ) -> Any:
+    ) -> None:
         details = kwargs.get("details", {})
         if url:
             details["url"] = url
@@ -272,7 +272,7 @@ class SecurityException(BaseChainFinityException):
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
         **kwargs,
-    ) -> Any:
+    ) -> None:
         details = kwargs.get("details", {})
         if security_event:
             details["security_event"] = security_event
@@ -303,7 +303,7 @@ class ComplianceException(BaseChainFinityException):
         regulation: Optional[str] = None,
         violation_type: Optional[str] = None,
         **kwargs,
-    ) -> Any:
+    ) -> None:
         details = kwargs.get("details", {})
         if regulation:
             details["regulation"] = regulation
@@ -332,7 +332,7 @@ class RateLimitException(BaseChainFinityException):
         window: Optional[int] = None,
         retry_after: Optional[int] = None,
         **kwargs,
-    ) -> Any:
+    ) -> None:
         details = kwargs.get("details", {})
         if limit:
             details["limit"] = limit
@@ -363,7 +363,7 @@ class ConfigurationException(BaseChainFinityException):
         config_key: Optional[str] = None,
         config_value: Optional[str] = None,
         **kwargs,
-    ) -> Any:
+    ) -> None:
         details = kwargs.get("details", {})
         if config_key:
             details["config_key"] = config_key
@@ -391,7 +391,7 @@ class ResourceNotFoundException(BaseChainFinityException):
         resource_type: Optional[str] = None,
         resource_id: Optional[str] = None,
         **kwargs,
-    ) -> Any:
+    ) -> None:
         details = kwargs.get("details", {})
         if resource_type:
             details["resource_type"] = resource_type
@@ -415,7 +415,7 @@ class ConflictException(BaseChainFinityException):
 
     def __init__(
         self, message: str, conflicting_resource: Optional[str] = None, **kwargs
-    ) -> Any:
+    ) -> None:
         details = kwargs.get("details", {})
         if conflicting_resource:
             details["conflicting_resource"] = conflicting_resource
@@ -441,7 +441,7 @@ class InsufficientResourcesException(BaseChainFinityException):
         required_amount: Optional[str] = None,
         available_amount: Optional[str] = None,
         **kwargs,
-    ) -> Any:
+    ) -> None:
         details = kwargs.get("details", {})
         if resource_type:
             details["resource_type"] = resource_type

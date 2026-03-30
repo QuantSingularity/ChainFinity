@@ -16,7 +16,7 @@ class CorrelationPredictor:
     Features include price sequences and historical volatility.
     """
 
-    def __init__(self, sequence_length: Any = 30, n_features: Any = 10) -> Any:
+    def __init__(self, sequence_length: Any = 30, n_features: Any = 10) -> None:
         self.sequence_length = sequence_length
         self.n_features = n_features
         self.scaler = MinMaxScaler(feature_range=(0, 1))
