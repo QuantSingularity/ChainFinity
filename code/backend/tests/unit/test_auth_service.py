@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 Unit tests for authentication service
 """

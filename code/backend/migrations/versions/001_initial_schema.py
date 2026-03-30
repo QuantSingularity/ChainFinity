@@ -1,3 +1,5 @@
+from typing import Any
+
 """Initial schema migration
 
 Revision ID: 001

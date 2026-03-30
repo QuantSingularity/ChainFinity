@@ -1,3 +1,5 @@
+from typing import Any
+
 """Compliance and audit tables
 
 Revision ID: 003

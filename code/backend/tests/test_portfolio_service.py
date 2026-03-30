@@ -1,3 +1,5 @@
+from typing import Any
+
 """
 Comprehensive Test Suite for Portfolio Service
 Tests all portfolio management functionality with edge cases and error scenarios

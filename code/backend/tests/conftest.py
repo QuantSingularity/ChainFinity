@@ -3,7 +3,7 @@ Pytest configuration and fixtures for ChainFinity backend tests
 """
 
 import asyncio
-from typing import AsyncGenerator, Generator
+from typing import Any, AsyncGenerator, Generator
 import pytest
 import pytest_asyncio
 from app.main import app

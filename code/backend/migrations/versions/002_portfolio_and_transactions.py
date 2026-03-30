@@ -1,3 +1,5 @@
+from typing import Any
+
 """Portfolio and transaction tables
 
 Revision ID: 002
