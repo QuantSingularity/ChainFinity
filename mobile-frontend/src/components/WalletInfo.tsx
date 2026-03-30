@@ -1,20 +1,20 @@
 // src/components/WalletInfo.tsx
 "use client";
 
+import { motion } from "framer-motion";
+import { Check, Copy, Network, Wallet } from "lucide-react";
 import React from "react";
-import { useApp } from "@/context/AppContext";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Wallet, Copy, Check, AlertCircle, Network } from "lucide-react";
-import { formatAddress } from "@/utils/helpers"; // Assuming this helper exists
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
+import { useApp } from "@/context/AppContext";
+import { formatAddress } from "@/utils/helpers"; // Assuming this helper exists
 
 export function WalletInfo() {
   const { wallet, actions, loading } = useApp();

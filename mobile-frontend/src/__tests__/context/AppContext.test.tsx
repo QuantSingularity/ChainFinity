@@ -1,5 +1,5 @@
-import React from "react";
-import { renderHook, act, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import type React from "react";
 import { AppProvider, useApp } from "@/context/AppContext";
 import * as apiModule from "@/services/api";
 

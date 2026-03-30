@@ -1,4 +1,16 @@
-import React from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   Card,
   CardContent,
@@ -11,17 +23,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "../../components/ui/tabs";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { PieChart, Pie, Cell, Legend } from "recharts";
-import { formatNumber } from "../../utils/formatters";
 
 const GovernanceAnalytics = ({ governanceData }) => {
   // Sample data for charts - in production this would come from the governanceData prop

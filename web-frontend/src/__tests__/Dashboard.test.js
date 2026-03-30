@@ -1,9 +1,8 @@
-import React from "react";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import Dashboard from "../pages/Dashboard";
 import { AppProvider } from "../context/AppContext";
+import Dashboard from "../pages/Dashboard";
 
 const theme = createTheme();
 

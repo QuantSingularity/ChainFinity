@@ -1,36 +1,37 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useApp } from "@/context/AppContext";
 import {
-  Box,
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Paper,
-  Grid,
-  InputAdornment,
-  IconButton,
-  Divider,
-  useTheme,
-  Alert,
-  Checkbox,
-  FormControlLabel,
-  Link as MuiLink,
-  CircularProgress,
-} from "@mui/material";
-import {
-  Visibility,
-  VisibilityOff,
+  AccountBalanceWallet,
   Email,
   Lock,
-  AccountBalanceWallet,
+  Visibility,
+  VisibilityOff,
 } from "@mui/icons-material";
+import {
+  Alert,
+  Box,
+  Button,
+  Checkbox,
+  CircularProgress,
+  Container,
+  Divider,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  InputAdornment,
+  Link as MuiLink,
+  Paper,
+  TextField,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useState } from "react";
+import { useApp } from "@/context/AppContext";
 
 const AuthPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -119,7 +120,7 @@ const Login = () => {
         // Redirect to dashboard on success
         router.push("/dashboard");
       }
-    } catch (err) {
+    } catch (_err) {
       setFormError("An unexpected error occurred. Please try again.");
     }
   };
@@ -128,7 +129,7 @@ const Login = () => {
     try {
       await connectWallet();
       router.push("/dashboard");
-    } catch (err) {
+    } catch (_err) {
       setFormError("Failed to connect wallet. Please try again.");
     }
   };

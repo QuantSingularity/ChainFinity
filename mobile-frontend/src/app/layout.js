@@ -1,11 +1,10 @@
 "use client";
 
-import * as React from "react";
 import { Box } from "@mui/material";
-import ThemeRegistry from "../ThemeRegistry"; // Adjusted path
-import { AppProvider } from "../context/AppContext"; // Adjusted path
-import Navbar from "../components/layout/Navbar"; // Adjusted path
 import Footer from "../components/layout/Footer"; // Adjusted path
+import Navbar from "../components/layout/Navbar"; // Adjusted path
+import { AppProvider } from "../context/AppContext"; // Adjusted path
+import ThemeRegistry from "../ThemeRegistry"; // Adjusted path
 
 export default function RootLayout({ children }) {
   return (

@@ -1,6 +1,6 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React from "react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type React from "react";
 import App from "../App";
 import "@testing-library/jest-dom";
 

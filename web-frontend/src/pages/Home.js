@@ -1,35 +1,33 @@
-import React, { useState } from "react";
 import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  Button,
-  TextField,
-  Paper,
-  useTheme,
-  Avatar,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Chip,
-} from "@mui/material";
-import {
-  Home as HomeIcon,
-  AccountBalanceWallet as WalletIcon,
+  ArrowForward as ArrowForwardIcon,
+  Layers as LayersIcon,
+  Security as SecurityIcon,
+  Speed as SpeedIcon,
   SwapHoriz as SwapIcon,
   TrendingUp as TrendingUpIcon,
-  ArrowForward as ArrowForwardIcon,
-  Speed as SpeedIcon,
-  Security as SecurityIcon,
-  Layers as LayersIcon,
+  AccountBalanceWallet as WalletIcon,
 } from "@mui/icons-material";
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Container,
+  Divider,
+  Grid,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  TextField,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
 const HeroSection = styled(Box)(({ theme }) => ({

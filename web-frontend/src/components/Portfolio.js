@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const Portfolio = ({ fetchData }) => {
   const [data, setData] = useState(null);
@@ -18,7 +18,7 @@ const Portfolio = ({ fetchData }) => {
               { id: "2", name: "Ethereum", value: 3000, symbol: "ETH" },
             ];
         setData(result);
-      } catch (err) {
+      } catch (_err) {
         setError("Failed to fetch portfolio data");
       } finally {
         setLoading(false);

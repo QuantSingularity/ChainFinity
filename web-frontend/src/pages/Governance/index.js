@@ -1,34 +1,30 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import CreateProposal from "../components/governance/CreateProposal";
+import DelegationManager from "../components/governance/DelegationManager";
+import GovernanceStats from "../components/governance/GovernanceStats";
+import ProposalList from "../components/governance/ProposalList";
+import VotingPower from "../components/governance/VotingPower";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import { Button } from "../components/ui/button";
+import { Loader } from "../components/ui/loader";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-import { Progress } from "../components/ui/progress";
-import { Badge } from "../components/ui/badge";
-import { ethers } from "ethers";
 import { useWeb3Context } from "../context/Web3Context";
-import { formatAddress, formatNumber } from "../utils/formatters";
-import ProposalList from "../components/governance/ProposalList";
-import CreateProposal from "../components/governance/CreateProposal";
-import VotingPower from "../components/governance/VotingPower";
-import GovernanceStats from "../components/governance/GovernanceStats";
-import DelegationManager from "../components/governance/DelegationManager";
-import { Loader } from "../components/ui/loader";
 
 const Governance = () => {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { account, provider, chainId, connectWallet } = useWeb3Context();
   const [activeTab, setActiveTab] = useState("proposals");
   const [loading, setLoading] = useState(true);
@@ -107,7 +103,7 @@ const Governance = () => {
     };
 
     fetchGovernanceData();
-  }, [account, provider]);
+  }, [account, provider, governanceData]);
 
   const handleCreateProposal = async (proposalData) => {
     // This would be replaced with actual contract calls in production

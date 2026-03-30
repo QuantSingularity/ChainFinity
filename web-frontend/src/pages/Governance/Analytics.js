@@ -1,23 +1,22 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
+import DelegationManager from "../components/governance/DelegationManager";
+import GovernanceAnalytics from "../components/governance/GovernanceAnalytics";
+import GovernanceStats from "../components/governance/GovernanceStats";
+import ProposalList from "../components/governance/ProposalList";
+import VotingPower from "../components/governance/VotingPower";
+import { Button } from "../components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import { Button } from "../components/ui/button";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-import GovernanceAnalytics from "../components/governance/GovernanceAnalytics";
-import ProposalList from "../components/governance/ProposalList";
-import VotingPower from "../components/governance/VotingPower";
-import GovernanceStats from "../components/governance/GovernanceStats";
-import DelegationManager from "../components/governance/DelegationManager";
 
 const Analytics = () => {
   const navigate = useNavigate();

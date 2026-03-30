@@ -1,7 +1,6 @@
-import React from "react";
+import { Github, Mail, Twitter } from "lucide-react"; // Example icons
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
-import { Github, Twitter, Mail } from "lucide-react"; // Example icons
 
 function Footer() {
   const currentYear = new Date().getFullYear();

@@ -1,9 +1,8 @@
 import axios from "axios";
-import { authAPI, handleApiError } from "@/services/api";
-import type { ApiError } from "@/services/api";
+import { handleApiError } from "@/services/api";
 
 jest.mock("axios");
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+const _mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe("API Service", () => {
   describe("handleApiError", () => {

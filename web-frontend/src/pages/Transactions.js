@@ -1,51 +1,51 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useTransactionHistory } from "../hooks/useProtocolData";
-import { useApp } from "../context/AppContext";
 import {
+  ArrowDownward,
+  ArrowUpward,
+  FilterList,
+  GetApp,
+  MoreVert,
+  Refresh,
+  Search,
+  SwapHoriz,
+} from "@mui/icons-material";
+import {
+  Alert,
   Box,
-  Container,
-  Typography,
-  Grid,
+  Button,
   Card,
   CardContent,
-  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Divider,
+  FormControl,
+  Grid,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Pagination,
   Paper,
+  Select,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
-  IconButton,
   TextField,
-  InputAdornment,
-  Pagination,
+  Typography,
   useTheme,
-  Divider,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  CircularProgress,
-  Alert,
 } from "@mui/material";
-import {
-  ArrowUpward,
-  ArrowDownward,
-  SwapHoriz,
-  Search,
-  FilterList,
-  GetApp,
-  MoreVert,
-  Refresh,
-} from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
-import { motion } from "framer-motion";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useApp } from "../context/AppContext";
+import { useTransactionHistory } from "../hooks/useProtocolData";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
@@ -95,7 +95,7 @@ const Transactions = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (_event, newPage) => {
     setPage(newPage);
   };
 

@@ -1,7 +1,6 @@
-import React from "react";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
 import App from "../App";
 import { AppProvider } from "../context/AppContext";
 

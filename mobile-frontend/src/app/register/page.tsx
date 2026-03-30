@@ -1,35 +1,36 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useApp } from "@/context/AppContext";
 import {
-  Box,
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Paper,
-  Grid,
-  InputAdornment,
-  IconButton,
-  Divider,
-  useTheme,
-  Alert,
-  Link as MuiLink,
-  CircularProgress,
-} from "@mui/material";
-import {
-  Visibility,
-  VisibilityOff,
+  AccountBalanceWallet,
   Email,
   Lock,
   Person,
-  AccountBalanceWallet,
+  Visibility,
+  VisibilityOff,
 } from "@mui/icons-material";
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Divider,
+  Grid,
+  IconButton,
+  InputAdornment,
+  Link as MuiLink,
+  Paper,
+  TextField,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useState } from "react";
+import { useApp } from "@/context/AppContext";
 
 const AuthPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -113,7 +114,7 @@ const Register = () => {
       if (result.success) {
         router.push("/login?registration=success");
       }
-    } catch (err) {
+    } catch (_err) {
       setFormError("An unexpected error occurred. Please try again.");
     }
   };
@@ -121,7 +122,7 @@ const Register = () => {
   const handleConnectWallet = async () => {
     try {
       await connectWallet();
-    } catch (err) {
+    } catch (_err) {
       setFormError("Failed to connect wallet.");
     }
   };

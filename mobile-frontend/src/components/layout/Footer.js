@@ -1,20 +1,19 @@
-import React from "react";
+import {
+  GitHub as GitHubIcon,
+  LinkedIn as LinkedInIcon,
+  Telegram as TelegramIcon,
+  Twitter as TwitterIcon,
+} from "@mui/icons-material";
 import {
   Box,
   Container,
-  Typography,
-  Link,
-  IconButton,
-  Grid,
-  useTheme,
   Divider,
+  Grid,
+  IconButton,
+  Link,
+  Typography,
+  useTheme,
 } from "@mui/material";
-import {
-  GitHub as GitHubIcon,
-  Twitter as TwitterIcon,
-  LinkedIn as LinkedInIcon,
-  Telegram as TelegramIcon,
-} from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
 
@@ -55,7 +54,7 @@ const SocialIcon = styled(IconButton)(({ theme }) => ({
 }));
 
 const Footer = () => {
-  const theme = useTheme();
+  const _theme = useTheme();
   const currentYear = new Date().getFullYear();
 
   return (

@@ -1,5 +1,4 @@
-import React from "react";
-import { Box, Container, Typography, Link, Grid } from "@mui/material";
+import { Box, Container, Grid, Link, Typography } from "@mui/material";
 
 function Footer() {
   const currentYear = new Date().getFullYear();

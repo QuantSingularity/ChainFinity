@@ -1,55 +1,53 @@
-import React, { useState, useEffect } from "react";
+import {
+  AccountBalanceWallet,
+  ArrowDownward,
+  ArrowUpward,
+  MoreVert,
+  Refresh,
+  SwapHoriz,
+  Timeline,
+  TrendingUp,
+} from "@mui/icons-material";
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Container,
+  Divider,
+  Grid,
+  IconButton,
+  LinearProgress,
+  Paper,
+  Tab,
+  Tabs,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { useApp } from "../context/AppContext";
 import {
   usePortfolioData,
   useTransactionHistory,
 } from "../hooks/useProtocolData";
-import {
-  Box,
-  Container,
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Chip,
-  Avatar,
-  IconButton,
-  Divider,
-  useTheme,
-  Paper,
-  LinearProgress,
-  Tab,
-  Tabs,
-  CircularProgress,
-  Alert,
-} from "@mui/material";
-import {
-  TrendingUp,
-  TrendingDown,
-  MoreVert,
-  Refresh,
-  ArrowUpward,
-  ArrowDownward,
-  SwapHoriz,
-  AccountBalanceWallet,
-  Timeline,
-} from "@mui/icons-material";
-import { styled } from "@mui/material/styles";
-import { motion } from "framer-motion";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
 
 // Styled components
 const DashboardCard = styled(Card)(({ theme }) => ({
@@ -152,7 +150,7 @@ const Dashboard = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (_event, newValue) => {
     setTabValue(newValue);
   };
 
@@ -425,7 +423,7 @@ const Dashboard = () => {
                               paddingAngle={5}
                               dataKey="value"
                             >
-                              {assetAllocation.map((entry, index) => (
+                              {assetAllocation.map((_entry, index) => (
                                 <Cell
                                   key={`cell-${index}`}
                                   fill={COLORS[index % COLORS.length]}
@@ -454,44 +452,42 @@ const Dashboard = () => {
                     </Box>
                     <Divider sx={{ my: 2 }} />
                     <Box>
-                      {portfolio?.assets &&
-                        portfolio.assets.map((asset, index) => (
+                      {portfolio?.assets?.map((asset, index) => (
+                        <Box
+                          key={index}
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            mb: 1,
+                          }}
+                        >
                           <Box
-                            key={index}
                             sx={{
                               display: "flex",
-                              justifyContent: "space-between",
                               alignItems: "center",
-                              mb: 1,
                             }}
                           >
                             <Box
                               sx={{
-                                display: "flex",
-                                alignItems: "center",
+                                width: 12,
+                                height: 12,
+                                borderRadius: "50%",
+                                backgroundColor: COLORS[index % COLORS.length],
+                                mr: 1,
                               }}
-                            >
-                              <Box
-                                sx={{
-                                  width: 12,
-                                  height: 12,
-                                  borderRadius: "50%",
-                                  backgroundColor:
-                                    COLORS[index % COLORS.length],
-                                  mr: 1,
-                                }}
-                              />
-                              <Typography variant="body2">
-                                {asset.symbol}
-                              </Typography>
-                            </Box>
-                            <Typography variant="body2" fontWeight={500}>
-                              $
-                              {parseFloat(asset.balance) *
-                                parseFloat(asset.value_usd || 0)}
+                            />
+                            <Typography variant="body2">
+                              {asset.symbol}
                             </Typography>
                           </Box>
-                        ))}
+                          <Typography variant="body2" fontWeight={500}>
+                            $
+                            {parseFloat(asset.balance) *
+                              parseFloat(asset.value_usd || 0)}
+                          </Typography>
+                        </Box>
+                      ))}
                     </Box>
                   </CardContent>
                 </DashboardCard>
@@ -702,14 +698,13 @@ const Dashboard = () => {
                               <Chip
                                 label={asset.change || "+0.0%"}
                                 color={
-                                  asset.change && asset.change.startsWith("-")
+                                  asset.change?.startsWith("-")
                                     ? "error"
                                     : "success"
                                 }
                                 size="small"
                                 icon={
-                                  asset.change &&
-                                  asset.change.startsWith("-") ? (
+                                  asset.change?.startsWith("-") ? (
                                     <ArrowDownward fontSize="small" />
                                   ) : (
                                     <ArrowUpward fontSize="small" />

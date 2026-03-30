@@ -1,34 +1,33 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useApp } from "../context/AppContext";
 import {
-  Box,
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Paper,
-  Grid,
-  InputAdornment,
-  IconButton,
-  Divider,
-  useTheme,
-  Alert,
-  Checkbox,
-  FormControlLabel,
-  Link,
-  CircularProgress,
-} from "@mui/material";
-import {
-  Visibility,
-  VisibilityOff,
+  AccountBalanceWallet,
   Email,
   Lock,
-  AccountBalanceWallet,
+  Visibility,
+  VisibilityOff,
 } from "@mui/icons-material";
+import {
+  Alert,
+  Box,
+  Button,
+  Checkbox,
+  CircularProgress,
+  Container,
+  Divider,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  InputAdornment,
+  Link,
+  Paper,
+  TextField,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
-import { Link as RouterLink } from "react-router-dom";
+import { useState } from "react";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useApp } from "../context/AppContext";
 
 const AuthPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -114,7 +113,7 @@ const Login = () => {
         // Redirect to dashboard on success
         navigate("/dashboard");
       }
-    } catch (err) {
+    } catch (_err) {
       setFormError("An unexpected error occurred. Please try again.");
     }
   };

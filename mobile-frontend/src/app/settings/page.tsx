@@ -1,15 +1,15 @@
 "use client";
-import React, { useState } from "react";
 import {
-  Box,
-  Typography,
-  TextField,
-  Button,
   Alert,
+  Box,
+  Button,
   CircularProgress,
-  Switch,
   FormControlLabel,
+  Switch,
+  TextField,
+  Typography,
 } from "@mui/material";
+import { useState } from "react";
 import { useAuth } from "../hooks/useAuth"; // Assuming a useAuth hook for password change
 
 const SettingsPage = () => {

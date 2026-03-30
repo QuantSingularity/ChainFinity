@@ -1,41 +1,41 @@
-import React, { useState } from "react";
+import {
+  DarkMode as DarkModeIcon,
+  Dashboard as DashboardIcon,
+  LightMode as LightModeIcon,
+  Logout as LogoutIcon,
+  Menu as MenuIcon,
+  Person as PersonIcon,
+  Settings as SettingsIcon,
+  SwapHoriz as SwapIcon,
+  AccountBalanceWallet as WalletIcon,
+} from "@mui/icons-material";
 import {
   AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  IconButton,
-  Box,
-  Container,
-  Menu,
-  MenuItem,
-  useMediaQuery,
-  useTheme,
   Avatar,
+  Box,
+  Button,
+  Container,
+  Divider,
   Drawer,
+  IconButton,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  Divider,
+  Menu,
+  MenuItem,
   Switch,
+  Toolbar,
   Tooltip,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import {
-  Menu as MenuIcon,
-  Dashboard as DashboardIcon,
-  AccountBalanceWallet as WalletIcon,
-  SwapHoriz as SwapIcon,
-  Settings as SettingsIcon,
-  Logout as LogoutIcon,
-  LightMode as LightModeIcon,
-  DarkMode as DarkModeIcon,
-  Person as PersonIcon,
-} from "@mui/icons-material";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor:
@@ -53,7 +53,7 @@ const LogoContainer = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
-const Logo = styled("img")({
+const _Logo = styled("img")({
   height: 40,
 });
 

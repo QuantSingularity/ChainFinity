@@ -1,16 +1,15 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
 import { Box, CssBaseline } from "@mui/material";
-import Navbar from "./components/layout/Navbar";
+import { Route, Routes } from "react-router-dom";
 import Footer from "./components/layout/Footer";
-import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Transactions from "./pages/Transactions";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
+import Navbar from "./components/layout/Navbar";
 import { useApp } from "./context/AppContext";
+import Dashboard from "./pages/Dashboard";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
+import Register from "./pages/Register";
+import Settings from "./pages/Settings";
+import Transactions from "./pages/Transactions";
 
 function App() {
   const { isAuthenticated } = useApp();

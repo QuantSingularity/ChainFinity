@@ -1,19 +1,18 @@
-import React from "react";
-import { Link as RouterLink, useLocation } from "react-router-dom";
 import {
   AppBar,
+  Box,
+  Button,
+  Link,
   Toolbar,
   Typography,
-  Button,
-  Box,
-  Link,
   useTheme,
 } from "@mui/material";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { formatAddress } from "../utils/helpers";
 
 function Navbar() {
-  const theme = useTheme();
+  const _theme = useTheme();
   const location = useLocation();
   const { state, actions } = useApp();
   const { wallet, user } = state;

@@ -1,14 +1,13 @@
 "use client";
 
-import React from "react";
+import { LogIn, LogOut, Menu, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ModeToggle } from "@/components/layout/mode-toggle"; // Assuming this exists for dark/light mode
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useApp } from "../context/AppContext"; // Assuming context remains compatible
 import { formatAddress } from "../utils/helpers"; // Assuming helper remains compatible
-import { Wallet, LogIn, LogOut, Menu } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ModeToggle } from "@/components/layout/mode-toggle"; // Assuming this exists for dark/light mode
 
 function Navbar() {
   const pathname = usePathname();

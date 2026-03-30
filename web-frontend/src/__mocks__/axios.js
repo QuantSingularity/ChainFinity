@@ -13,10 +13,10 @@ const mockAxios = {
     response: { use: jest.fn(), eject: jest.fn() },
   },
   defaults: { headers: {} },
-  isAxiosError: jest.fn((error) => false),
+  isAxiosError: jest.fn((_error) => false),
   CancelToken: {
     source: jest.fn(() => ({ token: {}, cancel: jest.fn() })),
-    isCancel: jest.fn((value) => false),
+    isCancel: jest.fn((_value) => false),
   },
 };
 

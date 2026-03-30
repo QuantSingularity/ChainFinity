@@ -1,46 +1,44 @@
-import React, { useState } from "react";
 import {
+  AccountCircle,
+  DarkMode,
+  Delete,
+  Edit,
+  Language,
+  LightMode,
+  Notifications,
+  Save,
+  Security,
+  Visibility,
+  VisibilityOff,
+  Wallet,
+} from "@mui/icons-material";
+import {
+  Avatar,
   Box,
-  Container,
-  Typography,
-  Grid,
+  Button,
   Card,
   CardContent,
-  Button,
-  TextField,
-  Paper,
-  Divider,
-  useTheme,
-  Avatar,
-  IconButton,
   Chip,
-  Tabs,
-  Tab,
+  Container,
+  Divider,
+  Grid,
+  IconButton,
   List,
   ListItem,
   ListItemText,
-  ListItemIcon,
+  Paper,
   Switch,
-  FormControlLabel,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+  useTheme,
 } from "@mui/material";
-import {
-  AccountCircle,
-  Edit,
-  Notifications,
-  Security,
-  Wallet,
-  Language,
-  DarkMode,
-  LightMode,
-  Save,
-  Delete,
-  Visibility,
-  VisibilityOff,
-} from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
-const SettingsCard = styled(Card)(({ theme }) => ({
+const _SettingsCard = styled(Card)(({ theme }) => ({
   height: "100%",
   borderRadius: theme.shape.borderRadius,
   boxShadow: "none",
@@ -93,7 +91,7 @@ const Settings = () => {
     confirmPassword: "",
   });
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (_event, newValue) => {
     setTabValue(newValue);
   };
 

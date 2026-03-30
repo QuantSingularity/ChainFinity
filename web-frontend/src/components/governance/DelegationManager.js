@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { Button } from "../../components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
-import { formatAddress } from "../../utils/formatters";
 import { useWeb3Context } from "../../context/Web3Context";
+import { formatAddress } from "../../utils/formatters";
 
 const DelegationManager = ({ delegatedTo, delegatedFrom, onDelegate }) => {
   const { account } = useWeb3Context();

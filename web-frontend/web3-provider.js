@@ -1,10 +1,10 @@
 import { Web3ReactProvider } from "@web3-react/core";
 import { BrowserProvider } from "ethers";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Configuration
 const POLLING_INTERVAL = 15000;
-const NETWORK_TIMEOUT = 10000;
+const _NETWORK_TIMEOUT = 10000;
 
 export function getLibrary(provider) {
   try {

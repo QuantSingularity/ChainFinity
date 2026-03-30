@@ -1,5 +1,4 @@
-import React from "react";
-import { Box, Container, Typography, Button, useTheme } from "@mui/material";
+import { Box, Button, Container, Typography, useTheme } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -21,7 +20,7 @@ const NotFoundImage = styled("img")(({ theme }) => ({
 }));
 
 const NotFound = () => {
-  const theme = useTheme();
+  const _theme = useTheme();
 
   return (
     <Container maxWidth="md">

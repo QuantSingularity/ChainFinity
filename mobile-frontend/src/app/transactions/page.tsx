@@ -1,20 +1,20 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
-  Box,
-  Typography,
-  CircularProgress,
   Alert,
+  Box,
+  CircularProgress,
+  Divider,
   List,
   ListItem,
   ListItemText,
-  Divider,
+  Typography,
 } from "@mui/material";
+import { useRouter } from "next/navigation";
+import React from "react";
 import { useTransactionHistory } from "../hooks/useProtocolData"; // Assuming this hook exists
 
 const TransactionsPage = () => {
-  const router = useRouter();
+  const _router = useRouter();
   const { transactions, loading, error } = useTransactionHistory(); // Placeholder hook
 
   // Example of a placeholder transaction data structure

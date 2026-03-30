@@ -1,4 +1,8 @@
 "use client";
+import { formatDistanceToNow } from "date-fns";
+import { AnimatePresence, motion } from "framer-motion";
+import { Clock, Plus } from "lucide-react";
+import { useEffect, useOptimistic, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,11 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Clock } from "lucide-react";
-import { useEffect, useOptimistic, useState, useTransition } from "react";
 import { getStats, incrementAndLog } from "./counter"; // Assuming this file exists and works
-import { motion, AnimatePresence } from "framer-motion";
-import { formatDistanceToNow } from "date-fns";
 
 export default function Home() {
   const [stats, setStats] = useState<{
@@ -96,7 +96,7 @@ export default function Home() {
               <ScrollArea className="h-[120px] w-full rounded-md border border-gray-200 dark:border-gray-700/50 p-3 bg-gray-50/50 dark:bg-gray-800/30">
                 <AnimatePresence initial={false}>
                   {optimisticStats.recentAccess.length > 0 ? (
-                    optimisticStats.recentAccess.map((log, i) => (
+                    optimisticStats.recentAccess.map((log, _i) => (
                       <motion.div
                         key={log.accessed_at} // Use timestamp as key for stability
                         initial={{ opacity: 0, height: 0 }}

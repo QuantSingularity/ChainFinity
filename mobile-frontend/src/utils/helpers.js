@@ -32,7 +32,7 @@ export const formatDate = (timestamp) => {
 export const isValidAddress = (address) => {
   try {
     return ethers.utils.isAddress(address);
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 };
@@ -64,10 +64,10 @@ export const debounce = (func, wait) => {
 // Format large numbers
 export const formatLargeNumber = (num) => {
   if (num >= 1000000) {
-    return (num / 1000000).toFixed(2) + "M";
+    return `${(num / 1000000).toFixed(2)}M`;
   }
   if (num >= 1000) {
-    return (num / 1000).toFixed(2) + "K";
+    return `${(num / 1000).toFixed(2)}K`;
   }
   return num.toString();
 };

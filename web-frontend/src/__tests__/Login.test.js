@@ -1,10 +1,9 @@
-import React from "react";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { render, screen, waitFor } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
 import userEvent from "@testing-library/user-event";
-import Login from "../pages/Login";
+import { BrowserRouter } from "react-router-dom";
 import { AppProvider } from "../context/AppContext";
+import Login from "../pages/Login";
 
 const theme = createTheme();
 

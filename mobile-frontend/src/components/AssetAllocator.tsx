@@ -1,7 +1,9 @@
 // src/components/AssetAllocator.tsx
 "use client";
 
-import React from "react";
+import { motion } from "framer-motion";
+import { DollarSign, PieChart as PieChartIcon } from "lucide-react";
+import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts"; // Using recharts, already in dependencies
 import {
   Card,
   CardContent,
@@ -11,21 +13,11 @@ import {
 } from "@/components/ui/card";
 import {
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
 } from "@/components/ui/chart";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts"; // Using recharts, already in dependencies
-import { DollarSign, PieChart as PieChartIcon } from "lucide-react";
-import { motion } from "framer-motion";
 
 // Mock data for demonstration
 const mockAssetData = [

@@ -1,14 +1,16 @@
 // src/context/AppContext.tsx
-import React, {
-  createContext,
-  useState,
-  useEffect,
-  useContext,
-  ReactNode,
-  useCallback,
-} from "react";
-import { authAPI, handleApiError, ApiError } from "../services/api"; // Assuming these exist and are typed
+
 import { ethers } from "ethers"; // Import ethers for balance formatting
+import type React from "react";
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { type ApiError, authAPI, handleApiError } from "../services/api"; // Assuming these exist and are typed
 
 // Define types for context state
 interface User {
@@ -84,7 +86,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       let initialDarkMode = false;
       let initialUser: User | null = null;
       let initialIsAuthenticated = false;
-      let initialLoading = true;
+      const _initialLoading = true;
 
       if (typeof window !== "undefined") {
         initialDarkMode = localStorage.getItem("darkMode") === "true";
@@ -98,7 +100,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
             // Verify token (optional but recommended)
             // const response = await authAPI.getCurrentUser();
             // initialUser = response.data;
-          } catch (err) {
+          } catch (_err) {
             localStorage.removeItem("token");
             localStorage.removeItem("user");
             initialUser = null;
@@ -270,7 +272,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       }));
       // Optionally prompt user to install MetaMask
     }
-  }, []);
+  }, [
+    // Handle disconnection
+    disconnectWallet,
+  ]);
 
   const disconnectWallet = useCallback(() => {
     // Remove listeners if added

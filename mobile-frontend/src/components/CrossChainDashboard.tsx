@@ -1,7 +1,9 @@
 // src/components/CrossChainDashboard.tsx
 "use client";
 
-import React from "react";
+import { motion } from "framer-motion";
+import { ArrowRightLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -17,9 +19,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { ArrowRightLeft, TrendingUp } from "lucide-react";
-import { motion } from "framer-motion";
 
 // Mock data for demonstration
 const mockCrossChainData = [

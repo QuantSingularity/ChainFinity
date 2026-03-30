@@ -1,7 +1,6 @@
 "use server";
 // import { getCloudflareContext } from '@opennextjs/cloudflare'
-import { headers } from "next/headers";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 /**
  * Increment counter and log access
@@ -17,11 +16,11 @@ import { cookies } from "next/headers";
  */
 export async function incrementAndLog() {
   // const cf = await getCloudflareContext()
-  const headersList = headers();
+  const _headersList = headers();
   const cookieStore = await cookies();
 
   // Get current count from cookie or start at 0
-  let currentCount = parseInt(cookieStore.get("page_views")?.value || "0");
+  let currentCount = parseInt(cookieStore.get("page_views")?.value || "0", 10);
 
   // Increment count
   currentCount += 1;
@@ -84,7 +83,10 @@ export async function getStats() {
   const cookieStore = await cookies();
 
   // Get current count from cookie or default to 0
-  const currentCount = parseInt(cookieStore.get("page_views")?.value || "0");
+  const currentCount = parseInt(
+    cookieStore.get("page_views")?.value || "0",
+    10,
+  );
 
   // Get recent access list from cookie or default to empty array
   const recentAccessList = JSON.parse(

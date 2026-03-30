@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { authAPI, handleApiError } from "../services/api";
 
 // Create context
@@ -39,7 +39,10 @@ export const AppProvider = ({ children }) => {
     };
 
     initAuth();
-  }, []);
+  }, [
+    // Token is invalid or expired
+    logout,
+  ]);
 
   // Toggle dark mode
   const toggleTheme = () => {
