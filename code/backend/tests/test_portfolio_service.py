@@ -1,5 +1,3 @@
-from typing import Any
-
 """
 Comprehensive Test Suite for Portfolio Service
 Tests all portfolio management functionality with edge cases and error scenarios
@@ -10,6 +8,7 @@ from datetime import datetime
 from decimal import Decimal
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import UUID, uuid4
+from typing import Any
 import pytest
 from exceptions.portfolio_exceptions import (
     InsufficientFundsError,
