@@ -4,7 +4,7 @@ Enhanced user management with KYC, risk profiling, and compliance
 """
 
 import enum
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import (
     JSON,
