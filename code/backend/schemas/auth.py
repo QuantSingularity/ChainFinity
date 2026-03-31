@@ -5,7 +5,9 @@ Authentication and authorization schemas
 import re
 from datetime import datetime
 from typing import Any, List, Optional
+
 from pydantic import BaseModel, EmailStr, Field, field_validator
+
 from .base import BaseSchema
 
 

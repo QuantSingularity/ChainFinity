@@ -5,23 +5,17 @@ Comprehensive user operations including profile management, KYC, and risk assess
 
 import logging
 
+from app.api.dependencies import get_current_user
 from config.database import get_async_session
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from fastapi.security import HTTPBearer
 from middleware.audit_middleware import audit_log
 from models.user import User
 from schemas.base import PaginatedResponse, SuccessResponse
-from schemas.user import (
-    UserKYCResponse,
-    UserKYCUpdate,
-    UserProfileResponse,
-    UserProfileUpdate,
-    UserResponse,
-    UserRiskProfileResponse,
-    UserRiskProfileUpdate,
-    UserUpdate,
-)
-from app.api.dependencies import get_current_user
+from schemas.user import (UserKYCResponse, UserKYCUpdate, UserProfileResponse,
+                          UserProfileUpdate, UserResponse,
+                          UserRiskProfileResponse, UserRiskProfileUpdate,
+                          UserUpdate)
 from services.user.user_service import UserService
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

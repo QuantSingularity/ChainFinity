@@ -8,17 +8,14 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 from uuid import UUID
+
 from config.settings import settings
 from models.portfolio import Portfolio, PortfolioAsset, PortfolioSnapshot
 from models.user import User
 from schemas.base import PaginatedResponse
-from schemas.portfolio import (
-    PortfolioAssetUpdate,
-    PortfolioCreate,
-    PortfolioUpdate,
-    RebalanceRequest,
-    RebalanceResponse,
-)
+from schemas.portfolio import (PortfolioAssetUpdate, PortfolioCreate,
+                               PortfolioUpdate, RebalanceRequest,
+                               RebalanceResponse)
 from services.analytics.performance_service import PerformanceService
 from services.compliance.compliance_service import ComplianceService
 from services.market.market_data_service import MarketDataService

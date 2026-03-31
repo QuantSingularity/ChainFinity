@@ -3,24 +3,21 @@ Transaction endpoints
 """
 
 import logging
+from datetime import datetime
 from typing import Any, List, Optional
 from uuid import UUID
 
 from app.api.dependencies import get_current_user
 from config.database import get_async_session
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from models.transaction import Transaction, TransactionStatus, TransactionType
 from models.user import User
-from schemas.transaction import (
-    TransactionCreate,
-    TransactionResponse,
-    TransactionUpdate,
-)
 from schemas.base import SuccessResponse
+from schemas.transaction import (TransactionCreate, TransactionResponse,
+                                 TransactionUpdate)
 from services.portfolio.portfolio_service import PortfolioService
+from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from models.transaction import Transaction, TransactionType, TransactionStatus
-from sqlalchemy import select, and_, desc
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

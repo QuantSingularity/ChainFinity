@@ -7,8 +7,9 @@ import asyncio
 import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Any, Dict, List, Optional
 from types import TracebackType
+from typing import Any, Dict, List, Optional
+
 import aiohttp
 from config.database import cache
 from config.settings import settings

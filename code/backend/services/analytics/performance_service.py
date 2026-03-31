@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
+
 import numpy as np
 from models.portfolio import Portfolio
 from services.market.market_data_service import MarketDataService

@@ -5,6 +5,7 @@ Rate limiting middleware for API protection
 import logging
 import time
 from typing import Any, Callable
+
 from config.database import get_redis
 from config.settings import settings
 from fastapi import Request, Response

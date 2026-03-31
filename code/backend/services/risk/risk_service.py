@@ -4,20 +4,22 @@ Comprehensive risk assessment, monitoring, and management with regulatory compli
 """
 
 import logging
+import os
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from decimal import Decimal
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
+
 import numpy as np
+import pandas as pd
 from models.portfolio import Portfolio
 from models.risk import RiskAssessment
 from models.user import RiskLevel, UserRiskProfile
 from scipy import stats
 from services.market.market_data_service import MarketDataService
-import os
-import sys
-from pathlib import Path
 
 # Add ai_models to path
 ai_models_path = Path(__file__).parent.parent.parent / "ai_models"
@@ -25,8 +27,8 @@ if str(ai_models_path) not in sys.path:
     sys.path.insert(0, str(ai_models_path))
 
 try:
-    from train_correlation_model import CorrelationPredictor
     import tensorflow as tf
+    from train_correlation_model import CorrelationPredictor
 
     HAS_ML_MODEL = True
 except (ImportError, ModuleNotFoundError):

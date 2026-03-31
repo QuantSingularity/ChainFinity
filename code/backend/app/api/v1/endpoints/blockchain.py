@@ -3,22 +3,18 @@ Blockchain endpoints
 """
 
 import logging
+from datetime import datetime
 from typing import Any, List, Optional
 from uuid import UUID
 
 from app.api.dependencies import get_current_user
 from config.database import get_async_session
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from models.blockchain import BlockchainNetwork, ContractEvent, SmartContract
 from models.user import User
-from schemas.blockchain import (
-    NetworkResponse,
-    ContractResponse,
-    EventResponse,
-)
+from schemas.blockchain import ContractResponse, EventResponse, NetworkResponse
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from models.blockchain import BlockchainNetwork, SmartContract, ContractEvent
-from sqlalchemy import select, desc
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

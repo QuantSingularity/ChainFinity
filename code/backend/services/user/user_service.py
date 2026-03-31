@@ -9,24 +9,17 @@ import secrets
 from datetime import datetime
 from io import BytesIO
 from typing import Any, Dict, List, Optional
+
 import pyotp
 import qrcode
 from config.database import cache
 from config.settings import settings
 from models.compliance import AuditLog
-from models.user import (
-    KYCStatus,
-    RiskLevel,
-    User,
-    UserKYC,
-    UserProfile,
-    UserRiskProfile,
-    UserStatus,
-)
+from models.user import (KYCStatus, RiskLevel, User, UserKYC, UserProfile,
+                         UserRiskProfile, UserStatus)
 from passlib.context import CryptContext
 from schemas.base import PaginatedResponse
 from schemas.user import UserCreate, UserProfileUpdate, UserUpdate
-
 # from services.email.email_service import EmailService
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession

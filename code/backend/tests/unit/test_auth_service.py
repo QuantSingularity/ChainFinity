@@ -5,6 +5,7 @@ Unit tests for authentication service
 """
 
 from datetime import datetime, timedelta
+
 import pytest
 from fastapi import HTTPException
 from models.user import UserStatus

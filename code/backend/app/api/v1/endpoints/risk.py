@@ -3,21 +3,19 @@ Risk management endpoints
 """
 
 import logging
+from datetime import datetime
 from typing import Any, List, Optional
 from uuid import UUID
 
 from app.api.dependencies import get_current_user
 from config.database import get_async_session
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from models.risk import AlertRule, RiskAssessment
 from models.user import User
-from schemas.risk import (
-    RiskAssessmentResponse,
-)
+from schemas.risk import RiskAssessmentResponse
 from services.risk.risk_service import RiskService
+from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from models.risk import RiskAssessment, AlertRule
-from sqlalchemy import select, and_, desc
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

@@ -11,16 +11,9 @@ from config.database import get_async_session
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from models.user import User
-from schemas.auth import (
-    LoginRequest,
-    MFASetupRequest,
-    MFASetupResponse,
-    MFAVerifyRequest,
-    PasswordChangeRequest,
-    RefreshTokenRequest,
-    RegisterRequest,
-    Token,
-)
+from schemas.auth import (LoginRequest, MFASetupRequest, MFASetupResponse,
+                          MFAVerifyRequest, PasswordChangeRequest,
+                          RefreshTokenRequest, RegisterRequest, Token)
 from schemas.base import SuccessResponse
 from schemas.user import UserResponse
 from services.auth import AuthService

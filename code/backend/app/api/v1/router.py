@@ -4,15 +4,8 @@ Main API router for v1 endpoints
 
 from fastapi import APIRouter
 
-from .endpoints import (
-    auth,
-    blockchain,
-    compliance,
-    portfolios,
-    risk,
-    transactions,
-    users,
-)
+from .endpoints import (auth, blockchain, compliance, portfolios, risk,
+                        transactions, users)
 
 api_router = APIRouter()
 

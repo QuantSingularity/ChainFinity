@@ -4,6 +4,7 @@ API dependencies for authentication and common functionality
 
 import logging
 from typing import Dict
+
 from config.database import get_async_session
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer

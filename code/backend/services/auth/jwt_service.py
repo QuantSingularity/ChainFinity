@@ -5,6 +5,7 @@ JWT token service for authentication
 import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
+
 from config.settings import settings
 from jose import JWTError, jwt
 

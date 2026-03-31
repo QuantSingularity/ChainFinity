@@ -7,8 +7,8 @@ import logging
 import re
 from typing import Optional
 
-from passlib.context import CryptContext
 from config.settings import settings
+from passlib.context import CryptContext
 
 logger = logging.getLogger(__name__)
 

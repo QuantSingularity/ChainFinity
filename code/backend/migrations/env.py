@@ -6,7 +6,6 @@ import asyncio
 from logging.config import fileConfig
 
 from alembic import context
-
 # Import all models to ensure they are registered with SQLAlchemy
 from models.base import Base
 from sqlalchemy import pool
