@@ -7,8 +7,11 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
 from config.settings import settings
-from models.compliance import (ComplianceCheck, ComplianceStatus,
-                               SuspiciousActivityReport)
+from models.compliance import (
+    ComplianceCheck,
+    ComplianceStatus,
+    SuspiciousActivityReport,
+)
 from models.risk import RiskLevel
 from models.transaction import Transaction, TransactionStatus
 from models.user import User

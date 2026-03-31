@@ -6,8 +6,19 @@ Network management, smart contracts, and events
 import enum
 from datetime import datetime
 
-from sqlalchemy import (JSON, Boolean, Column, DateTime, Enum, ForeignKey,
-                        Index, Integer, Numeric, String, Text)
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 

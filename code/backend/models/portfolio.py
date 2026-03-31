@@ -8,8 +8,19 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Dict
 
-from sqlalchemy import (JSON, Boolean, Column, DateTime, Enum, ForeignKey,
-                        Index, Numeric, String, Text, UniqueConstraint)
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 

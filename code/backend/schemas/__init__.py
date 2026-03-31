@@ -2,18 +2,34 @@
 Pydantic schemas for request/response validation
 """
 
-from .auth import (LoginRequest, PasswordChangeRequest, RegisterRequest, Token,
-                   TokenData)
+from .auth import LoginRequest, PasswordChangeRequest, RegisterRequest, Token, TokenData
 from .blockchain import ContractResponse, EventResponse, NetworkResponse
-from .compliance import (AuditLogResponse, ComplianceCheckResponse,
-                         RegulatoryReportResponse)
-from .portfolio import (AssetAllocation, PortfolioCreate, PortfolioResponse,
-                        PortfolioUpdate)
+from .compliance import (
+    AuditLogResponse,
+    ComplianceCheckResponse,
+    RegulatoryReportResponse,
+)
+from .portfolio import (
+    AssetAllocation,
+    PortfolioCreate,
+    PortfolioResponse,
+    PortfolioUpdate,
+)
 from .risk import AlertResponse, RiskAssessmentResponse, RiskMetricsResponse
-from .transaction import (TransactionCreate, TransactionFilter,
-                          TransactionResponse, TransactionUpdate)
-from .user import (UserCreate, UserKYC, UserProfile, UserResponse,
-                   UserRiskProfile, UserUpdate)
+from .transaction import (
+    TransactionCreate,
+    TransactionFilter,
+    TransactionResponse,
+    TransactionUpdate,
+)
+from .user import (
+    UserCreate,
+    UserKYC,
+    UserProfile,
+    UserResponse,
+    UserRiskProfile,
+    UserUpdate,
+)
 
 __all__ = [
     "UserCreate",

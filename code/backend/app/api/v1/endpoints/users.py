@@ -12,10 +12,16 @@ from fastapi.security import HTTPBearer
 from middleware.audit_middleware import audit_log
 from models.user import User
 from schemas.base import PaginatedResponse, SuccessResponse
-from schemas.user import (UserKYCResponse, UserKYCUpdate, UserProfileResponse,
-                          UserProfileUpdate, UserResponse,
-                          UserRiskProfileResponse, UserRiskProfileUpdate,
-                          UserUpdate)
+from schemas.user import (
+    UserKYCResponse,
+    UserKYCUpdate,
+    UserProfileResponse,
+    UserProfileUpdate,
+    UserResponse,
+    UserRiskProfileResponse,
+    UserRiskProfileUpdate,
+    UserUpdate,
+)
 from services.user.user_service import UserService
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

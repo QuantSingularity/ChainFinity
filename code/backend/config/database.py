@@ -10,8 +10,7 @@ from typing import Any, AsyncGenerator, Optional
 import redis.asyncio as redis
 from config.settings import settings
 from sqlalchemy import create_engine, event, text
-from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
-                                    create_async_engine)
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool

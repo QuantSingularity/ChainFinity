@@ -14,8 +14,7 @@ from httpx import AsyncClient
 from models.base import Base
 from models.user import User, UserStatus
 from services.auth import AuthService
-from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
-                                    create_async_engine)
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"

@@ -10,11 +10,18 @@ from uuid import UUID
 from app.api.dependencies import get_current_user
 from config.database import get_async_session
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from models.compliance import (AuditLog, ComplianceCheck, ComplianceStatus,
-                               RegulatoryReport)
+from models.compliance import (
+    AuditLog,
+    ComplianceCheck,
+    ComplianceStatus,
+    RegulatoryReport,
+)
 from models.user import User
-from schemas.compliance import (AuditLogResponse, ComplianceCheckResponse,
-                                RegulatoryReportResponse)
+from schemas.compliance import (
+    AuditLogResponse,
+    ComplianceCheckResponse,
+    RegulatoryReportResponse,
+)
 from services.compliance.compliance_service import ComplianceService
 from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
