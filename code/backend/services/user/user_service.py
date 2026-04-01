@@ -101,7 +101,7 @@ class UserService:
                     selectinload(User.kyc),
                     selectinload(User.risk_profile),
                 )
-                .where(and_(User.id == user_id, not User.is_deleted))
+                .where(and_(User.id == user_id, User.is_deleted == False))
             )
             result = await self.db.execute(stmt)
             return result.scalar_one_or_none()
@@ -115,7 +115,7 @@ class UserService:
         """
         try:
             stmt = select(User).where(
-                and_(User.email == email.lower(), not User.is_deleted)
+                and_(User.email == email.lower(), User.is_deleted == False)
             )
             result = await self.db.execute(stmt)
             return result.scalar_one_or_none()

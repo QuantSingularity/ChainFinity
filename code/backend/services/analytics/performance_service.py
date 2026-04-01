@@ -364,7 +364,7 @@ class PerformanceService:
         self, portfolio_id: UUID, user_id: Optional[UUID]
     ) -> Optional[Portfolio]:
         """Get portfolio with assets"""
-        conditions = [Portfolio.id == portfolio_id, not Portfolio.is_deleted]
+        conditions = [Portfolio.id == portfolio_id, Portfolio.is_deleted == False]
         if user_id:
             conditions.append(Portfolio.user_id == user_id)
         stmt = select(Portfolio).where(and_(*conditions))

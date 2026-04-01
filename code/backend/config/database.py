@@ -11,12 +11,10 @@ import redis.asyncio as redis
 from config.settings import settings
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
 
 logger = logging.getLogger(__name__)
-Base = declarative_base()
 async_engine = create_async_engine(
     settings.database.DATABASE_URL,
     echo=settings.database.DB_ECHO,
@@ -305,7 +303,7 @@ class DatabaseManager:
         Execute raw SQL with parameters
         """
         async with AsyncSessionLocal() as session:
-            result = await session.execute(sql, params or {})
+            result = await session.execute(text(sql), params or {})
             await session.commit()
             return result
 

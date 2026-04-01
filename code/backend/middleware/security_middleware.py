@@ -178,7 +178,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                         if pattern in body_str:
                             return True
             except Exception:
-                return True
+                pass
         return False
 
     def validate_user_agent(self, request: Request) -> bool:

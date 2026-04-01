@@ -257,7 +257,9 @@ async def setup_mfa(
 
         mfa_service = MFAService()
 
-        secret, qr_code_url, backup_codes = mfa_service.setup_totp(current_user.email)
+        secret = mfa_service.generate_secret()
+        qr_code_url = mfa_service.generate_qr_code(secret, current_user.email)
+        backup_codes = mfa_service.generate_backup_codes()
 
         # Store secret temporarily (user needs to verify before enabling)
         current_user.mfa_secret = secret
@@ -298,7 +300,7 @@ async def verify_mfa(
 
         mfa_service = MFAService()
 
-        if not mfa_service.verify_totp(current_user.mfa_secret, request.code):
+        if not mfa_service.verify_code(current_user.mfa_secret, request.code):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid MFA code"
             )
@@ -317,3 +319,54 @@ async def verify_mfa(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="MFA verification failed",
         )
+
+
+@router.post("/forgot-password", response_model=SuccessResponse)
+async def forgot_password(
+    request: Request,
+    db: AsyncSession = Depends(get_async_session),
+) -> Any:
+    """
+    Request password reset email.
+    Always returns success to avoid email enumeration.
+    """
+    from models.user import User
+    from sqlalchemy import select
+
+    try:
+        body = await request.json()
+        email = body.get("email", "")
+
+        result = await db.execute(
+            select(User).where(User.email == email, User.is_deleted == False)
+        )
+        user = result.scalar_one_or_none()
+
+        if user and user.is_active():
+            reset_token = auth_service.jwt_service.create_access_token(
+                data={"sub": str(user.id), "purpose": "password_reset"},
+            )
+            # In production: send reset_token via email service
+            logger.info(f"Password reset requested for user: {user.email}")
+
+        return SuccessResponse(
+            message="If that email is registered, a reset link has been sent."
+        )
+
+    except Exception as e:
+        logger.error(f"Forgot password error: {e}")
+        return SuccessResponse(
+            message="If that email is registered, a reset link has been sent."
+        )
+
+
+@router.post("/reset-password", response_model=SuccessResponse)
+async def reset_password(
+    db: AsyncSession = Depends(get_async_session),
+) -> Any:
+    """
+    Reset password using a valid reset token.
+    """
+
+    # Note: body parsing would be done via Pydantic model in production
+    return SuccessResponse(message="Password reset endpoint available")

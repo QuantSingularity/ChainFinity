@@ -2,6 +2,7 @@
 Authentication service with enhanced security features
 """
 
+import json
 import logging
 from datetime import datetime
 from typing import Dict, Optional, Tuple
@@ -46,7 +47,7 @@ class AuthService:
         """
         try:
             result = await db.execute(
-                select(User).where(User.email == email, not User.is_deleted)
+                select(User).where(User.email == email, User.is_deleted == False)
             )
             user = result.scalar_one_or_none()
             if not user:
@@ -88,11 +89,11 @@ class AuthService:
             if user.mfa_enabled:
                 if not mfa_code:
                     raise HTTPException(
-                        status_code=status.HTTP_200_OK,
+                        status_code=status.HTTP_428_PRECONDITION_REQUIRED,
                         detail="MFA code required",
                         headers={"X-MFA-Required": "true"},
                     )
-                if not self.mfa_service.verify_totp(user.mfa_secret, mfa_code):
+                if not self.mfa_service.verify_code(user.mfa_secret, mfa_code):
                     user.increment_failed_login()
                     await db.commit()
                     await self._log_failed_login(
@@ -185,7 +186,7 @@ class AuthService:
                     detail="Invalid refresh token",
                 )
             result = await db.execute(
-                select(User).where(User.id == UUID(user_id), not User.is_deleted)
+                select(User).where(User.id == UUID(user_id), User.is_deleted == False)
             )
             user = result.scalar_one_or_none()
             if not user or not user.can_login():
@@ -275,7 +276,7 @@ class AuthService:
                     status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
                 )
             result = await db.execute(
-                select(User).where(User.id == UUID(user_id), not User.is_deleted)
+                select(User).where(User.id == UUID(user_id), User.is_deleted == False)
             )
             user = result.scalar_one_or_none()
             if not user or not user.can_login():
@@ -317,7 +318,9 @@ class AuthService:
             "created_at": datetime.utcnow().isoformat(),
         }
         await cache.set(
-            f"user_session:{user_id}", str(session_data), ttl=settings.redis.SESSION_TTL
+            f"user_session:{user_id}",
+            json.dumps(session_data),
+            ttl=settings.redis.SESSION_TTL,
         )
 
     async def _invalidate_token(self, token: str) -> None:
@@ -344,7 +347,7 @@ class AuthService:
             user_id=user.id,
             ip_address=ip_address,
             user_agent=user_agent,
-            metadata={
+            extra_metadata={
                 "login_count": user.login_count,
                 "last_login": (
                     user.last_login_at.isoformat() if user.last_login_at else None
@@ -369,7 +372,7 @@ class AuthService:
             event_description=f"Failed login attempt for {email}",
             ip_address=ip_address,
             user_agent=user_agent,
-            metadata={"email": email, "failure_reason": reason},
+            extra_metadata={"email": email, "failure_reason": reason},
             is_suspicious=True,
         )
         db.add(audit_log)

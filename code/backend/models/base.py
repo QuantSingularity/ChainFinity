@@ -133,15 +133,15 @@ class MetadataMixin:
 
     def add_metadata(self, key: str, value: Any) -> None:
         """Add metadata key-value pair"""
-        if self.metadata is None:
-            self.metadata = {}
-        self.metadata[key] = value
+        if self.extra_metadata is None:
+            self.extra_metadata = {}
+        self.extra_metadata[key] = value
 
     def get_metadata(self, key: str, default: Any = None) -> Any:
         """Get metadata value by key"""
-        if self.metadata is None:
+        if self.extra_metadata is None:
             return default
-        return self.metadata.get(key, default)
+        return self.extra_metadata.get(key, default)
 
     def add_tag(self, tag: str) -> None:
         """Add a tag"""

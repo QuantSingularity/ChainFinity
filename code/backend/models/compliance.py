@@ -151,9 +151,9 @@ class AuditLog(BaseModel, TimestampMixin):
 
     def add_metadata(self, key: str, value: Any) -> None:
         """Add metadata to the audit log"""
-        if self.metadata is None:
-            self.metadata = {}
-        self.metadata[key] = value
+        if self.extra_metadata is None:
+            self.extra_metadata = {}
+        self.extra_metadata[key] = value
 
 
 class ComplianceCheck(BaseModel, TimestampMixin, AuditMixin):

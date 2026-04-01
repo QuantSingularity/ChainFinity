@@ -24,8 +24,13 @@ class PortfolioCreate(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = None
-    strategy_type: str = Field(default="balanced")
+    portfolio_type: Optional[str] = Field(default="main")
+    base_currency: Optional[str] = Field(default="USD")
+    target_allocation: Optional[dict] = Field(default=None)
     risk_tolerance: str = Field(default="moderate")
+    investment_objective: Optional[str] = None
+    rebalancing_frequency: Optional[str] = Field(default="monthly")
+    auto_rebalance: Optional[bool] = Field(default=False)
 
 
 class PortfolioUpdate(BaseModel):
@@ -33,8 +38,11 @@ class PortfolioUpdate(BaseModel):
 
     name: Optional[str] = None
     description: Optional[str] = None
-    strategy_type: Optional[str] = None
     risk_tolerance: Optional[str] = None
+    target_allocation: Optional[dict] = None
+    investment_objective: Optional[str] = None
+    rebalancing_frequency: Optional[str] = None
+    auto_rebalance: Optional[bool] = None
 
 
 class PortfolioResponse(BaseSchema):
@@ -75,10 +83,22 @@ class PortfolioAssetResponse(BaseSchema):
     current_value: Decimal
 
 
+class PortfolioAssetCreate(BaseModel):
+    """Portfolio asset creation schema"""
+
+    symbol: str = Field(..., min_length=1, max_length=20)
+    asset_type: Optional[str] = Field(default="cryptocurrency")
+    quantity: Decimal = Field(..., gt=0)
+    average_cost: Optional[Decimal] = None
+    target_allocation: Optional[Decimal] = None
+
+
 class PortfolioAssetUpdate(BaseModel):
     """Portfolio asset update schema"""
 
     quantity: Optional[Decimal] = None
+    average_cost: Optional[Decimal] = None
+    target_allocation: Optional[Decimal] = None
     notes: Optional[str] = None
 
 

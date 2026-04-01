@@ -5,6 +5,12 @@ Alembic environment configuration for ChainFinity backend
 import asyncio
 from logging.config import fileConfig
 
+import models.blockchain  # noqa: F401
+import models.compliance  # noqa: F401
+import models.portfolio  # noqa: F401
+import models.risk  # noqa: F401
+import models.transaction  # noqa: F401
+import models.user  # noqa: F401
 from alembic import context
 
 # Import all models to ensure they are registered with SQLAlchemy

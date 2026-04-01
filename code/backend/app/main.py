@@ -4,6 +4,7 @@ Main FastAPI application with production-ready configuration
 
 import logging
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import AsyncGenerator
 
 import uvicorn
@@ -163,6 +164,12 @@ async def general_exception_handler(request: Request, exc: Exception):
         )
 
 
+# Application start time for uptime calculation
+import time as _time
+
+_app_start_time = _time.time()
+
+
 # Health check endpoint
 @app.get("/health", tags=["system"])
 async def health_check() -> dict:
@@ -178,17 +185,15 @@ async def health_check() -> dict:
     }
 
     overall_status = (
-        "healthy"
-        if all(status == "healthy" for status in services.values())
-        else "unhealthy"
+        "healthy" if all(s == "healthy" for s in services.values()) else "unhealthy"
     )
 
     return {
         "status": overall_status,
-        "timestamp": "2025-01-08T12:00:00Z",  # Use actual timestamp
+        "timestamp": datetime.utcnow().isoformat() + "Z",
         "version": settings.app.APP_VERSION,
         "services": services,
-        "uptime_seconds": 0,  # Calculate actual uptime
+        "uptime_seconds": int(_time.time() - _app_start_time),
     }
 
 

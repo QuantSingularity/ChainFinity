@@ -16,6 +16,10 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
     wallet_address: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    preferred_language: Optional[str] = "en"
+    preferred_currency: Optional[str] = "USD"
 
 
 class UserUpdate(BaseModel):
@@ -31,9 +35,12 @@ class UserResponse(BaseSchema):
 
     id: UUID
     email: str
-    is_active: bool
-    is_verified: bool
+    email_verified: bool
+    status: str
+    mfa_enabled: bool
+    primary_wallet_address: Optional[str] = None
     created_at: datetime
+    last_login_at: Optional[datetime] = None
 
 
 class UserProfile(BaseSchema):
