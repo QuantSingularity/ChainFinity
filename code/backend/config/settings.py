@@ -67,7 +67,7 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MINUTE: int = Field(default=60)
     RATE_LIMIT_BURST: int = Field(default=100)
     API_KEY_HEADER: str = Field(default="X-API-Key")
-    CORS_ORIGINS: str = Field(default="*")
+    CORS_ORIGINS: List[str] = Field(default=["*"])
     CORS_ALLOW_CREDENTIALS: bool = Field(default=True)
     ENCRYPTION_KEY: Optional[str] = None
     FIELD_ENCRYPTION_ENABLED: bool = Field(default=True)
@@ -116,7 +116,7 @@ class Settings(BaseSettings):
     CRYPTOCOMPARE_API_KEY: Optional[str] = None
     ALPHA_VANTAGE_API_KEY: Optional[str] = None
 
-    @field_validator("CORS_ORIGINS", mode="after")
+    @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: Any) -> List[str]:
         if isinstance(v, str):
@@ -127,11 +127,11 @@ class Settings(BaseSettings):
 
     # Convenience property accessors for backward compatibility
     @property
-    def app(self) -> "AppSettings":
+    def app(self) -> Any:
         """Application settings accessor"""
 
         class AppSettings:
-            def __init__(self, settings: "Settings") -> None:
+            def __init__(self, settings: Settings) -> None:
                 self.APP_NAME = settings.APP_NAME
                 self.APP_VERSION = settings.APP_VERSION
                 self.APP_DESCRIPTION = settings.APP_DESCRIPTION
@@ -147,11 +147,11 @@ class Settings(BaseSettings):
         return AppSettings(self)
 
     @property
-    def database(self) -> "DatabaseSettings":
+    def database(self) -> Any:
         """Database settings accessor"""
 
         class DatabaseSettings:
-            def __init__(self, settings: "Settings") -> None:
+            def __init__(self, settings: Settings) -> None:
                 self.DATABASE_URL = settings.DATABASE_URL
                 self.DATABASE_READ_URL = settings.DATABASE_READ_URL
                 self.DB_POOL_SIZE = settings.DB_POOL_SIZE
@@ -164,11 +164,11 @@ class Settings(BaseSettings):
         return DatabaseSettings(self)
 
     @property
-    def redis(self) -> "RedisSettings":
+    def redis(self) -> Any:
         """Redis settings accessor"""
 
         class RedisSettings:
-            def __init__(self, settings: "Settings") -> None:
+            def __init__(self, settings: Settings) -> None:
                 self.REDIS_URL = settings.REDIS_URL
                 self.REDIS_PASSWORD = settings.REDIS_PASSWORD
                 self.REDIS_DB = settings.REDIS_DB
@@ -183,13 +183,13 @@ class Settings(BaseSettings):
         return RedisSettings(self)
 
     @property
-    def security(self) -> "SecuritySettings":
+    def security(self) -> Any:
         """Security settings accessor"""
 
         class SecuritySettings:
-            def __init__(self, settings: "Settings") -> None:
+            def __init__(self, settings: Settings) -> None:
                 self.SECRET_KEY = settings.SECRET_KEY
-                self.ALGORITHM = settings.JWT_ALGORITHM
+                self.JWT_ALGORITHM = settings.JWT_ALGORITHM
                 self.ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
                 self.REFRESH_TOKEN_EXPIRE_DAYS = settings.REFRESH_TOKEN_EXPIRE_DAYS
                 self.RATE_LIMIT_PER_MINUTE = settings.RATE_LIMIT_PER_MINUTE
@@ -200,44 +200,75 @@ class Settings(BaseSettings):
         return SecuritySettings(self)
 
     @property
-    def blockchain(self) -> "BlockchainSettings":
+    def blockchain(self) -> Any:
         """Blockchain settings accessor"""
 
         class BlockchainSettings:
-            def __init__(self, settings: "Settings") -> None:
+            def __init__(self, settings: Settings) -> None:
                 self.ETH_RPC_URL = settings.ETH_RPC_URL
+                self.ETH_WEBSOCKET_URL = settings.ETH_WEBSOCKET_URL
                 self.ETH_CHAIN_ID = settings.ETH_CHAIN_ID
+                self.POLYGON_RPC_URL = settings.POLYGON_RPC_URL
+                self.POLYGON_CHAIN_ID = settings.POLYGON_CHAIN_ID
+                self.BSC_RPC_URL = settings.BSC_RPC_URL
+                self.BSC_CHAIN_ID = settings.BSC_CHAIN_ID
+                self.GAS_PRICE_STRATEGY = settings.GAS_PRICE_STRATEGY
+                self.MAX_GAS_PRICE = settings.MAX_GAS_PRICE
+                self.GOVERNANCE_TOKEN_ADDRESS = settings.GOVERNANCE_TOKEN_ADDRESS
+                self.ASSET_VAULT_ADDRESS = settings.ASSET_VAULT_ADDRESS
+                self.ETHERSCAN_API_KEY = settings.ETHERSCAN_API_KEY
+                self.POLYGONSCAN_API_KEY = settings.POLYGONSCAN_API_KEY
 
         return BlockchainSettings(self)
 
     @property
-    def compliance(self) -> "ComplianceSettings":
+    def compliance(self) -> Any:
         """Compliance settings accessor"""
 
         class ComplianceSettings:
-            def __init__(self, settings: "Settings") -> None:
+            def __init__(self, settings: Settings) -> None:
                 self.KYC_ENABLED = settings.KYC_ENABLED
+                self.KYC_PROVIDER = settings.KYC_PROVIDER
+                self.KYC_API_KEY = settings.KYC_API_KEY
+                self.KYC_API_SECRET = settings.KYC_API_SECRET
                 self.AML_ENABLED = settings.AML_ENABLED
+                self.AML_PROVIDER = settings.AML_PROVIDER
+                self.AML_API_KEY = settings.AML_API_KEY
+                self.TRANSACTION_MONITORING_ENABLED = (
+                    settings.TRANSACTION_MONITORING_ENABLED
+                )
+                self.SUSPICIOUS_AMOUNT_THRESHOLD = settings.SUSPICIOUS_AMOUNT_THRESHOLD
+                self.DAILY_TRANSACTION_LIMIT = settings.DAILY_TRANSACTION_LIMIT
+                self.REGULATORY_REPORTING_ENABLED = (
+                    settings.REGULATORY_REPORTING_ENABLED
+                )
+                self.AUDIT_LOG_RETENTION_DAYS = settings.AUDIT_LOG_RETENTION_DAYS
 
         return ComplianceSettings(self)
 
     @property
-    def monitoring(self) -> "MonitoringSettings":
+    def monitoring(self) -> Any:
         """Monitoring settings accessor"""
 
         class MonitoringSettings:
-            def __init__(self, settings: "Settings") -> None:
+            def __init__(self, settings: Settings) -> None:
                 self.LOG_LEVEL = settings.LOG_LEVEL
+                self.LOG_FORMAT = settings.LOG_FORMAT
+                self.LOG_FILE = settings.LOG_FILE
                 self.METRICS_ENABLED = settings.METRICS_ENABLED
+                self.METRICS_PORT = settings.METRICS_PORT
+                self.HEALTH_CHECK_INTERVAL = settings.HEALTH_CHECK_INTERVAL
+                self.SENTRY_DSN = settings.SENTRY_DSN
+                self.SENTRY_ENVIRONMENT = settings.SENTRY_ENVIRONMENT
 
         return MonitoringSettings(self)
 
     @property
-    def external_apis(self) -> "ExternalAPISettings":
+    def external_apis(self) -> Any:
         """External APIs settings accessor"""
 
         class ExternalAPISettings:
-            def __init__(self, settings: "Settings") -> None:
+            def __init__(self, settings: Settings) -> None:
                 self.COINMARKETCAP_API_KEY = settings.COINMARKETCAP_API_KEY
                 self.CRYPTOCOMPARE_API_KEY = settings.CRYPTOCOMPARE_API_KEY
                 self.ALPHA_VANTAGE_API_KEY = settings.ALPHA_VANTAGE_API_KEY

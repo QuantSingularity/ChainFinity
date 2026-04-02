@@ -22,6 +22,7 @@ from schemas.user import (
     UserRiskProfileUpdate,
     UserUpdate,
 )
+from services.risk.risk_service import RiskService
 from services.user.user_service import UserService
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

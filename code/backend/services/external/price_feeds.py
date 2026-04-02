@@ -87,30 +87,33 @@ class BasePriceFeed:
     """Base class for price feed sources"""
 
     def __init__(self) -> None:
-        self.session = None
+        self.session: Optional[aiohttp.ClientSession] = None
         self.base_url = ""
         self.api_key = None
         self.rate_limit = 1.0
-        self.last_request = 0
+        self.last_request = 0.0
 
-    async def __aenter__(self) -> "PriceManager":
+    async def __aenter__(self) -> "BasePriceFeed":
         self.session = aiohttp.ClientSession()
         return self
 
     async def __aexit__(
         self,
-        exc_type: type | None,
-        exc_val: BaseException | None,
-        exc_tb: TracebackType | None,
+        exc_type: Optional[type],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
     ) -> None:
         if self.session:
             await self.session.close()
+            self.session = None
 
     async def get_price(self, symbol: str) -> Optional[Decimal]:
         """Get price for symbol - to be implemented by subclasses"""
         raise NotImplementedError
 
-    async def _make_request(self, url: str, params: Dict = None) -> Optional[Dict]:
+    async def _make_request(
+        self, url: str, params: Optional[Dict] = None
+    ) -> Optional[Dict]:
         """Make HTTP request with rate limiting"""
         try:
             now = datetime.now().timestamp()
@@ -122,7 +125,10 @@ class BasePriceFeed:
             if self.api_key:
                 headers["X-API-Key"] = self.api_key
             async with self.session.get(
-                url, params=params, headers=headers, timeout=10
+                url,
+                params=params,
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=10),
             ) as response:
                 self.last_request = datetime.now().timestamp()
                 if response.status == 200:
@@ -164,7 +170,7 @@ class CoinGeckoPriceFeed(BasePriceFeed):
             url = f"{self.base_url}/simple/price"
             params = {"ids": coin_id, "vs_currencies": "usd"}
             data = await self._make_request(url, params)
-            if data and coin_id in data and ("usd" in data[coin_id]):
+            if data and coin_id in data and "usd" in data[coin_id]:
                 price = data[coin_id]["usd"]
                 return Decimal(str(price))
             return None
@@ -193,9 +199,9 @@ class CoinMarketCapPriceFeed(BasePriceFeed):
             if (
                 data
                 and "data" in data
-                and (symbol.upper() in data["data"])
-                and ("quote" in data["data"][symbol.upper()])
-                and ("USD" in data["data"][symbol.upper()]["quote"])
+                and symbol.upper() in data["data"]
+                and "quote" in data["data"][symbol.upper()]
+                and "USD" in data["data"][symbol.upper()]["quote"]
             ):
                 price = data["data"][symbol.upper()]["quote"]["USD"]["price"]
                 return Decimal(str(price))
@@ -243,7 +249,11 @@ class CryptoComparePriceFeed(BasePriceFeed):
         try:
             url = f"{self.base_url}/price"
             params = {"fsym": symbol.upper(), "tsyms": "USD"}
-            data = await self._make_request(url, params)
+            if self.api_key:
+                headers = {"authorization": f"Apikey {self.api_key}"}
+                data = await self._make_request(url, params)
+            else:
+                data = await self._make_request(url, params)
             if data and "USD" in data:
                 price = data["USD"]
                 return Decimal(str(price))
@@ -273,11 +283,7 @@ class AlphaPriceFeed(BasePriceFeed):
                 "apikey": self.api_key,
             }
             data = await self._make_request(self.base_url, params)
-            if (
-                data
-                and "Global Quote" in data
-                and ("05. price" in data["Global Quote"])
-            ):
+            if data and "Global Quote" in data and "05. price" in data["Global Quote"]:
                 price = data["Global Quote"]["05. price"]
                 return Decimal(str(price))
             return None
@@ -302,10 +308,10 @@ class YahooPriceFeed(BasePriceFeed):
             if (
                 data
                 and "chart" in data
-                and ("result" in data["chart"])
-                and (len(data["chart"]["result"]) > 0)
-                and ("meta" in data["chart"]["result"][0])
-                and ("regularMarketPrice" in data["chart"]["result"][0]["meta"])
+                and "result" in data["chart"]
+                and data["chart"]["result"]
+                and "meta" in data["chart"]["result"][0]
+                and "regularMarketPrice" in data["chart"]["result"][0]["meta"]
             ):
                 price = data["chart"]["result"][0]["meta"]["regularMarketPrice"]
                 return Decimal(str(price))
@@ -329,18 +335,19 @@ class PriceValidator:
             if price <= 0:
                 return False
             if historical_prices:
-                recent_avg = sum(historical_prices[-10:]) / len(historical_prices[-10:])
+                recent = historical_prices[-10:]
+                recent_avg = sum(recent) / len(recent)
                 deviation = abs(price - recent_avg) / recent_avg
-                if deviation > 0.5:
+                if deviation > Decimal("0.5"):
                     logger.warning(
                         f"Price deviation too high for {symbol}: {deviation:.2%}"
                     )
                     return False
             if symbol.upper() == "BTC":
-                if not 1000 <= price <= 1000000:
+                if not (Decimal("1000") <= price <= Decimal("1000000")):
                     return False
             elif symbol.upper() == "ETH":
-                if not 10 <= price <= 50000:
+                if not (Decimal("10") <= price <= Decimal("50000")):
                     return False
             return True
         except Exception as e:
@@ -357,7 +364,7 @@ class PriceValidator:
         try:
             prices_float = [float(p) for p in prices]
             mean_price = sum(prices_float) / len(prices_float)
-            variance = sum(((p - mean_price) ** 2 for p in prices_float)) / len(
+            variance = sum((p - mean_price) ** 2 for p in prices_float) / len(
                 prices_float
             )
             std_dev = variance**0.5
@@ -379,7 +386,7 @@ class PriceFeedManager:
     def __init__(self) -> None:
         self.aggregator = PriceFeedAggregator()
         self.validator = PriceValidator()
-        self.health_status = {}
+        self.health_status: Dict[str, Any] = {}
         self.last_health_check = datetime.now()
         self.health_check_interval = timedelta(minutes=5)
 
@@ -403,7 +410,7 @@ class PriceFeedManager:
             logger.error(f"Error getting validated price for {symbol}: {e}")
             return None
 
-    async def _check_feed_health(self):
+    async def _check_feed_health(self) -> None:
         """Check health of all price feeds"""
         try:
             test_symbols = ["BTC", "ETH"]
@@ -450,6 +457,6 @@ class PriceFeedManager:
             "last_health_check": self.last_health_check.isoformat(),
             "sources": self.health_status,
             "overall_health": all(
-                (status["healthy"] for status in self.health_status.values())
+                status["healthy"] for status in self.health_status.values()
             ),
         }

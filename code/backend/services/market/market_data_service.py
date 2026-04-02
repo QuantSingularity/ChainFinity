@@ -72,7 +72,7 @@ class MarketDataService:
 
     def __init__(self) -> None:
         self.price_feed_aggregator = PriceFeedAggregator()
-        self.session = None
+        self.session: Optional[aiohttp.ClientSession] = None
         self.cache_ttl = {
             "current_price": 30,
             "historical_data": 300,
@@ -80,20 +80,21 @@ class MarketDataService:
             "technical_indicators": 120,
         }
 
-    async def __aenter__(self) -> "MarketDataManager":
+    async def __aenter__(self) -> "MarketDataService":
         """Async context manager entry"""
         self.session = aiohttp.ClientSession()
         return self
 
     async def __aexit__(
         self,
-        exc_type: type | None,
-        exc_val: BaseException | None,
-        exc_tb: TracebackType | None,
+        exc_type: Optional[type],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
     ) -> None:
         """Async context manager exit"""
         if self.session:
             await self.session.close()
+            self.session = None
 
     async def get_current_price(self, symbol: str) -> Optional[Decimal]:
         """
@@ -369,7 +370,7 @@ class MarketDataService:
                         total_market_cap += data.market_cap
                     if data.volume_24h:
                         total_volume += data.volume_24h
-                    if data.change_24h_pct:
+                    if data.change_24h_pct is not None:
                         if data.change_24h_pct > 0:
                             gainers.append(
                                 {
@@ -477,10 +478,10 @@ class MarketDataService:
                 bollinger_lower=None,
                 volatility=self._calculate_volatility(closes, 30),
             )
-            if indicators.ema_12 and indicators.ema_26:
+            if indicators.ema_12 is not None and indicators.ema_26 is not None:
                 indicators.macd = indicators.ema_12 - indicators.ema_26
             sma_20 = indicators.sma_20
-            if sma_20:
+            if sma_20 is not None:
                 std_dev = self._calculate_std_dev(closes[-20:], sma_20)
                 indicators.bollinger_upper = sma_20 + std_dev * 2
                 indicators.bollinger_lower = sma_20 - std_dev * 2
@@ -529,7 +530,7 @@ class MarketDataService:
         if avg_loss == 0:
             return Decimal("100")
         rs = avg_gain / avg_loss
-        rsi = 100 - 100 / (1 + rs)
+        rsi = Decimal("100") - Decimal("100") / (1 + rs)
         return rsi
 
     def _calculate_volatility(
@@ -547,7 +548,7 @@ class MarketDataService:
             return None
         recent_returns = returns[-period:]
         mean_return = sum(recent_returns) / len(recent_returns)
-        variance = sum(((r - mean_return) ** 2 for r in recent_returns)) / len(
+        variance = sum((r - mean_return) ** 2 for r in recent_returns) / len(
             recent_returns
         )
         volatility = variance ** Decimal("0.5")
@@ -555,7 +556,7 @@ class MarketDataService:
 
     def _calculate_std_dev(self, prices: List[Decimal], mean: Decimal) -> Decimal:
         """Calculate standard deviation"""
-        variance = sum(((price - mean) ** 2 for price in prices)) / len(prices)
+        variance = sum((price - mean) ** 2 for price in prices) / len(prices)
         return variance ** Decimal("0.5")
 
     def _calculate_market_sentiment(
