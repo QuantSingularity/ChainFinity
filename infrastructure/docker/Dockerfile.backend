@@ -1,0 +1,52 @@
+# ---- Build Stage ----
+FROM python:3.11-slim AS builder
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir --user -r requirements.txt
+
+# ---- Production Stage ----
+FROM python:3.11-slim AS production
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PATH=/home/appuser/.local/bin:$PATH
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/* && \
+    groupadd -g 1001 appgroup && \
+    useradd -u 1001 -g appgroup -s /bin/bash -m appuser
+
+WORKDIR /app
+
+COPY --from=builder --chown=appuser:appgroup /root/.local /home/appuser/.local
+COPY --chown=appuser:appgroup . .
+
+RUN mkdir -p /app/logs /app/cache /app/uploads /tmp && \
+    chown -R appuser:appgroup /app /tmp
+
+USER 1001
+
+EXPOSE 8080 9090
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -fsS http://localhost:8080/health || exit 1
+
+CMD ["python", "-m", "gunicorn", \
+     "--bind", "0.0.0.0:8080", \
+     "--workers", "4", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--timeout", "60", \
+     "--access-logfile", "/app/logs/access.log", \
+     "--error-logfile", "/app/logs/error.log", \
+     "app.main:app"]

@@ -62,7 +62,7 @@ locals {
     MonitoringRequired = "true"
     SecurityLevel      = "High"
     CreatedBy          = "Terraform"
-    CreatedDate        = timestamp()
+    CreatedDate        = "managed-by-terraform"
   }
 
   # Network configuration
@@ -482,141 +482,6 @@ resource "aws_network_acl" "database" {
 }
 
 # Security Groups with strict rules
-resource "aws_security_group" "alb" {
-  name_prefix = "chainfinity-alb-"
-  vpc_id      = aws_vpc.main.id
-  description = "Security group for Application Load Balancer"
-
-  # Inbound HTTPS from allowed CIDRs
-  ingress {
-    description = "HTTPS from allowed networks"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = local.allowed_cidr_blocks
-  }
-
-  # Inbound HTTP (redirect to HTTPS)
-  ingress {
-    description = "HTTP redirect to HTTPS"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = local.allowed_cidr_blocks
-  }
-
-  # Outbound to EKS nodes
-  egress {
-    description     = "To EKS nodes"
-    from_port       = 0
-    to_port         = 65535
-    protocol        = "tcp"
-    security_groups = [aws_security_group.eks_nodes.id]
-  }
-
-  tags = merge(local.common_tags, {
-    Name = "chainfinity-alb-sg"
-    Type = "SecurityGroup"
-  })
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "aws_security_group" "eks_cluster" {
-  name_prefix = "chainfinity-eks-cluster-"
-  vpc_id      = aws_vpc.main.id
-  description = "Security group for EKS cluster control plane"
-
-  # Inbound from nodes
-  ingress {
-    description     = "From EKS nodes"
-    from_port       = 443
-    to_port         = 443
-    protocol        = "tcp"
-    security_groups = [aws_security_group.eks_nodes.id]
-  }
-
-  # Outbound to nodes
-  egress {
-    description     = "To EKS nodes"
-    from_port       = 0
-    to_port         = 65535
-    protocol        = "tcp"
-    security_groups = [aws_security_group.eks_nodes.id]
-  }
-
-  # Outbound HTTPS for API calls
-  egress {
-    description = "HTTPS outbound"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = merge(local.common_tags, {
-    Name = "chainfinity-eks-cluster-sg"
-    Type = "SecurityGroup"
-  })
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "aws_security_group" "eks_nodes" {
-  name_prefix = "chainfinity-eks-nodes-"
-  vpc_id      = aws_vpc.main.id
-  description = "Security group for EKS worker nodes"
-
-  # Inbound from ALB
-  ingress {
-    description     = "From ALB"
-    from_port       = 0
-    to_port         = 65535
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
-  }
-
-  # Inbound from cluster
-  ingress {
-    description     = "From EKS cluster"
-    from_port       = 0
-    to_port         = 65535
-    protocol        = "tcp"
-    security_groups = [aws_security_group.eks_cluster.id]
-  }
-
-  # Node-to-node communication
-  ingress {
-    description = "Node to node"
-    from_port   = 0
-    to_port     = 65535
-    protocol    = "tcp"
-    self        = true
-  }
-
-  # Outbound all (managed by network ACLs)
-  egress {
-    description = "All outbound"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = merge(local.common_tags, {
-    Name = "chainfinity-eks-nodes-sg"
-    Type = "SecurityGroup"
-  })
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
 resource "aws_security_group" "rds" {
   name_prefix = "chainfinity-rds-"
   vpc_id      = aws_vpc.main.id
@@ -628,7 +493,7 @@ resource "aws_security_group" "rds" {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = [aws_security_group.eks_nodes.id]
+    security_groups = [aws_security_group.eks_nodes_fixed.id]
   }
 
   # No outbound rules (database doesn't need internet)
@@ -752,7 +617,7 @@ resource "aws_db_instance" "chainfinity_db" {
   option_group_name    = aws_db_option_group.postgresql.name
 
   # Backup configuration for compliance
-  backup_retention_period = local.backup_retention_days
+  backup_retention_period = min(var.backup_retention_days, 35) # RDS max is 35 days; use AWS Backup for longer retention
   backup_window           = "03:00-04:00"         # UTC
   maintenance_window      = "sun:04:00-sun:05:00" # UTC
 
@@ -947,7 +812,7 @@ resource "aws_eks_cluster" "chainfinity" {
     endpoint_private_access = true
     endpoint_public_access  = var.eks_endpoint_public_access
     public_access_cidrs     = var.eks_endpoint_public_access ? local.allowed_cidr_blocks : []
-    security_group_ids      = [aws_security_group.eks_cluster.id]
+    security_group_ids      = [aws_security_group.eks_cluster_fixed.id]
   }
 
   # Enhanced logging
@@ -997,7 +862,7 @@ resource "aws_launch_template" "eks_nodes" {
   image_id      = data.aws_ssm_parameter.eks_ami_release_version.value
   instance_type = var.node_instance_type
 
-  vpc_security_group_ids = [aws_security_group.eks_nodes.id]
+  vpc_security_group_ids = [aws_security_group.eks_nodes_fixed.id]
 
   # Enhanced security configuration
   metadata_options {
@@ -1022,7 +887,7 @@ resource "aws_launch_template" "eks_nodes" {
     }
   }
 
-  user_data = base64encode(templatefile("${path.module}/user_data.sh", {
+  user_data = base64encode(templatefile("${path.module}/templates/user_data.sh.tpl", {
     cluster_name        = aws_eks_cluster.chainfinity.name
     cluster_endpoint    = aws_eks_cluster.chainfinity.endpoint
     cluster_ca          = aws_eks_cluster.chainfinity.certificate_authority[0].data
@@ -1055,9 +920,8 @@ resource "aws_eks_node_group" "chainfinity" {
   node_role_arn   = aws_iam_role.eks_nodes.arn
   subnet_ids      = aws_subnet.private[*].id
 
-  # Instance configuration
-  capacity_type  = var.node_capacity_type
-  instance_types = var.node_instance_types
+  # Instance configuration — type/AMI/disk controlled by launch_template
+  capacity_type = var.node_capacity_type
 
   # Scaling configuration
   scaling_config {
@@ -1077,10 +941,6 @@ resource "aws_eks_node_group" "chainfinity" {
     version = aws_launch_template.eks_nodes.latest_version
   }
 
-  # Security
-  ami_type  = "AL2_x86_64"
-  disk_size = var.node_disk_size
-
   tags = merge(local.common_tags, {
     Name = "chainfinity-node-group"
     Type = "EKSNodeGroup"
@@ -1098,7 +958,7 @@ resource "aws_lb" "main" {
   name               = "chainfinity-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb.id]
+  security_groups    = [aws_security_group.alb_fixed.id]
   subnets            = aws_subnet.public[*].id
 
   # Security features
@@ -1136,7 +996,7 @@ resource "aws_s3_bucket_versioning" "alb_logs" {
   }
 }
 
-resource "aws_s3_bucket_encryption" "alb_logs" {
+resource "aws_s3_bucket_server_side_encryption_configuration" "alb_logs" {
   bucket = aws_s3_bucket.alb_logs.id
 
   server_side_encryption_configuration {
@@ -1214,7 +1074,7 @@ resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.main.arn
   port              = "443"
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   certificate_arn   = aws_acm_certificate_validation.main.certificate_arn
 
   default_action {
@@ -1545,6 +1405,7 @@ resource "aws_sns_topic_subscription" "email_alerts" {
 
 # WAF Web ACL for additional security
 resource "aws_wafv2_web_acl" "main" {
+  count = var.enable_waf ? 1 : 0
   name  = "chainfinity-web-acl"
   scope = "REGIONAL"
 
@@ -1639,8 +1500,9 @@ resource "aws_wafv2_web_acl" "main" {
 
 # Associate WAF with ALB
 resource "aws_wafv2_web_acl_association" "main" {
+  count        = var.enable_waf ? 1 : 0
   resource_arn = aws_lb.main.arn
-  web_acl_arn  = aws_wafv2_web_acl.main.arn
+  web_acl_arn  = aws_wafv2_web_acl.main[0].arn
 }
 
 # S3 bucket for backups
@@ -1661,7 +1523,7 @@ resource "aws_s3_bucket_versioning" "backups" {
   }
 }
 
-resource "aws_s3_bucket_encryption" "backups" {
+resource "aws_s3_bucket_server_side_encryption_configuration" "backups" {
   bucket = aws_s3_bucket.backups.id
 
   server_side_encryption_configuration {
@@ -1715,12 +1577,3 @@ resource "aws_s3_bucket_lifecycle_configuration" "backups" {
   }
 }
 
-# User data script for EKS nodes
-resource "local_file" "user_data" {
-  content = templatefile("${path.module}/templates/user_data.sh.tpl", {
-    cluster_name     = aws_eks_cluster.chainfinity.name
-    cluster_endpoint = aws_eks_cluster.chainfinity.endpoint
-    cluster_ca       = aws_eks_cluster.chainfinity.certificate_authority[0].data
-  })
-  filename = "${path.module}/user_data.sh"
-}

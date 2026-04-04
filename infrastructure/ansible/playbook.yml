@@ -10,10 +10,19 @@
     db_user: chainfinity
     db_password: "{{ lookup('env', 'DB_PASSWORD') }}"
 
+  pre_tasks:
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
   tasks:
     - name: Update apt cache
       apt:
-        update_cache: yes
+        update_cache: true
         cache_valid_time: 3600
 
     - name: Install required packages
@@ -21,28 +30,48 @@
         name:
           - python3
           - python3-pip
+          - python3-venv
           - nodejs
           - npm
           - docker.io
-          - docker-compose
+          - docker-compose-plugin
           - nginx
+          - curl
+          - jq
         state: present
 
     - name: Install Python dependencies
       pip:
         requirements: "{{ app_dir }}/code/backend/requirements.txt"
         virtualenv: "{{ app_dir }}/venv"
+        virtualenv_command: python3 -m venv
+        executable: pip3
 
     - name: Install Node.js dependencies
-      command: npm install
-      args:
-        chdir: "{{ app_dir }}/code/frontend"
-        creates: "{{ app_dir }}/code/frontend/node_modules"
+      community.general.npm:
+        path: "{{ app_dir }}/code/frontend"
+        state: present
+
+    - name: Copy application files
+      copy:
+        src: "{{ item }}"
+        dest: "{{ app_dir }}/"
+        owner: root
+        group: root
+        mode: "0644"
+      loop:
+        - code
+        - .env
+        - docker-compose.yml
 
     - name: Configure Nginx
       template:
         src: templates/nginx.conf.j2
         dest: /etc/nginx/sites-available/chainfinity
+        owner: root
+        group: root
+        mode: "0644"
+        validate: nginx -t -c %s
       notify: restart nginx
 
     - name: Enable Nginx site
@@ -52,28 +81,21 @@
         state: link
       notify: restart nginx
 
-    - name: Create application directory
+    - name: Remove default Nginx site
       file:
-        path: "{{ app_dir }}"
-        state: directory
-        mode: "0755"
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: restart nginx
 
-    - name: Copy application files
-      copy:
-        src: "{{ item }}"
-        dest: "{{ app_dir }}/"
-      with_items:
-        - code
-        - .env
-        - docker-compose.yml
-
-    - name: Start application services
-      command: docker-compose up -d
-      args:
-        chdir: "{{ app_dir }}"
+    - name: Start application services with Docker Compose
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dir }}"
+        state: present
+        pull: always
 
   handlers:
     - name: restart nginx
       service:
         name: nginx
         state: restarted
+        enabled: true

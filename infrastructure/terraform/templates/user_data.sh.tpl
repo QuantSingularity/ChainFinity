@@ -281,7 +281,7 @@ KUBELET_EXTRA_ARGS="$KUBELET_EXTRA_ARGS --tls-cipher-suites=TLS_ECDHE_RSA_WITH_A
     --apiserver-endpoint ${cluster_endpoint} \
     --b64-cluster-ca ${cluster_ca} \
     --kubelet-extra-args "$KUBELET_EXTRA_ARGS" \
-    --container-runtime containerd \
+    ${bootstrap_arguments} \
     --use-max-pods false
 
 # Install additional monitoring tools

@@ -1,107 +1,87 @@
-# Terraform Validation Notes
+# ChainFinity Terraform Validation Notes
 
-## Known Issues and Fixes Required
+## Fixes Applied
 
-### Issue 1: S3 Bucket Encryption Configuration
+### Security Groups (sg_fix.tf)
 
-**Problem**: The AWS provider version 5.x changed the resource name from `aws_s3_bucket_encryption` to `aws_s3_bucket_server_side_encryption_configuration` and restructured the block format.
+The original `main.tf` had circular dependencies between `alb`, `eks_cluster`, and `eks_nodes`
+security groups (each inline egress/ingress block referenced the other). This was broken out
+into `sg_fix.tf` using `aws_security_group_rule` resources. The original broken SG blocks have
+been removed from `main.tf` entirely.
 
-**Current (line 1139, 1664):**
+### EKS Node Group
 
-```hcl
-resource "aws_s3_bucket_encryption" "alb_logs" {
-  bucket = aws_s3_bucket.alb_logs.id
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        kms_master_key_id = aws_kms_key.chainfinity.arn
-        sse_algorithm     = "aws:kms"
-      }
-    }
-  }
-}
-```
+- Removed `instance_types`, `ami_type`, and `disk_size` from `aws_eks_node_group` — all three
+  are invalid when a `launch_template` is specified (AWS API error).
+- `instance_type` is now set only in the launch template.
 
-**Fixed:**
+### S3 Bucket Encryption
 
-```hcl
-resource "aws_s3_bucket_server_side_encryption_configuration" "alb_logs" {
-  bucket = aws_s3_bucket.alb_logs.id
+`aws_s3_bucket_encryption` is not a valid Terraform AWS provider resource. Renamed to
+`aws_s3_bucket_server_side_encryption_configuration` for both `alb_logs` and `backups` buckets.
 
-  rule {
-    apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.chainfinity.arn
-      sse_algorithm     = "aws:kms"
-    }
-  }
-}
-```
+### RDS Backup Retention
 
-### Issue 2: S3 Lifecycle Configuration
+`backup_retention_period` was set to `local.backup_retention_days` (3653). AWS RDS maximum is
+35 days. Changed to `min(var.backup_retention_days, 35)`. For longer compliance retention,
+use AWS Backup plans with snapshot copy to S3.
 
-**Problem**: AWS provider requires `filter` or `prefix` in lifecycle rules.
+### WAF Resources
 
-**Fix**: Add `filter {}` to each rule:
+`aws_wafv2_web_acl` and `aws_wafv2_web_acl_association` were always created, ignoring
+`var.enable_waf`. Added `count = var.enable_waf ? 1 : 0`. Updated outputs accordingly.
 
-```hcl
-rule {
-  id     = "delete_old_logs"
-  status = "Enabled"
-  filter {}  # Add this line
+### User Data Template
 
-  expiration {
-    days = 2555
-  }
-}
-```
+Removed the `local_file` resource anti-pattern (wrote rendered template to disk, breaking
+CI/CD pipelines). Launch template now calls `templatefile()` directly on `user_data.sh.tpl`.
+Fixed `bootstrap_arguments` variable which was passed but not used in the template.
 
-### Issue 3: Security Group Circular Dependency
+### Tags
 
-**Status**: FIXED via sg_fix.tf
+`timestamp()` in `common_tags.CreatedDate` caused perpetual diffs on every `terraform plan`.
+Replaced with the static string `"managed-by-terraform"`.
 
-- Created separate aws_security_group_rule resources
-- Base security groups defined without inline rules
-- Rules reference each other without circular dependency
+### ALB TLS Policy
 
-### Issue 4: CloudWatch Log Group Retention
+Updated from deprecated `ELBSecurityPolicy-TLS-1-2-2017-01` to
+`ELBSecurityPolicy-TLS13-1-2-2021-06` (supports TLS 1.2 and 1.3).
 
-**Status**: FIXED
+### db_password Validation
 
-- Changed from 2555 days to 3653 days (10 years, closest valid value)
-- Valid values: 0, 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653
+Added a `validation` block to `var.db_password` rejecting short values and common placeholder
+strings (`CHANGE_ME`, `password`, `admin`, `default`).
 
-### Issue 5: Invalid CIDR Block
+### Outputs
 
-**Status**: FIXED
+WAF outputs updated to be conditional (`var.enable_waf ? ... : null`) with `[0]` index.
 
-- Changed "10.0.1.0/22" to "10.0.0.0/22"
-- CIDR blocks must start at proper boundaries
+## Pre-Apply Checklist
 
-## Validation Commands
+1. Set required variables:
 
-```bash
-# Format
-terraform fmt -recursive
+   ```
+   export TF_VAR_db_password="$(openssl rand -base64 24)"
+   ```
 
-# Initialize (local backend for testing)
-terraform init -backend=false
+2. Configure S3 backend in `backend.example.tf` → rename to `backend.tf`
 
-# Validate (after manual fixes above)
-terraform validate
+3. Ensure AWS credentials are configured:
 
-# Plan (requires variables)
-export TF_VAR_db_password="test_password_123"
-terraform plan -var-file=terraform.tfvars.example
-```
+   ```
+   aws sts get-caller-identity
+   ```
 
-## Production Deployment Checklist
+4. Run validation:
 
-- [ ] Fix S3 encryption resource types (2 instances)
-- [ ] Add filters to lifecycle rules (2 instances)
-- [ ] Update backend configuration with real S3 bucket
-- [ ] Set db_password via environment variable or Secrets Manager
-- [ ] Replace all ACCOUNT_ID placeholders with actual AWS account ID
-- [ ] Replace KMS key ARNs with actual keys
-- [ ] Review and adjust network CIDR blocks
-- [ ] Configure Route53 hosted zone if manage_dns=true
-- [ ] Test with terraform plan before apply
+   ```
+   terraform init
+   terraform fmt -recursive -check
+   terraform validate
+   terraform plan -var-file=terraform.tfvars
+   ```
+
+5. For production, review and apply:
+   ```
+   terraform apply -var-file=terraform.tfvars
+   ```

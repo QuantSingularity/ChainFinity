@@ -1,58 +1,141 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: chainfinity-backup
+  namespace: chainfinity
+  labels:
+    app.kubernetes.io/name: chainfinity
+    app.kubernetes.io/component: backup
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/chainfinity-backup-role"
+
+---
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: db-backup
-  namespace: default
+  namespace: chainfinity
+  labels:
+    app.kubernetes.io/name: chainfinity
+    app.kubernetes.io/component: backup
 spec:
-  schedule: "0 0 * * *" # Run daily at midnight
+  schedule: "0 0 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 3600
       template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: chainfinity
+            app.kubernetes.io/component: backup
         spec:
+          serviceAccountName: chainfinity-backup
+          automountServiceAccountToken: true
+          restartPolicy: Never
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+            runAsGroup: 999
+            fsGroup: 999
+            seccompProfile:
+              type: RuntimeDefault
+
           containers:
             - name: backup
-              image: postgres:13
+              image: postgres:15-alpine
+              imagePullPolicy: IfNotPresent
+
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 999
+                runAsGroup: 999
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+
               command:
                 - /bin/sh
                 - -c
                 - |
-                  PGPASSWORD=$DB_PASSWORD pg_dump -h $DB_HOST -U $DB_USER -d $DB_NAME > /backup/db_backup_$(date +%Y%m%d).sql
-                  gzip /backup/db_backup_$(date +%Y%m%d).sql
-                  aws s3 cp /backup/db_backup_$(date +%Y%m%d).sql.gz s3://chainfinity-backups/
+                  set -euo pipefail
+                  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                  BACKUP_FILE="/backup/db_backup_${TIMESTAMP}.sql"
+                  echo "Starting backup at ${TIMESTAMP}..."
+                  PGPASSWORD="${DB_PASSWORD}" pg_dump \
+                    -h "${DB_HOST}" \
+                    -U "${DB_USER}" \
+                    -d "${DB_NAME}" \
+                    --no-password \
+                    --format=custom \
+                    --compress=9 \
+                    --file="${BACKUP_FILE}.pgdump"
+                  echo "Uploading to S3..."
+                  aws s3 cp "${BACKUP_FILE}.pgdump" \
+                    "s3://chainfinity-backups/database/${TIMESTAMP}/db_backup_${TIMESTAMP}.pgdump" \
+                    --sse aws:kms \
+                    --storage-class STANDARD_IA
+                  echo "Pruning backups older than 90 days..."
+                  aws s3 ls s3://chainfinity-backups/database/ | \
+                    awk '{print $2}' | \
+                    while read -r prefix; do
+                      dir_date=$(echo "$prefix" | cut -c1-8)
+                      cutoff=$(date -d '90 days ago' +%Y%m%d 2>/dev/null || date -v-90d +%Y%m%d)
+                      if [ "$dir_date" -lt "$cutoff" ]; then
+                        aws s3 rm "s3://chainfinity-backups/database/${prefix}" --recursive
+                      fi
+                    done
+                  echo "Backup completed successfully: ${BACKUP_FILE}.pgdump"
+
               env:
                 - name: DB_HOST
                   valueFrom:
                     secretKeyRef:
-                      name: chainfinity-secrets
+                      name: chainfinity-db-secret
                       key: db-host
                 - name: DB_USER
                   valueFrom:
                     secretKeyRef:
-                      name: chainfinity-secrets
+                      name: chainfinity-db-secret
                       key: db-username
                 - name: DB_PASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: chainfinity-secrets
+                      name: chainfinity-db-secret
                       key: db-password
                 - name: DB_NAME
                   value: chainfinity
-                - name: AWS_ACCESS_KEY_ID
-                  valueFrom:
-                    secretKeyRef:
-                      name: aws-credentials
-                      key: access-key
-                - name: AWS_SECRET_ACCESS_KEY
-                  valueFrom:
-                    secretKeyRef:
-                      name: aws-credentials
-                      key: secret-key
                 - name: AWS_DEFAULT_REGION
-                  value: us-east-1
+                  value: us-west-2
+
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
+
               volumeMounts:
                 - name: backup-volume
                   mountPath: /backup
+                - name: tmp-volume
+                  mountPath: /tmp
+
           volumes:
             - name: backup-volume
-              emptyDir: {}
-          restartPolicy: OnFailure
+              emptyDir:
+                sizeLimit: "10Gi"
+            - name: tmp-volume
+              emptyDir:
+                sizeLimit: "1Gi"
+
+          imagePullSecrets:
+            - name: chainfinity-registry-secret

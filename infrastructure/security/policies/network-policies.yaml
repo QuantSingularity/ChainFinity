@@ -37,8 +37,12 @@ metadata:
     security.compliance/ports: "8080,8443"
 spec:
   podSelector:
-    matchLabels:
-      app: chainfinity-app
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - chainfinity-frontend
+          - chainfinity-backend
   policyTypes:
     - Ingress
   ingress:
@@ -95,8 +99,12 @@ metadata:
     security.compliance/description: "Allow egress traffic from ChainFinity application"
 spec:
   podSelector:
-    matchLabels:
-      app: chainfinity-app
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - chainfinity-frontend
+          - chainfinity-backend
   policyTypes:
     - Egress
   egress:
@@ -465,7 +473,7 @@ spec:
               name: chainfinity
         - podSelector:
             matchLabels:
-              app: chainfinity-app
+              app.kubernetes.io/name: chainfinity
       ports:
         - protocol: TCP
           port: 8080
@@ -540,7 +548,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: log-aggregation-policy
-  namespace: chainfinity-monitoring
+  namespace: logging
   labels:
     app.kubernetes.io/name: logging
     network.policy/type: "ingress-egress"

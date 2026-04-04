@@ -42,7 +42,9 @@ spec:
       - dns01:
           route53:
             region: us-west-2
-            accessKeyID: AKIAIOSFODNN7EXAMPLE
+            accessKeyIDSecretRef:
+              name: route53-credentials
+              key: access-key-id
             secretAccessKeySecretRef:
               name: route53-credentials
               key: secret-access-key

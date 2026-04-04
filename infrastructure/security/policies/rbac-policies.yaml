@@ -61,7 +61,7 @@ metadata:
     vault.hashicorp.com/agent-inject: "true"
     vault.hashicorp.com/role: "chainfinity-app"
     vault.hashicorp.com/agent-inject-secret-config: "secret/data/app/chainfinity"
-automountServiceAccountToken: true
+automountServiceAccountToken: false
 
 ---
 # Service Account for Database Operations
@@ -76,7 +76,7 @@ metadata:
   annotations:
     vault.hashicorp.com/agent-inject: "true"
     vault.hashicorp.com/role: "chainfinity-db"
-automountServiceAccountToken: true
+automountServiceAccountToken: false
 
 ---
 # Service Account for Monitoring
@@ -88,7 +88,7 @@ metadata:
   labels:
     app.kubernetes.io/name: monitoring
     app.kubernetes.io/component: prometheus
-automountServiceAccountToken: true
+automountServiceAccountToken: false
 
 ---
 # Service Account for Security Scanning
@@ -100,7 +100,7 @@ metadata:
   labels:
     app.kubernetes.io/name: security
     app.kubernetes.io/component: scanner
-automountServiceAccountToken: true
+automountServiceAccountToken: false
 
 ---
 # ClusterRole for ChainFinity Application (minimal permissions)
