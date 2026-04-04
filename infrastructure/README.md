@@ -81,7 +81,7 @@ infrastructure/
 │       ├── vault-config.hcl          # Vault server config (raft HA, KMS auto-unseal)
 │       ├── init-vault.sh             # Vault initialisation script
 │       └── policies/                 # Vault HCL policies
-└── 
+└──
 ```
 
 ---
