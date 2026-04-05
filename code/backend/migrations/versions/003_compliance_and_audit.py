@@ -1,5 +1,3 @@
-from typing import Any
-
 """Compliance and audit tables
 
 Revision ID: 003
@@ -9,7 +7,7 @@ Create Date: 2025-01-08 12:00:00.000000
 """
 
 import uuid
-
+from typing import Any
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql

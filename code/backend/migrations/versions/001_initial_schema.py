@@ -1,5 +1,3 @@
-from typing import Any
-
 """Initial schema migration
 
 Revision ID: 001
@@ -9,7 +7,7 @@ Create Date: 2025-01-08 12:00:00.000000
 """
 
 import uuid
-
+from typing import Any
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
