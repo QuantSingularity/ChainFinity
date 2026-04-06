@@ -98,6 +98,9 @@ class User(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
     privacy_accepted_at = Column(DateTime, nullable=True)
     marketing_consent = Column(Boolean, default=False, nullable=False)
 
+    # Convenience / compatibility fields
+    username = Column(String(100), nullable=True, index=True)
+
     # Relationships
     profile = relationship(
         "UserProfile",
@@ -131,6 +134,19 @@ class User(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
         Index("idx_user_created_status", "created_at", "status"),
     )
 
+    def __init__(self, **kwargs):
+        # Handle is_active=True shortcut: set status=ACTIVE
+        if "is_active" in kwargs:
+            val = kwargs.pop("is_active")
+            if val and "status" not in kwargs:
+                kwargs["status"] = UserStatus.ACTIVE
+        # Handle is_verified=True shortcut: set email_verified=True
+        if "is_verified" in kwargs:
+            val = kwargs.pop("is_verified")
+            if val and "email_verified" not in kwargs:
+                kwargs["email_verified"] = val
+        super().__init__(**kwargs)
+
     def is_active(self) -> bool:
         """Check if user account is active"""
         return self.status == UserStatus.ACTIVE and not self.is_deleted
@@ -142,6 +158,10 @@ class User(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
     def can_login(self) -> bool:
         """Check if user can login"""
         return self.is_active() and not self.is_locked() and self.email_verified
+
+    def can_trade(self) -> bool:
+        """Check if user can trade"""
+        return self.is_active() and self.email_verified
 
     def increment_failed_login(self) -> None:
         """Increment failed login attempts"""
@@ -354,6 +374,12 @@ class UserRiskProfile(BaseModel, TimestampMixin, AuditMixin):
     volatility_tolerance = Column(Numeric(5, 2), nullable=True)
     max_drawdown_tolerance = Column(Numeric(5, 2), nullable=True)
     liquidity_requirement = Column(String(20), nullable=True)  # high, medium, low
+
+    # Extended Limits & Assessment Data
+    max_portfolio_value = Column(Numeric(20, 8), nullable=True)
+    max_single_asset_allocation = Column(Numeric(5, 4), nullable=True)
+    questionnaire_responses = Column(JSON, nullable=True)
+    assessment_data = Column(JSON, nullable=True)
 
     # Relationships
     user = relationship("User", back_populates="risk_profile")

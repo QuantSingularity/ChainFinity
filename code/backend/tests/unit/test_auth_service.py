@@ -2,10 +2,11 @@
 Unit tests for authentication service
 """
 
-import pytest
-from typing import Any
-from fastapi import HTTPException
 from datetime import datetime, timedelta
+from typing import Any
+
+import pytest
+from fastapi import HTTPException
 from models.user import UserStatus
 from services.auth.auth_service import AuthService
 from services.auth.password_service import PasswordService

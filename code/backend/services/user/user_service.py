@@ -236,9 +236,13 @@ class UserService:
         """
         try:
             offset = (page - 1) * size
-            count_stmt = select(AuditLog).where(AuditLog.user_id == user_id)
+            from sqlalchemy import func
+
+            count_stmt = select(func.count(AuditLog.id)).where(
+                AuditLog.user_id == user_id
+            )
             count_result = await self.db.execute(count_stmt)
-            total = len(count_result.all())
+            total = count_result.scalar() or 0
             stmt = (
                 select(AuditLog)
                 .where(AuditLog.user_id == user_id)

@@ -328,7 +328,7 @@ async def remove_portfolio_asset(
 @router.get("/{portfolio_id}/analytics", response_model=PortfolioAnalytics)
 async def get_portfolio_analytics(
     portfolio_id: str,
-    period: str = Query("30d", regex="^(1d|7d|30d|90d|1y|all)$"),
+    period: str = Query("30d", pattern="^(1d|7d|30d|90d|1y|all)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
@@ -356,7 +356,7 @@ async def get_portfolio_analytics(
 @router.get("/{portfolio_id}/performance", response_model=PortfolioPerformance)
 async def get_portfolio_performance(
     portfolio_id: str,
-    period: str = Query("30d", regex="^(1d|7d|30d|90d|1y|all)$"),
+    period: str = Query("30d", pattern="^(1d|7d|30d|90d|1y|all)$"),
     benchmark: Optional[str] = Query(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
@@ -486,7 +486,7 @@ async def sync_portfolio_with_blockchain(
 @router.post("/{portfolio_id}/export", response_model=dict)
 async def export_portfolio_data(
     portfolio_id: str,
-    format: str = Query("csv", regex="^(csv|json|pdf)$"),
+    format: str = Query("csv", pattern="^(csv|json|pdf)$"),
     include_transactions: bool = Query(True),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),

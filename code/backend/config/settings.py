@@ -116,6 +116,12 @@ class Settings(BaseSettings):
     CRYPTOCOMPARE_API_KEY: Optional[str] = None
     ALPHA_VANTAGE_API_KEY: Optional[str] = None
 
+    # Portfolio Configuration
+    MAX_PORTFOLIOS_PER_USER: int = Field(default=10)
+    REBALANCING_THRESHOLD: float = Field(default=5.0)
+    MIN_TRADE_VALUE: float = Field(default=10.0)
+    MAX_TRADE_VALUE: float = Field(default=1000000.0)
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: Any) -> List[str]:
@@ -274,6 +280,19 @@ class Settings(BaseSettings):
                 self.ALPHA_VANTAGE_API_KEY = settings.ALPHA_VANTAGE_API_KEY
 
         return ExternalAPISettings(self)
+
+    @property
+    def portfolio(self) -> Any:
+        """Portfolio settings accessor"""
+
+        class PortfolioSettings:
+            def __init__(self, settings: Settings) -> None:
+                self.MAX_PORTFOLIOS_PER_USER = settings.MAX_PORTFOLIOS_PER_USER
+                self.REBALANCING_THRESHOLD = settings.REBALANCING_THRESHOLD
+                self.MIN_TRADE_VALUE = settings.MIN_TRADE_VALUE
+                self.MAX_TRADE_VALUE = settings.MAX_TRADE_VALUE
+
+        return PortfolioSettings(self)
 
 
 @lru_cache()

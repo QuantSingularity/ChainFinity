@@ -62,10 +62,18 @@ async def async_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, 
 
 @pytest_asyncio.fixture
 async def test_user(db_session: AsyncSession) -> User:
-    """Create a test user"""
+    """Create a test user.
+
+    Password 'testpassword' hashed with bcrypt so verify_password works in auth tests.
+    """
+    from passlib.context import CryptContext
+
+    pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    hashed = pwd_ctx.hash("testpassword")
+
     user = User(
         email="test@example.com",
-        hashed_password="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6QJYzHJZyG",
+        hashed_password=hashed,
         status=UserStatus.ACTIVE,
         email_verified=True,
     )
@@ -144,7 +152,6 @@ def mock_blockchain_service(monkeypatch: Any) -> Any:
     """Mock blockchain service for testing"""
 
     class MockBlockchainService:
-
         async def get_transaction(self, tx_hash: str):
             return {"hash": tx_hash, "status": "confirmed", "block_number": 12345678}
 
@@ -162,7 +169,6 @@ def mock_kyc_service(monkeypatch: Any) -> Any:
     """Mock KYC service for testing"""
 
     class MockKYCService:
-
         async def verify_identity(self, user_data: dict):
             return {
                 "status": "verified",
@@ -178,7 +184,6 @@ def mock_aml_service(monkeypatch: Any) -> Any:
     """Mock AML service for testing"""
 
     class MockAMLService:
-
         async def screen_transaction(self, transaction_data: dict):
             return {"risk_score": 10.0, "status": "clear", "alerts": []}
 

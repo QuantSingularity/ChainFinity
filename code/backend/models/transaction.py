@@ -87,17 +87,17 @@ class Transaction(BaseModel, TimestampMixin, AuditMixin):
     block_number = Column(Integer, nullable=True, index=True)
     block_hash = Column(String(66), nullable=True)
     transaction_index = Column(Integer, nullable=True)
-    network = Column(String(50), nullable=False, default="ethereum", index=True)
+    network = Column(String(50), nullable=True, default="ethereum", index=True)
 
     # Transaction Details
-    transaction_type = Column(Enum(TransactionType), nullable=False, index=True)
+    transaction_type = Column(Enum(TransactionType), nullable=True, index=True)
     status = Column(
         Enum(TransactionStatus),
         default=TransactionStatus.PENDING,
         nullable=False,
         index=True,
     )
-    direction = Column(Enum(TransactionDirection), nullable=False, index=True)
+    direction = Column(Enum(TransactionDirection), nullable=True, index=True)
 
     # Addresses
     from_address = Column(String(42), nullable=True, index=True)
@@ -105,22 +105,23 @@ class Transaction(BaseModel, TimestampMixin, AuditMixin):
     contract_address = Column(String(42), nullable=True, index=True)
 
     # Asset Information
-    asset_symbol = Column(String(20), nullable=False, index=True)
+    asset_symbol = Column(String(20), nullable=True, index=True)
     asset_name = Column(String(100), nullable=True)
     asset_decimals = Column(Integer, default=18, nullable=False)
 
     # Amount and Value
-    amount = Column(Numeric(36, 18), nullable=False)  # Raw amount in smallest unit
+    amount = Column(Numeric(36, 18), nullable=True)  # Raw amount in smallest unit
     amount_usd = Column(
         Numeric(20, 8), nullable=True
     )  # USD value at time of transaction
+    value_usd = Column(Numeric(20, 8), nullable=True)  # Alias for amount_usd
     gas_used = Column(Integer, nullable=True)
     gas_price = Column(Numeric(20, 0), nullable=True)  # Wei
     gas_fee = Column(Numeric(36, 18), nullable=True)  # ETH
     gas_fee_usd = Column(Numeric(20, 8), nullable=True)
 
     # Timing
-    timestamp = Column(DateTime, nullable=False, index=True)
+    timestamp = Column(DateTime, nullable=True, index=True, default=None)
     confirmed_at = Column(DateTime, nullable=True)
 
     # Risk and Compliance

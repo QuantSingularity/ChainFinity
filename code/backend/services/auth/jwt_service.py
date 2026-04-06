@@ -19,7 +19,7 @@ class JWTService:
 
     def __init__(self) -> None:
         self.secret_key = settings.security.SECRET_KEY
-        self.algorithm = settings.security.ALGORITHM
+        self.algorithm = settings.security.JWT_ALGORITHM
         self.access_token_expire_minutes = settings.security.ACCESS_TOKEN_EXPIRE_MINUTES
         self.refresh_token_expire_days = settings.security.REFRESH_TOKEN_EXPIRE_DAYS
 
