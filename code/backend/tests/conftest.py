@@ -10,7 +10,7 @@ import pytest_asyncio
 from app.main import app
 from config.database import get_async_session
 from fastapi.testclient import TestClient
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from models.base import Base
 from models.user import User, UserStatus
 from services.auth import AuthService
@@ -31,33 +31,39 @@ TestSessionLocal = async_sessionmaker(
 
 @pytest_asyncio.fixture
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
-    """Create a test database session"""
+    """Create a test database session."""
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
     async with TestSessionLocal() as session:
         yield session
+
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
 
 @pytest.fixture
 def client() -> Generator[TestClient, None, None]:
-    """Create a test client"""
+    """Create a test client."""
     with TestClient(app) as test_client:
         yield test_client
 
 
 @pytest_asyncio.fixture
 async def async_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
-    """Create an async test client"""
+    """Create an async test client."""
 
     async def override_get_db():
         yield db_session
 
     app.dependency_overrides[get_async_session] = override_get_db
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        yield ac
-    app.dependency_overrides.clear()
+
+    transport = ASGITransport(app=app)
+    try:
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            yield ac
+    finally:
+        app.dependency_overrides.clear()
 
 
 @pytest_asyncio.fixture
@@ -85,7 +91,7 @@ async def test_user(db_session: AsyncSession) -> User:
 
 @pytest_asyncio.fixture
 async def auth_headers(test_user: User) -> dict:
-    """Create authentication headers for test user"""
+    """Create authentication headers for test user."""
     auth_service = AuthService()
     tokens = await auth_service._generate_tokens(test_user)
     return {"Authorization": f"Bearer {tokens['access_token']}"}
@@ -93,7 +99,7 @@ async def auth_headers(test_user: User) -> dict:
 
 @pytest.fixture
 def sample_transaction_data() -> dict:
-    """Sample transaction data for testing"""
+    """Sample transaction data for testing."""
     return {
         "transaction_hash": "0x1234567890abcdef",
         "from_address": "0xabcdef1234567890",
@@ -109,7 +115,7 @@ def sample_transaction_data() -> dict:
 
 @pytest.fixture
 def sample_user_data() -> dict:
-    """Sample user data for testing"""
+    """Sample user data for testing."""
     return {
         "email": "newuser@example.com",
         "password": "TestPassword123!",
@@ -122,7 +128,7 @@ def sample_user_data() -> dict:
 
 @pytest.fixture
 def sample_kyc_data() -> dict:
-    """Sample KYC data for testing"""
+    """Sample KYC data for testing."""
     return {
         "first_name": "John",
         "last_name": "Doe",
@@ -149,7 +155,7 @@ def event_loop() -> Any:
 
 @pytest.fixture
 def mock_blockchain_service(monkeypatch: Any) -> Any:
-    """Mock blockchain service for testing"""
+    """Mock blockchain service for testing."""
 
     class MockBlockchainService:
         async def get_transaction(self, tx_hash: str):
@@ -166,7 +172,7 @@ def mock_blockchain_service(monkeypatch: Any) -> Any:
 
 @pytest.fixture
 def mock_kyc_service(monkeypatch: Any) -> Any:
-    """Mock KYC service for testing"""
+    """Mock KYC service for testing."""
 
     class MockKYCService:
         async def verify_identity(self, user_data: dict):
@@ -181,7 +187,7 @@ def mock_kyc_service(monkeypatch: Any) -> Any:
 
 @pytest.fixture
 def mock_aml_service(monkeypatch: Any) -> Any:
-    """Mock AML service for testing"""
+    """Mock AML service for testing."""
 
     class MockAMLService:
         async def screen_transaction(self, transaction_data: dict):
