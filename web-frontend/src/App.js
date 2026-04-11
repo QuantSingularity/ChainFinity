@@ -1,5 +1,5 @@
 import { Box, CssBaseline } from "@mui/material";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Footer from "./components/layout/Footer";
 import Navbar from "./components/layout/Navbar";
 import { useApp } from "./context/AppContext";
@@ -23,9 +23,18 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/transactions" element={<Transactions />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route
+            path="/dashboard"
+            element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/transactions"
+            element={isAuthenticated ? <Transactions /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/settings"
+            element={isAuthenticated ? <Settings /> : <Navigate to="/login" replace />}
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Box>

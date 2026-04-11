@@ -1,192 +1,143 @@
-import { Badge } from "../../components/ui/badge";
-import { Button } from "../../components/ui/button";
 import {
+  CheckCircle as ForIcon,
+  Cancel as AgainstIcon,
+  RemoveCircle as AbstainIcon,
+} from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  ButtonGroup,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import { Progress } from "../../components/ui/progress";
-import {
-  formatAddress,
-  formatDate,
-  formatNumber,
-} from "../../utils/formatters";
+  Chip,
+  Divider,
+  LinearProgress,
+  Typography,
+} from "@mui/material";
+import { formatLargeNumber } from "../../utils/helpers";
+
+const statusColor = (status) => {
+  switch (status) {
+    case "active": return "success";
+    case "pending": return "warning";
+    case "executed": return "info";
+    case "defeated": return "error";
+    default: return "default";
+  }
+};
+
+const ProposalCard = ({ proposal, onVote }) => {
+  const totalVotes =
+    parseFloat(proposal.forVotes) +
+    parseFloat(proposal.againstVotes) +
+    parseFloat(proposal.abstainVotes);
+  const forPct = totalVotes > 0 ? (parseFloat(proposal.forVotes) / totalVotes) * 100 : 0;
+  const againstPct = totalVotes > 0 ? (parseFloat(proposal.againstVotes) / totalVotes) * 100 : 0;
+
+  const daysLeft = Math.max(
+    0,
+    Math.ceil((proposal.eta - Date.now()) / (1000 * 60 * 60 * 24))
+  );
+
+  return (
+    <Card sx={{ mb: 2, border: (theme) => `1px solid ${theme.palette.divider}`, boxShadow: "none" }}>
+      <CardContent>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}>
+          <Typography variant="subtitle1" fontWeight={700}>
+            #{proposal.id} {proposal.title}
+          </Typography>
+          <Chip
+            label={proposal.status.toUpperCase()}
+            color={statusColor(proposal.status)}
+            size="small"
+            sx={{ ml: 1, flexShrink: 0 }}
+          />
+        </Box>
+
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          {proposal.description}
+        </Typography>
+
+        <Typography variant="caption" color="text.secondary" gutterBottom display="block">
+          Proposed by {proposal.proposer} · {daysLeft}d remaining
+        </Typography>
+
+        {totalVotes > 0 && (
+          <Box sx={{ my: 2 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+              <Typography variant="caption" color="success.main">For: {forPct.toFixed(1)}%</Typography>
+              <Typography variant="caption" color="error.main">Against: {againstPct.toFixed(1)}%</Typography>
+            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={forPct}
+              color="success"
+              sx={{ height: 8, borderRadius: 4, mb: 0.5 }}
+            />
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Typography variant="caption" color="text.secondary">
+                {formatLargeNumber(Number(proposal.forVotes))} CFG for
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {formatLargeNumber(Number(proposal.againstVotes))} CFG against
+              </Typography>
+            </Box>
+          </Box>
+        )}
+
+        {proposal.status === "active" && (
+          <>
+            <Divider sx={{ my: 1.5 }} />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="body2" fontWeight={600} sx={{ mr: 1 }}>
+                Cast Vote:
+              </Typography>
+              <ButtonGroup size="small" variant="outlined">
+                <Button
+                  color="success"
+                  startIcon={<ForIcon />}
+                  onClick={() => onVote(proposal.id, 1)}
+                >
+                  For
+                </Button>
+                <Button
+                  color="error"
+                  startIcon={<AgainstIcon />}
+                  onClick={() => onVote(proposal.id, 0)}
+                >
+                  Against
+                </Button>
+                <Button
+                  color="warning"
+                  startIcon={<AbstainIcon />}
+                  onClick={() => onVote(proposal.id, 2)}
+                >
+                  Abstain
+                </Button>
+              </ButtonGroup>
+            </Box>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 const ProposalList = ({ proposals, onVote }) => {
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "active":
-        return "bg-green-500";
-      case "pending":
-        return "bg-yellow-500";
-      case "executed":
-        return "bg-blue-500";
-      case "defeated":
-        return "bg-red-500";
-      case "expired":
-        return "bg-gray-500";
-      default:
-        return "bg-gray-300";
-    }
-  };
-
-  const calculateProgress = (forVotes, againstVotes, abstainVotes) => {
-    const total =
-      parseFloat(forVotes) +
-      parseFloat(againstVotes) +
-      parseFloat(abstainVotes);
-    if (total === 0)
-      return { forPercentage: 0, againstPercentage: 0, abstainPercentage: 0 };
-
-    return {
-      forPercentage: (parseFloat(forVotes) / total) * 100,
-      againstPercentage: (parseFloat(againstVotes) / total) * 100,
-      abstainPercentage: (parseFloat(abstainVotes) / total) * 100,
-    };
-  };
-
-  const handleVote = async (proposalId, support) => {
-    try {
-      await onVote(proposalId, support);
-    } catch (error) {
-      console.error("Error voting:", error);
-    }
-  };
-
   if (!proposals || proposals.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-8 text-center">
-          <p className="text-gray-500">No proposals found</p>
-        </CardContent>
-      </Card>
+      <Box sx={{ textAlign: "center", py: 6 }}>
+        <Typography color="text.secondary">No proposals found.</Typography>
+      </Box>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {proposals.map((proposal) => {
-        const { forPercentage, againstPercentage, abstainPercentage } =
-          calculateProgress(
-            proposal.forVotes,
-            proposal.againstVotes,
-            proposal.abstainVotes,
-          );
-
-        return (
-          <Card key={proposal.id} className="overflow-hidden">
-            <div className="flex items-center p-1">
-              <div
-                className={`w-2 h-full ${getStatusColor(proposal.status)}`}
-              ></div>
-              <CardHeader className="py-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">{proposal.title}</CardTitle>
-                  <Badge
-                    variant={
-                      proposal.status === "active" ? "default" : "outline"
-                    }
-                  >
-                    {proposal.status.charAt(0).toUpperCase() +
-                      proposal.status.slice(1)}
-                  </Badge>
-                </div>
-              </CardHeader>
-            </div>
-
-            <CardContent className="pb-6">
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  {proposal.description.length > 200
-                    ? `${proposal.description.substring(0, 200)}...`
-                    : proposal.description}
-                </p>
-                <div className="flex items-center text-xs text-gray-500">
-                  <span>Proposed by {formatAddress(proposal.proposer)}</span>
-                  <span className="mx-2">•</span>
-                  <span>Ends {formatDate(proposal.eta)}</span>
-                </div>
-              </div>
-
-              <div className="space-y-3 mb-6">
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-xs">For</span>
-                    <span className="text-xs">
-                      {formatNumber(proposal.forVotes)}
-                    </span>
-                  </div>
-                  <Progress
-                    value={forPercentage}
-                    className="h-1 bg-gray-200"
-                    indicatorColor="bg-green-500"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-xs">Against</span>
-                    <span className="text-xs">
-                      {formatNumber(proposal.againstVotes)}
-                    </span>
-                  </div>
-                  <Progress
-                    value={againstPercentage}
-                    className="h-1 bg-gray-200"
-                    indicatorColor="bg-red-500"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-xs">Abstain</span>
-                    <span className="text-xs">
-                      {formatNumber(proposal.abstainVotes)}
-                    </span>
-                  </div>
-                  <Progress
-                    value={abstainPercentage}
-                    className="h-1 bg-gray-200"
-                    indicatorColor="bg-gray-500"
-                  />
-                </div>
-              </div>
-
-              {proposal.status === "active" && (
-                <div className="flex space-x-2">
-                  <Button
-                    variant="default"
-                    className="flex-1"
-                    onClick={() => handleVote(proposal.id, 1)}
-                  >
-                    Vote For
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handleVote(proposal.id, 0)}
-                  >
-                    Vote Against
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="flex-1"
-                    onClick={() => handleVote(proposal.id, 2)}
-                  >
-                    Abstain
-                  </Button>
-                </div>
-              )}
-
-              {proposal.status === "succeeded" && !proposal.executed && (
-                <Button className="w-full">Execute Proposal</Button>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
+    <Box>
+      {proposals.map((proposal) => (
+        <ProposalCard key={proposal.id} proposal={proposal} onVote={onVote} />
+      ))}
+    </Box>
   );
 };
 

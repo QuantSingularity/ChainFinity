@@ -29,8 +29,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import {
   Area,
   AreaChart,
@@ -121,8 +120,7 @@ const COLORS = ["#3a36e0", "#6c63ff", "#4caf50", "#ff9800"];
 
 const Dashboard = () => {
   const theme = useTheme();
-  const navigate = useNavigate();
-  const { user, isAuthenticated } = useApp();
+  const { user } = useApp();
   const [tabValue, setTabValue] = useState(0);
 
   // Get wallet address from user context
@@ -144,12 +142,6 @@ const Dashboard = () => {
   } = useTransactionHistory(walletAddress);
 
   // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-    }
-  }, [isAuthenticated, navigate]);
-
   const handleTabChange = (_event, newValue) => {
     setTabValue(newValue);
   };

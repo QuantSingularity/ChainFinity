@@ -289,7 +289,7 @@ const Login = () => {
                 fullWidth
                 variant="outlined"
                 startIcon={<AccountBalanceWallet />}
-                onClick={() => console.log("Connect wallet")}
+                onClick={() => window.open("https://metamask.io", "_blank", "noopener,noreferrer")}
                 disabled={loading}
               >
                 Connect Wallet
@@ -299,7 +299,7 @@ const Login = () => {
               <SocialButton
                 fullWidth
                 variant="outlined"
-                onClick={() => console.log("Guest login")}
+                onClick={() => { setEmail("guest@chainfinity.io"); setPassword("guest1234"); }}
                 disabled={loading}
               >
                 Guest Access

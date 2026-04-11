@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { authAPI, handleApiError } from "../services/api";
 
 // Create context
@@ -13,6 +13,14 @@ export const AppProvider = ({ children }) => {
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem("darkMode") === "true",
   );
+
+  // Logout function - defined before useEffect with useCallback to stabilize reference
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setIsAuthenticated(false);
+  }, []);
 
   // Initialize auth state from localStorage on app load
   useEffect(() => {
@@ -39,15 +47,15 @@ export const AppProvider = ({ children }) => {
     };
 
     initAuth();
-  }, [
-    // Token is invalid or expired
-    logout,
-  ]);
+  }, [logout]);
 
   // Toggle dark mode
   const toggleTheme = () => {
-    setDarkMode(!darkMode);
-    localStorage.setItem("darkMode", !darkMode);
+    setDarkMode((prev) => {
+      const next = !prev;
+      localStorage.setItem("darkMode", next);
+      return next;
+    });
   };
 
   // Login function
@@ -57,7 +65,7 @@ export const AppProvider = ({ children }) => {
 
     try {
       const response = await authAPI.login(credentials);
-      const { access_token, token_type } = response.data;
+      const { access_token } = response.data;
 
       // Store token
       localStorage.setItem("token", access_token);
@@ -87,19 +95,11 @@ export const AppProvider = ({ children }) => {
       setLoading(false);
       return { success: true, data: response.data };
     } catch (err) {
-      const error = handleApiError(err);
-      setError(error);
+      const apiError = handleApiError(err);
+      setError(apiError);
       setLoading(false);
-      return { success: false, error };
+      return { success: false, error: apiError };
     }
-  };
-
-  // Logout function
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-    setIsAuthenticated(false);
   };
 
   // Clear error

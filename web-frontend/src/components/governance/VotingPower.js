@@ -1,56 +1,62 @@
+import { HowToVote as VoteIcon } from "@mui/icons-material";
 import {
+  Box,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import { Progress } from "../../components/ui/progress";
-import { formatNumber } from "../../utils/formatters";
+  Divider,
+  LinearProgress,
+  Typography,
+} from "@mui/material";
+import { formatLargeNumber } from "../../utils/helpers";
 
 const VotingPower = ({ userVotingPower, userTokenBalance, totalSupply }) => {
-  // Calculate percentage of total supply
-  const votingPowerPercentage =
-    (parseFloat(userVotingPower) / parseFloat(totalSupply)) * 100;
+  const votingPct = totalSupply > 0
+    ? (parseFloat(userVotingPower) / parseFloat(totalSupply)) * 100
+    : 0;
+  const delegatedPower = parseFloat(userVotingPower) - parseFloat(userTokenBalance);
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Your Voting Power</CardTitle>
-      </CardHeader>
+    <Card sx={{ height: "100%", border: (theme) => `1px solid ${theme.palette.divider}`, boxShadow: "none" }}>
       <CardContent>
-        <div className="space-y-4">
-          <div>
-            <div className="flex justify-between mb-1">
-              <span className="text-sm font-medium">Voting Power</span>
-              <span className="text-sm font-medium">
-                {formatNumber(userVotingPower)} CFG
-              </span>
-            </div>
-            <Progress value={votingPowerPercentage} className="h-2" />
-            <p className="text-xs text-gray-500 mt-1">
-              {votingPowerPercentage.toFixed(4)}% of total supply
-            </p>
-          </div>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <VoteIcon color="primary" sx={{ mr: 1 }} />
+          <Typography variant="h6" fontWeight={600}>
+            Your Voting Power
+          </Typography>
+        </Box>
+        <Divider sx={{ mb: 2 }} />
 
-          <div className="pt-2">
-            <div className="flex justify-between text-sm">
-              <span>Token Balance:</span>
-              <span className="font-medium">
-                {formatNumber(userTokenBalance)} CFG
-              </span>
-            </div>
+        <Box sx={{ mb: 3 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+            <Typography variant="body2" fontWeight={500}>Voting Power</Typography>
+            <Typography variant="body2" fontWeight={600} color="primary">
+              {formatLargeNumber(Number(userVotingPower))} CFG
+            </Typography>
+          </Box>
+          <LinearProgress
+            variant="determinate"
+            value={Math.min(votingPct, 100)}
+            sx={{ height: 8, borderRadius: 4 }}
+          />
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
+            {votingPct.toFixed(4)}% of total supply
+          </Typography>
+        </Box>
 
-            <div className="flex justify-between text-sm mt-2">
-              <span>Delegated Power:</span>
-              <span className="font-medium">
-                {formatNumber(
-                  parseFloat(userVotingPower) - parseFloat(userTokenBalance),
-                )}{" "}
-                CFG
-              </span>
-            </div>
-          </div>
-        </div>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Typography variant="body2" color="text.secondary">Token Balance</Typography>
+            <Typography variant="body2" fontWeight={600}>
+              {formatLargeNumber(Number(userTokenBalance))} CFG
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Typography variant="body2" color="text.secondary">Delegated Power</Typography>
+            <Typography variant="body2" fontWeight={600}>
+              {formatLargeNumber(Math.max(0, delegatedPower))} CFG
+            </Typography>
+          </Box>
+        </Box>
       </CardContent>
     </Card>
   );

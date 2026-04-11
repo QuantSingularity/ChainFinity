@@ -34,6 +34,7 @@ import {
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useApp } from "../../context/AppContext";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -51,10 +52,6 @@ const LogoContainer = styled(Box)(({ theme }) => ({
   alignItems: "center",
   gap: theme.spacing(1),
 }));
-
-const _Logo = styled("img")({
-  height: 40,
-});
 
 const NavButton = styled(Button)(({ theme }) => ({
   marginLeft: theme.spacing(2),
@@ -117,10 +114,12 @@ const ThemeToggleSwitch = styled(Switch)(({ theme }) => ({
   },
 }));
 
-const Navbar = ({ toggleTheme, themeMode }) => {
+const Navbar = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const { logout, toggleTheme, darkMode, isAuthenticated, user } = useApp();
+  const themeMode = darkMode ? "dark" : "light";
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -140,8 +139,8 @@ const Navbar = ({ toggleTheme, themeMode }) => {
   };
 
   const handleLogout = () => {
-    // Implement logout functionality
     handleMenuClose();
+    logout();
     navigate("/login");
   };
 
@@ -372,26 +371,51 @@ const Navbar = ({ toggleTheme, themeMode }) => {
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title="Account">
-                <IconButton
-                  edge="end"
-                  aria-label="account of current user"
-                  aria-controls={menuId}
-                  aria-haspopup="true"
-                  onClick={handleProfileMenuOpen}
-                  color="inherit"
-                >
-                  <Avatar
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      bgcolor: theme.palette.primary.main,
-                    }}
+              {isAuthenticated ? (
+                <Tooltip title="Account">
+                  <IconButton
+                    edge="end"
+                    aria-label="account of current user"
+                    aria-controls={menuId}
+                    aria-haspopup="true"
+                    onClick={handleProfileMenuOpen}
+                    color="inherit"
                   >
-                    <PersonIcon />
-                  </Avatar>
-                </IconButton>
-              </Tooltip>
+                    <Avatar
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: theme.palette.primary.main,
+                        fontSize: "0.85rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {user?.name ? user.name.charAt(0).toUpperCase() : <PersonIcon />}
+                    </Avatar>
+                  </IconButton>
+                </Tooltip>
+              ) : (
+                <Box sx={{ display: "flex", gap: 1, ml: 1 }}>
+                  <NavButton
+                    component={RouterLink}
+                    to="/login"
+                    color="inherit"
+                    variant="outlined"
+                    sx={{ borderRadius: 2 }}
+                  >
+                    Sign In
+                  </NavButton>
+                  <NavButton
+                    component={RouterLink}
+                    to="/register"
+                    variant="contained"
+                    color="primary"
+                    sx={{ borderRadius: 2 }}
+                  >
+                    Get Started
+                  </NavButton>
+                </Box>
+              )}
             </Box>
           </Toolbar>
         </Container>

@@ -93,10 +93,14 @@ const StatsCard = styled(Card)(({ theme }) => ({
 const Home = () => {
   const theme = useTheme();
   const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
 
   const handleSubscribe = (e) => {
     e.preventDefault();
-    console.log("Subscribed with email:", email);
+    // Show success state - email is stored in state and cleared after
+    setSubscribed(true);
+    setEmail("");
+    setTimeout(() => setSubscribed(false), 4000);
     setEmail("");
     // Here you would typically make an API call to subscribe the user
   };

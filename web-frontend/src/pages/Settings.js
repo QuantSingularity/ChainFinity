@@ -13,12 +13,14 @@ import {
   Wallet,
 } from "@mui/icons-material";
 import {
+  Alert,
   Avatar,
   Box,
   Button,
   Card,
   CardContent,
   Chip,
+  Collapse,
   Container,
   Divider,
   Grid,
@@ -37,8 +39,9 @@ import {
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useApp } from "../context/AppContext";
 
-const _SettingsCard = styled(Card)(({ theme }) => ({
+const SettingsCard = styled(Card)(({ theme }) => ({
   height: "100%",
   borderRadius: theme.shape.borderRadius,
   boxShadow: "none",
@@ -70,11 +73,12 @@ const Settings = () => {
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
-  const [darkMode, setDarkMode] = useState(theme.palette.mode === "dark");
+  const { darkMode, toggleTheme } = useApp();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
   const [language, setLanguage] = useState("english");
+  const [saveSuccess, setSaveSuccess] = useState(null);
 
   // Profile form state
   const [profileForm, setProfileForm] = useState({
@@ -117,13 +121,16 @@ const Settings = () => {
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
-    console.log("Profile saved:", profileForm);
+    setSaveSuccess("profile");
+    setTimeout(() => setSaveSuccess(null), 3000);
     // Here you would make an API call to save the profile
   };
 
   const handleSaveSecurity = (e) => {
     e.preventDefault();
-    console.log("Security settings saved:", securityForm);
+    setSaveSuccess("security");
+    setSecurityForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    setTimeout(() => setSaveSuccess(null), 3000);
     // Here you would make an API call to update security settings
   };
 
@@ -176,6 +183,13 @@ const Settings = () => {
                 mb: 4,
               }}
             >
+              <Collapse in={Boolean(saveSuccess)}>
+                <Alert severity="success" sx={{ mb: 2 }}>
+                  {saveSuccess === "profile"
+                    ? "Profile updated successfully!"
+                    : "Security settings saved successfully!"}
+                </Alert>
+              </Collapse>
               <Tabs
                 value={tabValue}
                 onChange={handleTabChange}
@@ -418,12 +432,7 @@ const Settings = () => {
                         <Typography variant="h6" fontWeight={600} gutterBottom>
                           Two-Factor Authentication
                         </Typography>
-                        <Card
-                          sx={{
-                            mb: 3,
-                            border: `1px solid ${theme.palette.divider}`,
-                          }}
-                        >
+                        <SettingsCard sx={{ mb: 3 }}>
                           <CardContent>
                             <Box
                               sx={{
@@ -455,16 +464,12 @@ const Settings = () => {
                               />
                             </Box>
                           </CardContent>
-                        </Card>
+                        </SettingsCard>
 
                         <Typography variant="h6" fontWeight={600} gutterBottom>
                           Connected Wallets
                         </Typography>
-                        <Card
-                          sx={{
-                            border: `1px solid ${theme.palette.divider}`,
-                          }}
-                        >
+                        <SettingsCard>
                           <CardContent>
                             <Box
                               sx={{
@@ -509,7 +514,7 @@ const Settings = () => {
                               />
                             </Box>
                           </CardContent>
-                        </Card>
+                        </SettingsCard>
                       </Grid>
 
                       <Grid item xs={12}>
@@ -768,7 +773,7 @@ const Settings = () => {
                             </Box>
                             <Switch
                               checked={darkMode}
-                              onChange={(e) => setDarkMode(e.target.checked)}
+                              onChange={toggleTheme}
                               color="primary"
                             />
                           </Box>

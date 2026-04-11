@@ -1,122 +1,91 @@
-import { useState } from "react";
-import { Button } from "../../components/ui/button";
+import { People as PeopleIcon } from "@mui/icons-material";
 import {
+  Box,
+  Button,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import { useWeb3Context } from "../../context/Web3Context";
-import { formatAddress } from "../../utils/formatters";
+  Chip,
+  Divider,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useState } from "react";
+import { formatAddress } from "../../utils/helpers";
 
 const DelegationManager = ({ delegatedTo, delegatedFrom, onDelegate }) => {
-  const { account } = useWeb3Context();
   const [delegateAddress, setDelegateAddress] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleDelegate = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setSuccess(false);
-
+  const handleDelegate = async () => {
+    if (!delegateAddress.trim()) return;
+    setSubmitting(true);
     try {
-      // Validate address
-      if (!delegateAddress || !ethers.utils.isAddress(delegateAddress)) {
-        throw new Error("Invalid address");
-      }
-
-      const result = await onDelegate(delegateAddress);
-      if (result) {
-        setSuccess(true);
-        setDelegateAddress("");
-      }
-    } catch (err) {
-      setError(err.message || "Failed to delegate");
+      await onDelegate(delegateAddress.trim());
+      setDelegateAddress("");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Delegation</CardTitle>
-      </CardHeader>
+    <Card sx={{ height: "100%", border: (theme) => `1px solid ${theme.palette.divider}`, boxShadow: "none" }}>
       <CardContent>
-        <div className="space-y-4">
-          {delegatedTo ? (
-            <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md">
-              <p className="text-sm font-medium mb-1">
-                Currently delegated to:
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">{formatAddress(delegatedTo)}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onDelegate(account)}
-                  disabled={loading}
-                >
-                  Undelegate
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleDelegate} className="space-y-3">
-              <div className="space-y-2">
-                <label
-                  htmlFor="delegateAddress"
-                  className="text-sm font-medium"
-                >
-                  Delegate your voting power
-                </label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="delegateAddress"
-                    value={delegateAddress}
-                    onChange={(e) => setDelegateAddress(e.target.value)}
-                    placeholder="0x..."
-                    disabled={loading}
-                  />
-                  <Button type="submit" disabled={loading}>
-                    {loading ? "Delegating..." : "Delegate"}
-                  </Button>
-                </div>
-                {error && <p className="text-xs text-red-500">{error}</p>}
-                {success && (
-                  <p className="text-xs text-green-500">
-                    Successfully delegated!
-                  </p>
-                )}
-              </div>
-            </form>
-          )}
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <PeopleIcon color="primary" sx={{ mr: 1 }} />
+          <Typography variant="h6" fontWeight={600}>
+            Delegation
+          </Typography>
+        </Box>
+        <Divider sx={{ mb: 2 }} />
 
-          {delegatedFrom.length > 0 && (
-            <div className="pt-2">
-              <p className="text-sm font-medium mb-2">Delegated from:</p>
-              <div className="space-y-2 max-h-32 overflow-y-auto">
-                {delegatedFrom.map((delegation, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded"
-                  >
-                    <span className="text-xs">
-                      {formatAddress(delegation.address)}
-                    </span>
-                    <span className="text-xs font-medium">
-                      {formatNumber(delegation.amount)} CFG
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Currently delegating to
+          </Typography>
+          <Chip
+            label={delegatedTo ? formatAddress(delegatedTo) : "Self (not delegated)"}
+            color={delegatedTo ? "primary" : "default"}
+            size="small"
+            variant="outlined"
+          />
+        </Box>
+
+        {delegatedFrom.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Delegated from ({delegatedFrom.length})
+            </Typography>
+            {delegatedFrom.map((d, i) => (
+              <Box key={i} sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                <Typography variant="caption">{d.address}</Typography>
+                <Typography variant="caption" fontWeight={600}>{Number(d.amount).toLocaleString()} CFG</Typography>
+              </Box>
+            ))}
+          </Box>
+        )}
+
+        <Divider sx={{ my: 2 }} />
+
+        <Typography variant="body2" fontWeight={600} gutterBottom>
+          Delegate Voting Power
+        </Typography>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="0x... wallet address"
+          value={delegateAddress}
+          onChange={(e) => setDelegateAddress(e.target.value)}
+          sx={{ mb: 1.5 }}
+        />
+        <Button
+          fullWidth
+          variant="contained"
+          size="small"
+          onClick={handleDelegate}
+          disabled={submitting || !delegateAddress.trim()}
+        >
+          {submitting ? "Delegating..." : "Delegate"}
+        </Button>
       </CardContent>
     </Card>
   );

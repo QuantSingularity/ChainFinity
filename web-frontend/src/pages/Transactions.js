@@ -42,8 +42,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { useTransactionHistory } from "../hooks/useProtocolData";
 
@@ -70,8 +69,7 @@ const FilterCard = styled(Card)(({ theme }) => ({
 
 const Transactions = () => {
   const theme = useTheme();
-  const navigate = useNavigate();
-  const { user, isAuthenticated } = useApp();
+  const { user } = useApp();
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
@@ -89,12 +87,6 @@ const Transactions = () => {
     useTransactionHistory(walletAddress);
 
   // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-    }
-  }, [isAuthenticated, navigate]);
-
   const handleChangePage = (_event, newPage) => {
     setPage(newPage);
   };

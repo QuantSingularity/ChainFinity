@@ -1,15 +1,19 @@
-import { ethers } from "ethers";
-
 // Format Ethereum address
 export const formatAddress = (address) => {
   if (!address) return "";
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
-// Format token amount
+// Format token amount (ethers v6 compatible)
 export const formatTokenAmount = (amount, decimals = 18) => {
   try {
-    return ethers.utils.formatUnits(amount, decimals);
+    // Handle BigInt or string amounts without ethers dependency
+    const num = typeof amount === "bigint" ? amount : BigInt(amount);
+    const divisor = BigInt(10) ** BigInt(decimals);
+    const whole = num / divisor;
+    const fraction = num % divisor;
+    const fractionStr = fraction.toString().padStart(decimals, "0").slice(0, 6);
+    return `${whole}.${fractionStr}`.replace(/\.?0+$/, "");
   } catch (error) {
     console.error("Error formatting token amount:", error);
     return "0";
@@ -30,11 +34,8 @@ export const formatDate = (timestamp) => {
 
 // Validate Ethereum address
 export const isValidAddress = (address) => {
-  try {
-    return ethers.utils.isAddress(address);
-  } catch (_error) {
-    return false;
-  }
+  if (!address) return false;
+  return /^0x[0-9a-fA-F]{40}$/.test(address);
 };
 
 // Copy to clipboard
@@ -63,26 +64,47 @@ export const debounce = (func, wait) => {
 
 // Format large numbers
 export const formatLargeNumber = (num) => {
-  if (num >= 1000000) {
-    return `${(num / 1000000).toFixed(2)}M`;
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(2)}K`;
-  }
-  return num.toString();
+  const n = Number(num);
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(2)}K`;
+  return n.toString();
+};
+
+// Format currency value
+export const formatCurrency = (value, currency = "USD") => {
+  const num = Number(value);
+  if (isNaN(num)) return "$0.00";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(num);
 };
 
 // Generate random ID
 export const generateId = () => {
-  return Math.random().toString(36).substr(2, 9);
+  return Math.random().toString(36).substring(2, 11);
 };
 
 // Check if object is empty
 export const isEmpty = (obj) => {
-  return Object.keys(obj).length === 0;
+  return obj == null || Object.keys(obj).length === 0;
 };
 
 // Deep clone object
 export const deepClone = (obj) => {
   return JSON.parse(JSON.stringify(obj));
+};
+
+// Truncate text
+export const truncateText = (text, maxLength = 50) => {
+  if (!text || text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength)}...`;
+};
+
+// Calculate percentage change
+export const calcPercentChange = (current, previous) => {
+  if (!previous || previous === 0) return 0;
+  return ((current - previous) / previous) * 100;
 };

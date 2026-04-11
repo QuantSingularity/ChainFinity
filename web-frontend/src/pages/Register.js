@@ -355,7 +355,7 @@ const Register = () => {
                 fullWidth
                 variant="outlined"
                 startIcon={<AccountBalanceWallet />}
-                onClick={() => console.log("Connect wallet")}
+                onClick={() => window.open("https://metamask.io", "_blank", "noopener,noreferrer")}
                 disabled={loading}
               >
                 Connect Wallet

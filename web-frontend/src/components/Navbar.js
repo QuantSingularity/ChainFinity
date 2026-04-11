@@ -2,24 +2,23 @@ import {
   AppBar,
   Box,
   Button,
+  Chip,
   Link,
   Toolbar,
   Typography,
-  useTheme,
 } from "@mui/material";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { formatAddress } from "../utils/helpers";
 
 function Navbar() {
-  const _theme = useTheme();
   const location = useLocation();
-  const { state, actions } = useApp();
-  const { wallet, user } = state;
+  const { user, isAuthenticated, logout } = useApp();
 
   const navItems = [
     { label: "Home", path: "/" },
     { label: "Dashboard", path: "/dashboard" },
+    { label: "Transactions", path: "/transactions" },
   ];
 
   return (
@@ -49,35 +48,24 @@ function Navbar() {
                 color:
                   location.pathname === item.path ? "primary.main" : "inherit",
                 textDecoration: "none",
-                "&:hover": {
-                  color: "primary.main",
-                },
+                "&:hover": { color: "primary.main" },
               }}
             >
               {item.label}
             </Link>
           ))}
 
-          {wallet.isConnected ? (
-            <Button
-              variant="contained"
+          {user?.wallet_address && (
+            <Chip
+              label={formatAddress(user.wallet_address)}
               color="primary"
-              onClick={actions.disconnectWallet}
-            >
-              {formatAddress(wallet.address)}
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={actions.connectWallet}
-            >
-              Connect Wallet
-            </Button>
+              size="small"
+              variant="outlined"
+            />
           )}
 
-          {user ? (
-            <Button variant="outlined" color="inherit" onClick={actions.logout}>
+          {isAuthenticated ? (
+            <Button variant="outlined" color="inherit" onClick={logout}>
               Logout
             </Button>
           ) : (

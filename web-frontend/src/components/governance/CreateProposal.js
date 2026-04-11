@@ -1,246 +1,123 @@
-import { useState } from "react";
-import { Alert, AlertDescription } from "../../components/ui/alert";
-import { Button } from "../../components/ui/button";
+import { Send as SendIcon } from "@mui/icons-material";
 import {
+  Box,
+  Button,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import { Textarea } from "../../components/ui/textarea";
-import { useWeb3Context } from "../../context/Web3Context";
+  Divider,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useState } from "react";
 
 const CreateProposal = ({ onSubmit }) => {
-  const { account } = useWeb3Context();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     title: "",
     description: "",
-    actions: [{ target: "", value: "0", signature: "", calldata: "" }],
+    calldata: "",
+    targetAddress: "",
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const validate = () => {
+    const e = {};
+    if (!form.title.trim()) e.title = "Title is required";
+    if (!form.description.trim()) e.description = "Description is required";
+    if (form.title.length > 200) e.title = "Title must be under 200 characters";
+    return e;
   };
 
-  const handleActionChange = (index, field, value) => {
-    const newActions = [...formData.actions];
-    newActions[index] = {
-      ...newActions[index],
-      [field]: value,
-    };
-    setFormData((prev) => ({
-      ...prev,
-      actions: newActions,
-    }));
-  };
-
-  const addAction = () => {
-    setFormData((prev) => ({
-      ...prev,
-      actions: [
-        ...prev.actions,
-        { target: "", value: "0", signature: "", calldata: "" },
-      ],
-    }));
-  };
-
-  const removeAction = (index) => {
-    const newActions = [...formData.actions];
-    newActions.splice(index, 1);
-    setFormData((prev) => ({
-      ...prev,
-      actions: newActions,
-    }));
+  const handleChange = (field) => (e) => {
+    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-    setSuccess(false);
-
+    const errs = validate();
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      return;
+    }
+    setSubmitting(true);
     try {
-      // Validate form
-      if (!formData.title.trim()) {
-        throw new Error("Title is required");
-      }
-      if (!formData.description.trim()) {
-        throw new Error("Description is required");
-      }
-
-      // Validate actions
-      for (const [index, action] of formData.actions.entries()) {
-        if (!action.target || !ethers.utils.isAddress(action.target)) {
-          throw new Error(`Invalid target address in action ${index + 1}`);
-        }
-        if (action.signature.trim() === "") {
-          throw new Error(
-            `Function signature is required in action ${index + 1}`,
-          );
-        }
-      }
-
-      const result = await onSubmit(formData);
-      if (result) {
-        setSuccess(true);
-        setFormData({
-          title: "",
-          description: "",
-          actions: [{ target: "", value: "0", signature: "", calldata: "" }],
-        });
-      }
-    } catch (err) {
-      setError(err.message || "Failed to create proposal");
+      await onSubmit(form);
+      setForm({ title: "", description: "", calldata: "", targetAddress: "" });
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create New Proposal</CardTitle>
-      </CardHeader>
+    <Card sx={{ border: (theme) => `1px solid ${theme.palette.divider}`, boxShadow: "none" }}>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          Create New Proposal
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Submit a governance proposal for the ChainFinity community to vote on.
+        </Typography>
+        <Divider sx={{ mb: 3 }} />
 
-          {success && (
-            <Alert>
-              <AlertDescription>
-                Proposal created successfully!
-              </AlertDescription>
-            </Alert>
-          )}
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <TextField
+            fullWidth
+            label="Proposal Title"
+            required
+            value={form.title}
+            onChange={handleChange("title")}
+            error={Boolean(errors.title)}
+            helperText={errors.title || `${form.title.length}/200`}
+            sx={{ mb: 3 }}
+          />
 
-          <div className="space-y-2">
-            <label htmlFor="title" className="text-sm font-medium">
-              Title
-            </label>
-            <Input
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              placeholder="Proposal Title"
-              required
-            />
-          </div>
+          <TextField
+            fullWidth
+            label="Description"
+            required
+            multiline
+            rows={5}
+            value={form.description}
+            onChange={handleChange("description")}
+            error={Boolean(errors.description)}
+            helperText={errors.description || "Explain what this proposal does and why it should be approved."}
+            sx={{ mb: 3 }}
+          />
 
-          <div className="space-y-2">
-            <label htmlFor="description" className="text-sm font-medium">
-              Description
-            </label>
-            <Textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Describe your proposal in detail..."
-              rows={6}
-              required
-            />
-            <p className="text-xs text-gray-500">
-              Markdown formatting is supported
-            </p>
-          </div>
+          <TextField
+            fullWidth
+            label="Target Contract Address (Optional)"
+            placeholder="0x..."
+            value={form.targetAddress}
+            onChange={handleChange("targetAddress")}
+            helperText="The contract address this proposal will interact with"
+            sx={{ mb: 3 }}
+          />
 
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-sm font-medium">Actions</h3>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addAction}
-              >
-                Add Action
-              </Button>
-            </div>
+          <TextField
+            fullWidth
+            label="Calldata (Optional)"
+            placeholder="0x..."
+            value={form.calldata}
+            onChange={handleChange("calldata")}
+            helperText="Encoded function call data for on-chain execution"
+            sx={{ mb: 3 }}
+          />
 
-            {formData.actions.map((action, index) => (
-              <div key={index} className="p-4 border rounded-md space-y-4">
-                <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-medium">Action {index + 1}</h4>
-                  {formData.actions.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeAction(index)}
-                    >
-                      Remove
-                    </Button>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs">Target Contract</label>
-                  <Input
-                    value={action.target}
-                    onChange={(e) =>
-                      handleActionChange(index, "target", e.target.value)
-                    }
-                    placeholder="0x..."
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs">Value (ETH)</label>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.0001"
-                    value={action.value}
-                    onChange={(e) =>
-                      handleActionChange(index, "value", e.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs">Function Signature</label>
-                  <Input
-                    value={action.signature}
-                    onChange={(e) =>
-                      handleActionChange(index, "signature", e.target.value)
-                    }
-                    placeholder="transfer(address,uint256)"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs">Calldata (hex)</label>
-                  <Input
-                    value={action.calldata}
-                    onChange={(e) =>
-                      handleActionChange(index, "calldata", e.target.value)
-                    }
-                    placeholder="0x..."
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="pt-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating..." : "Create Proposal"}
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              startIcon={<SendIcon />}
+              disabled={submitting}
+              sx={{ minWidth: 180 }}
+            >
+              {submitting ? "Submitting..." : "Submit Proposal"}
             </Button>
-          </div>
-        </form>
+          </Box>
+        </Box>
       </CardContent>
     </Card>
   );

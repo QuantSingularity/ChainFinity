@@ -10,18 +10,16 @@ export const usePortfolioData = (walletAddress) => {
 
   useEffect(() => {
     const fetchPortfolioData = async () => {
-      if (!walletAddress && user) {
-        walletAddress = user.wallet_address;
-      }
+      const address = walletAddress || (user ? user.wallet_address : null);
 
-      if (!walletAddress) {
+      if (!address) {
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-        const response = await blockchainAPI.getPortfolio(walletAddress);
+        const response = await blockchainAPI.getPortfolio(address);
         setPortfolioData(response.data);
         setError(null);
       } catch (err) {
@@ -65,18 +63,16 @@ export const useTransactionHistory = (walletAddress) => {
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      if (!walletAddress && user) {
-        walletAddress = user.wallet_address;
-      }
+      const address = walletAddress || (user ? user.wallet_address : null);
 
-      if (!walletAddress) {
+      if (!address) {
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-        const response = await blockchainAPI.getTransactions(walletAddress);
+        const response = await blockchainAPI.getTransactions(address);
         setTransactions(response.data);
         setError(null);
       } catch (err) {

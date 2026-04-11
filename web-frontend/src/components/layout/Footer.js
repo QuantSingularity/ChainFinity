@@ -12,7 +12,6 @@ import {
   IconButton,
   Link,
   Typography,
-  useTheme,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
@@ -54,7 +53,6 @@ const SocialIcon = styled(IconButton)(({ theme }) => ({
 }));
 
 const Footer = () => {
-  const _theme = useTheme();
   const currentYear = new Date().getFullYear();
 
   return (
