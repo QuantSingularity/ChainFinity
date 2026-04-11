@@ -26,7 +26,7 @@ const renderSettings = () =>
       <ThemeProvider theme={theme}>
         <Settings />
       </ThemeProvider>
-    </BrowserRouter>
+    </BrowserRouter>,
   );
 
 describe("Settings Page", () => {
@@ -40,10 +40,10 @@ describe("Settings Page", () => {
     expect(screen.getByRole("tab", { name: /Profile/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /Security/i })).toBeInTheDocument();
     expect(
-      screen.getByRole("tab", { name: /Notifications/i })
+      screen.getByRole("tab", { name: /Notifications/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("tab", { name: /Preferences/i })
+      screen.getByRole("tab", { name: /Preferences/i }),
     ).toBeInTheDocument();
   });
 
@@ -51,7 +51,7 @@ describe("Settings Page", () => {
     renderSettings();
     expect(screen.getByDisplayValue("John Doe")).toBeInTheDocument();
     expect(
-      screen.getByDisplayValue("john.doe@example.com")
+      screen.getByDisplayValue("john.doe@example.com"),
     ).toBeInTheDocument();
   });
 
@@ -60,9 +60,7 @@ describe("Settings Page", () => {
     renderSettings();
     await user.click(screen.getByRole("tab", { name: /Security/i }));
     await waitFor(() => {
-      expect(
-        screen.getByLabelText(/Current Password/i)
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText(/Current Password/i)).toBeInTheDocument();
     });
   });
 
@@ -96,7 +94,7 @@ describe("Settings Page", () => {
   test("renders save changes button", () => {
     renderSettings();
     expect(
-      screen.getAllByRole("button", { name: /Save/i }).length
+      screen.getAllByRole("button", { name: /Save/i }).length,
     ).toBeGreaterThan(0);
   });
 });

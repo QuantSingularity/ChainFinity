@@ -25,7 +25,7 @@ const renderNavbar = (authenticated = true) =>
       <ThemeProvider theme={theme}>
         <Navbar />
       </ThemeProvider>
-    </BrowserRouter>
+    </BrowserRouter>,
   );
 
 describe("Navbar Component", () => {
@@ -89,7 +89,7 @@ describe("Navbar - unauthenticated", () => {
         <ThemeProvider theme={createTheme()}>
           <NavbarFresh />
         </ThemeProvider>
-      </BrowserRouter>
+      </BrowserRouter>,
     );
     // At minimum ChainFinity brand renders
     expect(screen.getAllByText(/ChainFinity/i).length).toBeGreaterThan(0);

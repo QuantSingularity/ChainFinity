@@ -1,6 +1,4 @@
-import {
-  Assessment as AssessmentIcon,
-} from "@mui/icons-material";
+import { Assessment as AssessmentIcon } from "@mui/icons-material";
 import {
   Box,
   Card,
@@ -18,14 +16,28 @@ const GovernanceStats = ({
   proposalThreshold,
 }) => {
   const stats = [
-    { label: "Total Supply", value: `${formatLargeNumber(Number(totalSupply))} CFG`, color: "primary" },
+    {
+      label: "Total Supply",
+      value: `${formatLargeNumber(Number(totalSupply))} CFG`,
+      color: "primary",
+    },
     { label: "Voting Delay", value: votingDelay, color: "default" },
     { label: "Voting Period", value: votingPeriod, color: "default" },
-    { label: "Proposal Threshold", value: `${proposalThreshold} CFG`, color: "default" },
+    {
+      label: "Proposal Threshold",
+      value: `${proposalThreshold} CFG`,
+      color: "default",
+    },
   ];
 
   return (
-    <Card sx={{ height: "100%", border: (theme) => `1px solid ${theme.palette.divider}`, boxShadow: "none" }}>
+    <Card
+      sx={{
+        height: "100%",
+        border: (theme) => `1px solid ${theme.palette.divider}`,
+        boxShadow: "none",
+      }}
+    >
       <CardContent>
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
           <AssessmentIcon color="primary" sx={{ mr: 1 }} />
@@ -38,12 +50,21 @@ const GovernanceStats = ({
           {stats.map(({ label, value, color }) => (
             <Box
               key={label}
-              sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
             >
               <Typography variant="body2" color="text.secondary">
                 {label}
               </Typography>
-              <Chip label={value} size="small" color={color} variant={color === "primary" ? "filled" : "outlined"} />
+              <Chip
+                label={value}
+                size="small"
+                color={color}
+                variant={color === "primary" ? "filled" : "outlined"}
+              />
             </Box>
           ))}
         </Box>

@@ -11,7 +11,7 @@ const renderNotFound = () =>
       <ThemeProvider theme={theme}>
         <NotFound />
       </ThemeProvider>
-    </BrowserRouter>
+    </BrowserRouter>,
   );
 
 describe("NotFound Page", () => {
@@ -34,8 +34,6 @@ describe("NotFound Page", () => {
 
   test("renders descriptive message", () => {
     renderNotFound();
-    expect(
-      screen.getByText(/might have been removed/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/might have been removed/i)).toBeInTheDocument();
   });
 });

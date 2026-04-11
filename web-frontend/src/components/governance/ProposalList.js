@@ -18,11 +18,16 @@ import { formatLargeNumber } from "../../utils/helpers";
 
 const statusColor = (status) => {
   switch (status) {
-    case "active": return "success";
-    case "pending": return "warning";
-    case "executed": return "info";
-    case "defeated": return "error";
-    default: return "default";
+    case "active":
+      return "success";
+    case "pending":
+      return "warning";
+    case "executed":
+      return "info";
+    case "defeated":
+      return "error";
+    default:
+      return "default";
   }
 };
 
@@ -31,18 +36,33 @@ const ProposalCard = ({ proposal, onVote }) => {
     parseFloat(proposal.forVotes) +
     parseFloat(proposal.againstVotes) +
     parseFloat(proposal.abstainVotes);
-  const forPct = totalVotes > 0 ? (parseFloat(proposal.forVotes) / totalVotes) * 100 : 0;
-  const againstPct = totalVotes > 0 ? (parseFloat(proposal.againstVotes) / totalVotes) * 100 : 0;
+  const forPct =
+    totalVotes > 0 ? (parseFloat(proposal.forVotes) / totalVotes) * 100 : 0;
+  const againstPct =
+    totalVotes > 0 ? (parseFloat(proposal.againstVotes) / totalVotes) * 100 : 0;
 
   const daysLeft = Math.max(
     0,
-    Math.ceil((proposal.eta - Date.now()) / (1000 * 60 * 60 * 24))
+    Math.ceil((proposal.eta - Date.now()) / (1000 * 60 * 60 * 24)),
   );
 
   return (
-    <Card sx={{ mb: 2, border: (theme) => `1px solid ${theme.palette.divider}`, boxShadow: "none" }}>
+    <Card
+      sx={{
+        mb: 2,
+        border: (theme) => `1px solid ${theme.palette.divider}`,
+        boxShadow: "none",
+      }}
+    >
       <CardContent>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            mb: 1,
+          }}
+        >
           <Typography variant="subtitle1" fontWeight={700}>
             #{proposal.id} {proposal.title}
           </Typography>
@@ -58,15 +78,26 @@ const ProposalCard = ({ proposal, onVote }) => {
           {proposal.description}
         </Typography>
 
-        <Typography variant="caption" color="text.secondary" gutterBottom display="block">
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          gutterBottom
+          display="block"
+        >
           Proposed by {proposal.proposer} · {daysLeft}d remaining
         </Typography>
 
         {totalVotes > 0 && (
           <Box sx={{ my: 2 }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
-              <Typography variant="caption" color="success.main">For: {forPct.toFixed(1)}%</Typography>
-              <Typography variant="caption" color="error.main">Against: {againstPct.toFixed(1)}%</Typography>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}
+            >
+              <Typography variant="caption" color="success.main">
+                For: {forPct.toFixed(1)}%
+              </Typography>
+              <Typography variant="caption" color="error.main">
+                Against: {againstPct.toFixed(1)}%
+              </Typography>
             </Box>
             <LinearProgress
               variant="determinate"

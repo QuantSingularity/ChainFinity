@@ -1,4 +1,7 @@
-import { ArrowBack as BackIcon, Analytics as AnalyticsIcon } from "@mui/icons-material";
+import {
+  ArrowBack as BackIcon,
+  Analytics as AnalyticsIcon,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -35,7 +38,8 @@ const GOVERNANCE_DATA = {
     {
       id: "1",
       title: "Update fee structure for AssetVault",
-      description: "Proposal to update the fee structure for deposits and withdrawals.",
+      description:
+        "Proposal to update the fee structure for deposits and withdrawals.",
       proposer: "0xabcd...1234",
       status: "active",
       forVotes: "2500000",
@@ -118,7 +122,12 @@ const Analytics = () => {
 
         <Grid container spacing={3}>
           <Grid item xs={12} lg={8}>
-            <Card sx={{ border: `1px solid ${theme.palette.divider}`, boxShadow: "none" }}>
+            <Card
+              sx={{
+                border: `1px solid ${theme.palette.divider}`,
+                boxShadow: "none",
+              }}
+            >
               <CardContent>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
                   Recent Proposals
@@ -131,7 +140,12 @@ const Analytics = () => {
             </Card>
           </Grid>
           <Grid item xs={12} lg={4}>
-            <Card sx={{ border: `1px solid ${theme.palette.divider}`, boxShadow: "none" }}>
+            <Card
+              sx={{
+                border: `1px solid ${theme.palette.divider}`,
+                boxShadow: "none",
+              }}
+            >
               <CardContent>
                 <Tabs
                   value={sideTab}

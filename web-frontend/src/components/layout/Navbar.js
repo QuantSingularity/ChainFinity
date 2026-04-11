@@ -390,7 +390,11 @@ const Navbar = () => {
                         fontWeight: 700,
                       }}
                     >
-                      {user?.name ? user.name.charAt(0).toUpperCase() : <PersonIcon />}
+                      {user?.name ? (
+                        user.name.charAt(0).toUpperCase()
+                      ) : (
+                        <PersonIcon />
+                      )}
                     </Avatar>
                   </IconButton>
                 </Tooltip>

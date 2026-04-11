@@ -50,7 +50,12 @@ const CreateProposal = ({ onSubmit }) => {
   };
 
   return (
-    <Card sx={{ border: (theme) => `1px solid ${theme.palette.divider}`, boxShadow: "none" }}>
+    <Card
+      sx={{
+        border: (theme) => `1px solid ${theme.palette.divider}`,
+        boxShadow: "none",
+      }}
+    >
       <CardContent>
         <Typography variant="h6" fontWeight={600} gutterBottom>
           Create New Proposal
@@ -81,7 +86,10 @@ const CreateProposal = ({ onSubmit }) => {
             value={form.description}
             onChange={handleChange("description")}
             error={Boolean(errors.description)}
-            helperText={errors.description || "Explain what this proposal does and why it should be approved."}
+            helperText={
+              errors.description ||
+              "Explain what this proposal does and why it should be approved."
+            }
             sx={{ mb: 3 }}
           />
 

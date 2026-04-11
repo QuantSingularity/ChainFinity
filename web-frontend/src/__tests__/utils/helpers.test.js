@@ -18,7 +18,7 @@ describe("helpers utilities", () => {
   describe("formatAddress", () => {
     test("formats a full address correctly", () => {
       expect(formatAddress("0x1234567890abcdef1234567890abcdef12345678")).toBe(
-        "0x1234...5678"
+        "0x1234...5678",
       );
     });
     test("returns empty string for falsy input", () => {
@@ -54,7 +54,9 @@ describe("helpers utilities", () => {
 
   describe("isValidAddress", () => {
     test("returns true for valid Ethereum address", () => {
-      expect(isValidAddress("0x1234567890abcdef1234567890abcdef12345678")).toBe(true);
+      expect(isValidAddress("0x1234567890abcdef1234567890abcdef12345678")).toBe(
+        true,
+      );
     });
     test("returns false for invalid address", () => {
       expect(isValidAddress("not-an-address")).toBe(false);
@@ -77,7 +79,9 @@ describe("helpers utilities", () => {
     });
     test("returns false on failure", async () => {
       Object.assign(navigator, {
-        clipboard: { writeText: jest.fn().mockRejectedValue(new Error("fail")) },
+        clipboard: {
+          writeText: jest.fn().mockRejectedValue(new Error("fail")),
+        },
       });
       const result = await copyToClipboard("hello");
       expect(result).toBe(false);

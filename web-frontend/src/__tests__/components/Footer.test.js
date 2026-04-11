@@ -11,7 +11,7 @@ const renderFooter = () =>
       <ThemeProvider theme={theme}>
         <Footer />
       </ThemeProvider>
-    </BrowserRouter>
+    </BrowserRouter>,
   );
 
 describe("Footer Component", () => {

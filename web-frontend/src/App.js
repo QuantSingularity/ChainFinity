@@ -25,15 +25,25 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route
             path="/dashboard"
-            element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />}
+            element={
+              isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />
+            }
           />
           <Route
             path="/transactions"
-            element={isAuthenticated ? <Transactions /> : <Navigate to="/login" replace />}
+            element={
+              isAuthenticated ? (
+                <Transactions />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
           />
           <Route
             path="/settings"
-            element={isAuthenticated ? <Settings /> : <Navigate to="/login" replace />}
+            element={
+              isAuthenticated ? <Settings /> : <Navigate to="/login" replace />
+            }
           />
           <Route path="*" element={<NotFound />} />
         </Routes>

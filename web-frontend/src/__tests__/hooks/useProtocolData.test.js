@@ -37,13 +37,13 @@ describe("useProtocolData hooks", () => {
       blockchainAPI.getPortfolio.mockResolvedValue({ data: mockData });
 
       const { result } = renderHook(() =>
-        usePortfolioData("0xPROVIDED_WALLET")
+        usePortfolioData("0xPROVIDED_WALLET"),
       );
 
       await waitFor(() => expect(result.current.loading).toBe(false));
       expect(result.current.portfolioData).toEqual(mockData);
       expect(blockchainAPI.getPortfolio).toHaveBeenCalledWith(
-        "0xPROVIDED_WALLET"
+        "0xPROVIDED_WALLET",
       );
     });
 
@@ -61,7 +61,7 @@ describe("useProtocolData hooks", () => {
       blockchainAPI.getPortfolio.mockRejectedValue(new Error("Network error"));
 
       const { result } = renderHook(() =>
-        usePortfolioData("0xPROVIDED_WALLET")
+        usePortfolioData("0xPROVIDED_WALLET"),
       );
 
       await waitFor(() => expect(result.current.loading).toBe(false));
@@ -84,9 +84,7 @@ describe("useProtocolData hooks", () => {
       const mockTxs = [{ id: 1, type: "send" }];
       blockchainAPI.getTransactions.mockResolvedValue({ data: mockTxs });
 
-      const { result } = renderHook(() =>
-        useTransactionHistory("0xWALLET")
-      );
+      const { result } = renderHook(() => useTransactionHistory("0xWALLET"));
 
       await waitFor(() => expect(result.current.loading).toBe(false));
       expect(result.current.transactions).toEqual(mockTxs);
@@ -107,7 +105,7 @@ describe("useProtocolData hooks", () => {
       });
 
       const { result } = renderHook(() =>
-        useTokenBalance("0xTOKEN", "ethereum")
+        useTokenBalance("0xTOKEN", "ethereum"),
       );
 
       await waitFor(() => expect(result.current.loading).toBe(false));

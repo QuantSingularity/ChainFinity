@@ -122,7 +122,8 @@ const Governance = () => {
     setLoading(true);
     try {
       await new Promise((res) => setTimeout(res, 800));
-      const voteLabel = support === 1 ? "For" : support === 0 ? "Against" : "Abstain";
+      const voteLabel =
+        support === 1 ? "For" : support === 0 ? "Against" : "Abstain";
       showFeedback(`Vote "${voteLabel}" cast on proposal #${proposalId}!`);
     } catch {
       showFeedback("Failed to cast vote. Please try again.", "error");
@@ -150,9 +151,7 @@ const Governance = () => {
       <Container maxWidth="md" sx={{ py: 8 }}>
         <Card sx={{ textAlign: "center", p: 6 }}>
           <CardContent>
-            <WalletIcon
-              sx={{ fontSize: 64, color: "primary.main", mb: 2 }}
-            />
+            <WalletIcon sx={{ fontSize: 64, color: "primary.main", mb: 2 }} />
             <Typography variant="h5" fontWeight={700} gutterBottom>
               Governance Dashboard
             </Typography>

@@ -57,7 +57,7 @@ const renderTransactions = () =>
       <ThemeProvider theme={theme}>
         <Transactions />
       </ThemeProvider>
-    </BrowserRouter>
+    </BrowserRouter>,
   );
 
 describe("Transactions Page", () => {

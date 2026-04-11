@@ -47,7 +47,7 @@ const renderWithProviders = (ui) =>
       <ThemeProvider theme={theme}>
         <AppProvider>{ui}</AppProvider>
       </ThemeProvider>
-    </BrowserRouter>
+    </BrowserRouter>,
   );
 
 describe("AppContext", () => {
@@ -60,7 +60,7 @@ describe("AppContext", () => {
   test("provides default unauthenticated state", async () => {
     renderWithProviders(<TestConsumer />);
     await waitFor(() =>
-      expect(screen.getByTestId("loading").textContent).toBe("false")
+      expect(screen.getByTestId("loading").textContent).toBe("false"),
     );
     expect(screen.getByTestId("auth").textContent).toBe("false");
   });
@@ -76,13 +76,13 @@ describe("AppContext", () => {
 
     renderWithProviders(<TestConsumer />);
     await waitFor(() =>
-      expect(screen.getByTestId("loading").textContent).toBe("false")
+      expect(screen.getByTestId("loading").textContent).toBe("false"),
     );
 
     await user.click(screen.getByText("Login"));
 
     await waitFor(() =>
-      expect(screen.getByTestId("auth").textContent).toBe("true")
+      expect(screen.getByTestId("auth").textContent).toBe("true"),
     );
     expect(localStorage.setItem).toHaveBeenCalledWith("token", "tok123");
   });
@@ -98,7 +98,10 @@ describe("AppContext", () => {
       return (
         <button
           onClick={async () => {
-            loginResult = await ctx.login({ email: "x@x.com", password: "bad" });
+            loginResult = await ctx.login({
+              email: "x@x.com",
+              password: "bad",
+            });
           }}
         >
           TryLogin
@@ -123,12 +126,12 @@ describe("AppContext", () => {
 
     renderWithProviders(<TestConsumer />);
     await waitFor(() =>
-      expect(screen.getByTestId("loading").textContent).toBe("false")
+      expect(screen.getByTestId("loading").textContent).toBe("false"),
     );
 
     await user.click(screen.getByText("Login"));
     await waitFor(() =>
-      expect(screen.getByTestId("auth").textContent).toBe("true")
+      expect(screen.getByTestId("auth").textContent).toBe("true"),
     );
 
     await user.click(screen.getByText("Logout"));
@@ -140,7 +143,7 @@ describe("AppContext", () => {
     const user = userEvent.setup();
     renderWithProviders(<TestConsumer />);
     await waitFor(() =>
-      expect(screen.getByTestId("loading").textContent).toBe("false")
+      expect(screen.getByTestId("loading").textContent).toBe("false"),
     );
 
     const initialMode = screen.getByTestId("darkMode").textContent;
@@ -155,11 +158,11 @@ describe("AppContext", () => {
 
     renderWithProviders(<TestConsumer />);
     await waitFor(() =>
-      expect(screen.getByTestId("loading").textContent).toBe("false")
+      expect(screen.getByTestId("loading").textContent).toBe("false"),
     );
     await user.click(screen.getByText("Login"));
     await waitFor(() =>
-      expect(screen.getByTestId("error").textContent).not.toBe("null")
+      expect(screen.getByTestId("error").textContent).not.toBe("null"),
     );
     await user.click(screen.getByText("ClearError"));
     expect(screen.getByTestId("error").textContent).toBe("null");
@@ -172,7 +175,7 @@ describe("AppContext", () => {
       return null;
     };
     expect(() => render(<BadConsumer />)).toThrow(
-      "useApp must be used within an AppProvider"
+      "useApp must be used within an AppProvider",
     );
     spy.mockRestore();
   });

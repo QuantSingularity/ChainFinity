@@ -129,7 +129,11 @@ const Settings = () => {
   const handleSaveSecurity = (e) => {
     e.preventDefault();
     setSaveSuccess("security");
-    setSecurityForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    setSecurityForm({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
     setTimeout(() => setSaveSuccess(null), 3000);
     // Here you would make an API call to update security settings
   };
