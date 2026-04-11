@@ -1,260 +1,157 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type React from "react";
-import App from "../App";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { useRouter, usePathname } from "next/navigation";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { useApp } from "@/context/AppContext";
 
-// Create a new QueryClient for testing
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-    },
-  },
-});
-
-// Wrapper component to provide necessary context
-const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-);
-
-// Mock the next/router
-jest.mock("next/router", () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-    pathname: "/",
-  }),
+jest.mock("next/navigation", () => ({
+  useRouter: jest.fn(),
+  usePathname: jest.fn(),
 }));
 
-// Mock global fetch
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
+jest.mock("@/context/AppContext", () => ({
+  useApp: jest.fn(),
+}));
 
-describe("Mobile App Component", () => {
+const mockActions = {
+  login: jest.fn(),
+  logout: jest.fn(),
+  register: jest.fn(),
+  clearError: jest.fn(),
+  toggleTheme: jest.fn(),
+  connectWallet: jest.fn(),
+  disconnectWallet: jest.fn(),
+};
+
+const defaultAppState = {
+  user: null,
+  isAuthenticated: false,
+  loading: false,
+  error: null,
+  darkMode: false,
+  wallet: { isConnected: false, address: null, balance: null, network: null },
+  actions: mockActions,
+};
+
+describe("Navbar", () => {
   beforeEach(() => {
-    // Clear all mocks before each test
     jest.clearAllMocks();
+    (useRouter as jest.Mock).mockReturnValue({ push: jest.fn() });
+    (usePathname as jest.Mock).mockReturnValue("/");
+    (useApp as jest.Mock).mockReturnValue(defaultAppState);
   });
 
-  test("renders login screen by default", () => {
-    render(
-      <TestWrapper>
-        <App />
-      </TestWrapper>,
-    );
-
-    expect(screen.getByText(/welcome/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/password/i)).toBeInTheDocument();
+  it("renders the brand name", () => {
+    render(<Navbar />);
+    expect(screen.getAllByText("ChainFinity").length).toBeGreaterThan(0);
   });
 
-  test("handles login form submission", async () => {
-    render(
-      <TestWrapper>
-        <App />
-      </TestWrapper>,
-    );
-
-    const emailInput = screen.getByPlaceholderText(/email/i);
-    const passwordInput = screen.getByPlaceholderText(/password/i);
-    const submitButton = screen.getByRole("button", { name: /sign in/i });
-
-    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      // Add assertions based on your login success behavior
-      expect(screen.queryByText(/welcome/i)).not.toBeInTheDocument();
-    });
+  it("shows Login button when unauthenticated", () => {
+    render(<Navbar />);
+    expect(screen.getByRole("link", { name: /login/i })).toBeInTheDocument();
   });
 
-  test("validates login form inputs", async () => {
-    render(
-      <TestWrapper>
-        <App />
-      </TestWrapper>,
-    );
-
-    const emailInput = screen.getByPlaceholderText(/email/i);
-    const passwordInput = screen.getByPlaceholderText(/password/i);
-    const submitButton = screen.getByRole("button", { name: /sign in/i });
-
-    // Test invalid email
-    fireEvent.change(emailInput, { target: { value: "invalid-email" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByText(/invalid email format/i)).toBeInTheDocument();
-    });
-
-    // Test short password
-    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "short" } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(/password must be at least 8 characters/i),
-      ).toBeInTheDocument();
-    });
+  it("shows Connect Wallet button when wallet is not connected", () => {
+    render(<Navbar />);
+    expect(
+      screen.getByRole("button", { name: /connect wallet/i }),
+    ).toBeInTheDocument();
   });
 
-  test("handles wallet connection", async () => {
-    render(
-      <TestWrapper>
-        <App />
-      </TestWrapper>,
-    );
-
-    const connectWalletButton = screen.getByRole("button", {
-      name: /connect wallet/i,
+  it("shows Logout button when user is logged in", () => {
+    (useApp as jest.Mock).mockReturnValue({
+      ...defaultAppState,
+      user: { id: "1", username: "testuser", email: "test@example.com" },
+      isAuthenticated: true,
     });
-    fireEvent.click(connectWalletButton);
-
-    await waitFor(() => {
-      // Add assertions based on your wallet connection behavior
-      expect(screen.getByText(/wallet connected/i)).toBeInTheDocument();
-    });
+    render(<Navbar />);
+    expect(screen.getByRole("button", { name: /logout/i })).toBeInTheDocument();
   });
 
-  test("displays portfolio data after successful login", async () => {
-    // Mock successful login
-    const mockPortfolioData = {
-      tokens: [
-        { symbol: "ETH", balance: "1.5", value: "3000" },
-        { symbol: "USDT", balance: "1000", value: "1000" },
-      ],
-    };
-
-    // Mock the API response
-    mockFetch.mockResolvedValueOnce({
-      json: () => Promise.resolve(mockPortfolioData),
-      ok: true,
-    });
-
-    render(
-      <TestWrapper>
-        <App />
-      </TestWrapper>,
-    );
-
-    // Perform login
-    const emailInput = screen.getByPlaceholderText(/email/i);
-    const passwordInput = screen.getByPlaceholderText(/password/i);
-    const submitButton = screen.getByRole("button", { name: /sign in/i });
-
-    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByText("ETH")).toBeInTheDocument();
-      expect(screen.getByText("USDT")).toBeInTheDocument();
-      expect(screen.getByText("1.5")).toBeInTheDocument();
-      expect(screen.getByText("1000")).toBeInTheDocument();
-    });
-  });
-
-  test("handles API errors gracefully", async () => {
-    // Mock API error
-    mockFetch.mockRejectedValueOnce(new Error("API Error"));
-
-    render(
-      <TestWrapper>
-        <App />
-      </TestWrapper>,
-    );
-
-    // Perform login
-    const emailInput = screen.getByPlaceholderText(/email/i);
-    const passwordInput = screen.getByPlaceholderText(/password/i);
-    const submitButton = screen.getByRole("button", { name: /sign in/i });
-
-    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByText(/error occurred/i)).toBeInTheDocument();
-    });
-  });
-
-  test("handles network errors gracefully", async () => {
-    // Mock network error
-    mockFetch.mockRejectedValueOnce(new Error("Network Error"));
-
-    render(
-      <TestWrapper>
-        <App />
-      </TestWrapper>,
-    );
-
-    // Perform login
-    const emailInput = screen.getByPlaceholderText(/email/i);
-    const passwordInput = screen.getByPlaceholderText(/password/i);
-    const submitButton = screen.getByRole("button", { name: /sign in/i });
-
-    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByText(/network error/i)).toBeInTheDocument();
-    });
-  });
-
-  test("handles biometric authentication", async () => {
-    // Mock biometric authentication
-    const mockBiometricAuth = jest.fn().mockResolvedValue(true);
-    Object.defineProperty(window.navigator, "credentials", {
-      value: {
-        get: mockBiometricAuth,
+  it("shows truncated wallet address when wallet is connected", () => {
+    (useApp as jest.Mock).mockReturnValue({
+      ...defaultAppState,
+      wallet: {
+        isConnected: true,
+        address: "0x1234567890abcdef1234567890abcdef12345678",
+        balance: "1.0000 ETH",
+        network: "Ethereum Mainnet",
       },
-      writable: true,
     });
-
-    render(
-      <TestWrapper>
-        <App />
-      </TestWrapper>,
-    );
-
-    const biometricButton = screen.getByRole("button", {
-      name: /use biometrics/i,
-    });
-    fireEvent.click(biometricButton);
-
-    await waitFor(() => {
-      expect(mockBiometricAuth).toHaveBeenCalled();
-      expect(screen.queryByText(/welcome/i)).not.toBeInTheDocument();
-    });
+    render(<Navbar />);
+    expect(screen.getByText(/0x1234/)).toBeInTheDocument();
   });
 
-  test("handles offline mode", async () => {
-    // Mock offline status
-    Object.defineProperty(window.navigator, "onLine", {
-      value: false,
-      writable: true,
-    });
+  it("calls connectWallet action when Connect Wallet is clicked", async () => {
+    render(<Navbar />);
+    const btn = screen.getByRole("button", { name: /connect wallet/i });
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockActions.connectWallet).toHaveBeenCalled());
+  });
 
-    render(
-      <TestWrapper>
-        <App />
-      </TestWrapper>,
+  it("calls disconnectWallet when wallet address button is clicked", async () => {
+    (useApp as jest.Mock).mockReturnValue({
+      ...defaultAppState,
+      wallet: {
+        isConnected: true,
+        address: "0xabc123def456abc123def456abc123def456abc1",
+        balance: "2.5000 ETH",
+        network: "Ethereum Mainnet",
+      },
+    });
+    render(<Navbar />);
+    const btn = screen.getByRole("button", { name: /0xabc1/i });
+    fireEvent.click(btn);
+    await waitFor(() =>
+      expect(mockActions.disconnectWallet).toHaveBeenCalled(),
     );
+  });
 
-    const emailInput = screen.getByPlaceholderText(/email/i);
-    const passwordInput = screen.getByPlaceholderText(/password/i);
-    const submitButton = screen.getByRole("button", { name: /sign in/i });
-
-    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByText(/you are offline/i)).toBeInTheDocument();
+  it("calls logout when Logout is clicked", async () => {
+    (useApp as jest.Mock).mockReturnValue({
+      ...defaultAppState,
+      user: { id: "1", username: "testuser", email: "test@example.com" },
+      isAuthenticated: true,
     });
+    render(<Navbar />);
+    const btn = screen.getByRole("button", { name: /logout/i });
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockActions.logout).toHaveBeenCalled());
+  });
+
+  it("toggles theme when ModeToggle is clicked", async () => {
+    render(<Navbar />);
+    const toggleBtn = screen.getByRole("button", { name: /toggle theme/i });
+    fireEvent.click(toggleBtn);
+    await waitFor(() => expect(mockActions.toggleTheme).toHaveBeenCalled());
+  });
+});
+
+describe("Footer", () => {
+  it("renders brand name", () => {
+    render(<Footer />);
+    expect(screen.getByText("ChainFinity")).toBeInTheDocument();
+  });
+
+  it("renders current year in copyright", () => {
+    render(<Footer />);
+    const year = new Date().getFullYear().toString();
+    expect(screen.getByText(new RegExp(year))).toBeInTheDocument();
+  });
+
+  it("renders quick links", () => {
+    render(<Footer />);
+    expect(screen.getByRole("link", { name: /home/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /dashboard/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders social links", () => {
+    render(<Footer />);
+    const githubLink = screen.getByRole("link", { name: /github/i });
+    expect(githubLink).toBeInTheDocument();
+    expect(githubLink).toHaveAttribute("href");
   });
 });

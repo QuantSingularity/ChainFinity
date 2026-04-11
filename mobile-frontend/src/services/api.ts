@@ -51,6 +51,9 @@ export const authAPI = {
   register: (userData: any) => api.post("/api/v1/auth/register", userData),
   login: (credentials: any) => api.post("/api/v1/auth/token", credentials),
   getCurrentUser: () => api.get("/api/v1/auth/me"),
+  updatePassword: (data: { currentPassword: string; newPassword: string }) =>
+    api.put("/api/v1/auth/password", data),
+  updateProfile: (data: any) => api.put("/api/v1/auth/me", data),
 };
 
 // Blockchain API endpoints

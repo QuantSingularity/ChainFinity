@@ -8,20 +8,17 @@ export const usePortfolioData = (walletAddress) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const resolvedAddress = walletAddress || user?.wallet_address || null;
+
   useEffect(() => {
     const fetchPortfolioData = async () => {
-      if (!walletAddress && user) {
-        walletAddress = user.wallet_address;
-      }
-
-      if (!walletAddress) {
+      if (!resolvedAddress) {
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
-        const response = await blockchainAPI.getPortfolio(walletAddress);
+        const response = await blockchainAPI.getPortfolio(resolvedAddress);
         setPortfolioData(response.data);
         setError(null);
       } catch (err) {
@@ -30,19 +27,14 @@ export const usePortfolioData = (walletAddress) => {
         setLoading(false);
       }
     };
-
     fetchPortfolioData();
-  }, [walletAddress, user]);
+  }, [resolvedAddress]);
 
   const refreshPortfolio = async () => {
+    if (!resolvedAddress) return false;
     setLoading(true);
     try {
-      const address = walletAddress || (user ? user.wallet_address : null);
-      if (!address) {
-        throw new Error("No wallet address available");
-      }
-
-      const response = await blockchainAPI.getPortfolio(address);
+      const response = await blockchainAPI.getPortfolio(resolvedAddress);
       setPortfolioData(response.data);
       setError(null);
       return true;
@@ -63,20 +55,17 @@ export const useTransactionHistory = (walletAddress) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const resolvedAddress = walletAddress || user?.wallet_address || null;
+
   useEffect(() => {
     const fetchTransactions = async () => {
-      if (!walletAddress && user) {
-        walletAddress = user.wallet_address;
-      }
-
-      if (!walletAddress) {
+      if (!resolvedAddress) {
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
-        const response = await blockchainAPI.getTransactions(walletAddress);
+        const response = await blockchainAPI.getTransactions(resolvedAddress);
         setTransactions(response.data);
         setError(null);
       } catch (err) {
@@ -85,19 +74,14 @@ export const useTransactionHistory = (walletAddress) => {
         setLoading(false);
       }
     };
-
     fetchTransactions();
-  }, [walletAddress, user]);
+  }, [resolvedAddress]);
 
   const refreshTransactions = async () => {
+    if (!resolvedAddress) return false;
     setLoading(true);
     try {
-      const address = walletAddress || (user ? user.wallet_address : null);
-      if (!address) {
-        throw new Error("No wallet address available");
-      }
-
-      const response = await blockchainAPI.getTransactions(address);
+      const response = await blockchainAPI.getTransactions(resolvedAddress);
       setTransactions(response.data);
       setError(null);
       return true;
@@ -123,7 +107,6 @@ export const useTokenBalance = (tokenAddress, network = "ethereum") => {
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
         const response = await blockchainAPI.getTokenBalance(
@@ -138,15 +121,11 @@ export const useTokenBalance = (tokenAddress, network = "ethereum") => {
         setLoading(false);
       }
     };
-
     fetchBalance();
   }, [tokenAddress, network]);
 
   const refreshBalance = async () => {
-    if (!tokenAddress) {
-      return false;
-    }
-
+    if (!tokenAddress) return false;
     setLoading(true);
     try {
       const response = await blockchainAPI.getTokenBalance(
@@ -185,7 +164,6 @@ export const useEthBalance = () => {
         setLoading(false);
       }
     };
-
     fetchEthBalance();
   }, []);
 
