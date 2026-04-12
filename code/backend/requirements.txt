@@ -22,9 +22,10 @@ redis==5.0.1
 hiredis==2.2.3
 
 # Blockchain
-web3==6.11.1
-eth-account==0.9.0
-eth-utils==2.3.1
+# Upgraded to 6.15.0+ to fix pkg_resources dependency and ChainID warnings
+web3>=6.15.0
+eth-account>=0.11.0
+eth-utils>=2.3.1
 
 # HTTP & API
 httpx==0.25.2
@@ -34,7 +35,8 @@ aiohttp==3.9.1
 # Environment & Configuration
 python-dotenv==1.0.0
 pyyaml==6.0.1
-setuptools>=60.0.0
+# Explicitly required for Python 3.11+ compatibility in CI
+setuptools>=69.0.0
 
 # Monitoring & Logging
 structlog==23.2.0
@@ -52,10 +54,10 @@ pandas==2.1.4
 scipy==1.11.4
 
 # Testing
-pytest==7.4.3
-pytest-asyncio==0.21.1
+# Upgraded pytest to 8.x to resolve PluggyTeardownRaisedWarning
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
 pytest-cov==4.1.0
-httpx==0.25.2
 factory-boy==3.3.0
 
 # Development
