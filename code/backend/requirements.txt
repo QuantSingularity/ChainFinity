@@ -9,6 +9,8 @@ sqlalchemy==2.0.23
 alembic==1.13.1
 psycopg2-binary==2.9.9
 asyncpg==0.29.0
+# Added for async SQLite testing
+aiosqlite==0.19.0
 
 # Authentication & Security
 python-jose[cryptography]==3.3.0
@@ -72,6 +74,5 @@ python-dateutil==2.8.2
 pytz==2023.3
 click==8.1.7
 email-validator>=2.0.0
-# Added for QR Code generation in UserService
 qrcode==7.4.2
 pillow==10.1.0
