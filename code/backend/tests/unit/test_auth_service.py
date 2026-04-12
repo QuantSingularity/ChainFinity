@@ -2,7 +2,7 @@
 Unit tests for authentication service
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import pytest
@@ -76,7 +76,7 @@ class TestAuthService:
     ):
         """Test authentication with locked account"""
         test_user.failed_login_attempts = 5
-        test_user.locked_until = datetime.utcnow() + timedelta(hours=1)
+        test_user.locked_until = datetime.now(timezone.utc) + timedelta(hours=1)
         await db_session.commit()
         with pytest.raises(HTTPException) as exc_info:
             await auth_service.authenticate_user(

@@ -2,7 +2,7 @@
 Tests targeting uncovered service code to boost overall coverage
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
@@ -158,8 +158,8 @@ class TestMarketDataService:
 
     @pytest.mark.asyncio
     async def test_get_historical_data_signature(self, svc):
-        start = datetime.utcnow() - timedelta(days=7)
-        end = datetime.utcnow()
+        start = datetime.now(timezone.utc) - timedelta(days=7)
+        end = datetime.now(timezone.utc)
         with patch.object(
             svc, "_fetch_historical_data", new=AsyncMock(return_value=[])
         ):
@@ -373,8 +373,8 @@ class TestComplianceServiceCoverage:
 
     @pytest.mark.asyncio
     async def test_generate_regulatory_report_empty_period(self, svc):
-        start = datetime.utcnow() - timedelta(days=30)
-        end = datetime.utcnow()
+        start = datetime.now(timezone.utc) - timedelta(days=30)
+        end = datetime.now(timezone.utc)
         result = await svc.generate_regulatory_report("sar", start, end)
         assert result.report_type == "sar"
         assert result.record_count == 0

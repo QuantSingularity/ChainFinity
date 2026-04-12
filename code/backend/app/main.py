@@ -4,7 +4,7 @@ Main FastAPI application with production-ready configuration
 
 import logging
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import AsyncGenerator
 
 import uvicorn
@@ -190,7 +190,7 @@ async def health_check() -> dict:
 
     return {
         "status": overall_status,
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(timezone.utc).isoformat() + "Z",
         "version": settings.app.APP_VERSION,
         "services": services,
         "uptime_seconds": int(_time.time() - _app_start_time),

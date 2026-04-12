@@ -4,7 +4,7 @@ Handles KYC verification, document validation, and compliance checks
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import UUID
 
@@ -107,7 +107,7 @@ class KYCService:
         kyc_record.status = KYCStatus.APPROVED
         kyc_record.identity_verified = True
         kyc_record.document_verified = True
-        kyc_record.reviewed_at = datetime.utcnow()
+        kyc_record.reviewed_at = datetime.now(timezone.utc)
         if reviewed_by:
             kyc_record.reviewed_by = UUID(reviewed_by)
 
@@ -124,7 +124,7 @@ class KYCService:
 
         kyc_record.status = KYCStatus.REJECTED
         kyc_record.status_reason = reason
-        kyc_record.reviewed_at = datetime.utcnow()
+        kyc_record.reviewed_at = datetime.now(timezone.utc)
         if reviewed_by:
             kyc_record.reviewed_by = UUID(reviewed_by)
 

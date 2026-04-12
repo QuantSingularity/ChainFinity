@@ -3,7 +3,7 @@ Comprehensive test suite for compliance services
 Tests KYC, AML, transaction monitoring, and regulatory compliance
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import Mock, patch
 
@@ -50,7 +50,7 @@ class TestComplianceService:
         risk_profile = UserRiskProfile(
             user_id=user.id,
             risk_level=RiskLevel.MEDIUM,
-            assessment_date=datetime.utcnow(),
+            assessment_date=datetime.now(timezone.utc),
         )
         db_session.add(risk_profile)
 
@@ -68,7 +68,7 @@ class TestComplianceService:
             amount=Decimal("1000.00"),
             value_usd=Decimal("1000.00"),
             status=TransactionStatus.CONFIRMED,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
         db_session.add(transaction)
         await db_session.commit()
@@ -232,7 +232,7 @@ class TestComplianceService:
             user_id="test_user_id",
             transaction_type=TransactionType.TRANSFER,
             value_usd=Decimal("25000.00"),  # Above threshold
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
 
         result = await compliance_service._check_transaction_amount(large_transaction)
@@ -249,7 +249,7 @@ class TestComplianceService:
     ):
         """Test transaction velocity checking"""
         # Create multiple recent transactions
-        yesterday = datetime.utcnow() - timedelta(hours=12)
+        yesterday = datetime.now(timezone.utc) - timedelta(hours=12)
 
         for i in range(15):  # Create 15 transactions
             transaction = Transaction(
@@ -268,7 +268,7 @@ class TestComplianceService:
             user_id=test_user.id,
             transaction_type=TransactionType.TRANSFER,
             value_usd=Decimal("1000.00"),
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
 
         result = await compliance_service._check_transaction_velocity(test_transaction)
@@ -302,7 +302,7 @@ class TestComplianceService:
         # Test round number detection
         round_transaction = Transaction(
             value_usd=Decimal("10000.00"),  # Round number
-            created_at=datetime.utcnow().replace(hour=2),  # Unusual time
+            created_at=datetime.now(timezone.utc).replace(hour=2),  # Unusual time
         )
 
         result = await compliance_service._check_transaction_patterns(round_transaction)
@@ -315,8 +315,8 @@ class TestComplianceService:
         self, compliance_service: ComplianceService, db_session: AsyncSession
     ):
         """Test regulatory report generation"""
-        period_start = datetime.utcnow() - timedelta(days=30)
-        period_end = datetime.utcnow()
+        period_start = datetime.now(timezone.utc) - timedelta(days=30)
+        period_end = datetime.now(timezone.utc)
 
         # Create some suspicious activities
         for i in range(3):

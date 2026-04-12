@@ -7,7 +7,7 @@ import asyncio
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from types import TracebackType
 from typing import Any, Dict, List, Optional
@@ -392,7 +392,7 @@ class MarketDataService:
                 "total_volume_24h": float(total_volume),
                 "top_gainers": gainers[:5],
                 "top_losers": losers[:5],
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "market_sentiment": self._calculate_market_sentiment(gainers, losers),
             }
             await cache.set(cache_key, json.dumps(overview), ttl=300)
@@ -411,7 +411,7 @@ class MarketDataService:
                 change_24h=Decimal("500.00"),
                 change_24h_pct=Decimal("1.12"),
                 market_cap=Decimal("850000000000"),
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
                 source="mock_api",
             )
         except Exception as e:
@@ -455,7 +455,7 @@ class MarketDataService:
     ) -> Optional[TechnicalIndicators]:
         """Calculate technical indicators from historical data"""
         try:
-            end_date = datetime.utcnow()
+            end_date = datetime.now(timezone.utc)
             start_date = end_date - timedelta(days=250)
             historical_data = await self.get_historical_data(
                 symbol, start_date, end_date
@@ -465,7 +465,7 @@ class MarketDataService:
             closes = [data.close_price for data in historical_data]
             indicators = TechnicalIndicators(
                 symbol=symbol,
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
                 sma_20=self._calculate_sma(closes, 20),
                 sma_50=self._calculate_sma(closes, 50),
                 sma_200=self._calculate_sma(closes, 200),

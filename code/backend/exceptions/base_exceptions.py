@@ -4,7 +4,7 @@ Provides structured error handling with detailed error codes and messages
 """
 
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -59,7 +59,7 @@ class BaseChainFinityException(Exception):
         self.user_message = user_message or message
         self.suggestions = suggestions or []
         self.correlation_id = correlation_id
-        self.timestamp = datetime.utcnow()
+        self.timestamp = datetime.now(timezone.utc)
         self.traceback = traceback.format_exc()
 
     def to_dict(self) -> Dict[str, Any]:

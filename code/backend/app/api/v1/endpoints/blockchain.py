@@ -3,7 +3,7 @@ Blockchain endpoints
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, List, Optional
 from uuid import UUID
 
@@ -248,7 +248,7 @@ async def verify_blockchain_address(
             "network": network,
             "is_valid": is_valid,
             "address_type": address_type,
-            "checked_at": datetime.utcnow().isoformat(),
+            "checked_at": datetime.now(timezone.utc).isoformat(),
         }
 
     except Exception as e:
@@ -278,7 +278,7 @@ async def get_address_balance(
             "balance": "0",
             "balance_usd": "0",
             "tokens": [],
-            "last_updated": datetime.utcnow().isoformat(),
+            "last_updated": datetime.now(timezone.utc).isoformat(),
         }
 
     except Exception as e:
@@ -301,7 +301,7 @@ async def get_gas_price(
         # Mock gas price response
         return {
             "network": network,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "gas_prices": {
                 "slow": "20",
                 "standard": "25",

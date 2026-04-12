@@ -4,7 +4,7 @@ Authentication service with enhanced security features
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Optional, Tuple
 from uuid import UUID
 
@@ -195,7 +195,7 @@ class AuthService:
                     detail="User not found or inactive",
                 )
             tokens = await self._generate_tokens(user)
-            user.last_activity_at = datetime.utcnow()
+            user.last_activity_at = datetime.now(timezone.utc)
             await db.commit()
             await self._cache_user_session(user.id, tokens["access_token"])
             return tokens
@@ -247,7 +247,7 @@ class AuthService:
                 )
             new_hashed_password = self.password_service.hash_password(new_password)
             user.hashed_password = new_hashed_password
-            user.password_changed_at = datetime.utcnow()
+            user.password_changed_at = datetime.now(timezone.utc)
             await db.commit()
             await self._log_password_change(db, user, ip_address, user_agent)
         except HTTPException:
@@ -284,7 +284,7 @@ class AuthService:
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="User not found or inactive",
                 )
-            user.last_activity_at = datetime.utcnow()
+            user.last_activity_at = datetime.now(timezone.utc)
             await db.commit()
             return user
         except HTTPException:
@@ -315,7 +315,7 @@ class AuthService:
         session_data = {
             "user_id": str(user_id),
             "access_token": access_token,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
         await cache.set(
             f"user_session:{user_id}",
@@ -328,7 +328,7 @@ class AuthService:
         payload = self.jwt_service.decode_token_without_verification(token)
         exp = payload.get("exp")
         if exp:
-            ttl = exp - datetime.utcnow().timestamp()
+            ttl = exp - datetime.now(timezone.utc).timestamp()
             if ttl > 0:
                 await cache.set(f"blacklist:{token}", "1", ttl=int(ttl))
 

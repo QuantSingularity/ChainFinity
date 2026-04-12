@@ -3,7 +3,7 @@ Authentication endpoints
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from app.api.dependencies import get_client_info, get_current_user
@@ -50,8 +50,12 @@ async def register(
             wallet_address=request.wallet_address,
             ip_address=client_info["ip_address"],
             user_agent=client_info["user_agent"],
-            terms_accepted_at=datetime.utcnow() if request.terms_accepted else None,
-            privacy_accepted_at=datetime.utcnow() if request.privacy_accepted else None,
+            terms_accepted_at=(
+                datetime.now(timezone.utc) if request.terms_accepted else None
+            ),
+            privacy_accepted_at=(
+                datetime.now(timezone.utc) if request.privacy_accepted else None
+            ),
             marketing_consent=request.marketing_consent,
         )
 

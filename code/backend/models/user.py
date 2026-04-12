@@ -4,10 +4,11 @@ Enhanced user management with KYC, risk profiling, and compliance
 """
 
 import enum
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import (
     JSON,
+    UUID,
     Boolean,
     Column,
     DateTime,
@@ -19,7 +20,6 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from .base import AuditMixin, BaseModel, EncryptedMixin, SoftDeleteMixin, TimestampMixin
@@ -69,7 +69,9 @@ class User(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
 
     # Authentication
     hashed_password = Column(String(255), nullable=False)
-    password_changed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    password_changed_at = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
     failed_login_attempts = Column(Integer, default=0, nullable=False)
     locked_until = Column(DateTime, nullable=True)
 
@@ -83,7 +85,9 @@ class User(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
         Enum(UserStatus), default=UserStatus.PENDING, nullable=False, index=True
     )
     status_reason = Column(Text, nullable=True)
-    status_changed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    status_changed_at = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
 
     # Blockchain
     primary_wallet_address = Column(String(42), nullable=True, index=True)
@@ -153,7 +157,7 @@ class User(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
 
     def is_locked(self) -> bool:
         """Check if user account is locked"""
-        return self.locked_until and self.locked_until > datetime.utcnow()
+        return self.locked_until and self.locked_until > datetime.now(timezone.utc)
 
     def can_login(self) -> bool:
         """Check if user can login"""
@@ -168,7 +172,7 @@ class User(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
         self.failed_login_attempts += 1
         # Lock account after 5 failed attempts for 30 minutes
         if self.failed_login_attempts >= 5:
-            self.locked_until = datetime.utcnow() + timedelta(minutes=30)
+            self.locked_until = datetime.now(timezone.utc) + timedelta(minutes=30)
 
     def reset_failed_login(self) -> None:
         """Reset failed login attempts"""
@@ -177,8 +181,8 @@ class User(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
 
     def record_login(self) -> None:
         """Record successful login"""
-        self.last_login_at = datetime.utcnow()
-        self.last_activity_at = datetime.utcnow()
+        self.last_login_at = datetime.now(timezone.utc)
+        self.last_activity_at = datetime.now(timezone.utc)
         self.login_count += 1
         self.reset_failed_login()
 
@@ -257,7 +261,9 @@ class UserKYC(BaseModel, TimestampMixin, AuditMixin, EncryptedMixin):
         Enum(KYCStatus), default=KYCStatus.NOT_STARTED, nullable=False, index=True
     )
     status_reason = Column(Text, nullable=True)
-    status_changed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    status_changed_at = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
 
     # Verification Provider
     provider = Column(String(50), nullable=True)  # jumio, onfido, etc.
@@ -314,12 +320,14 @@ class UserKYC(BaseModel, TimestampMixin, AuditMixin, EncryptedMixin):
             and self.identity_verified
             and self.document_verified
             and not self.sanctions_match
-            and (self.expires_at is None or self.expires_at > datetime.utcnow())
+            and (
+                self.expires_at is None or self.expires_at > datetime.now(timezone.utc)
+            )
         )
 
     def is_expired(self) -> bool:
         """Check if KYC verification is expired"""
-        return self.expires_at and self.expires_at <= datetime.utcnow()
+        return self.expires_at and self.expires_at <= datetime.now(timezone.utc)
 
     def needs_renewal(self) -> bool:
         """Check if KYC needs renewal"""
@@ -349,7 +357,9 @@ class UserRiskProfile(BaseModel, TimestampMixin, AuditMixin):
     risk_factors = Column(JSON, nullable=True)  # List of risk factors
 
     # Assessment Details
-    assessment_date = Column(DateTime, default=datetime.utcnow, nullable=False)
+    assessment_date = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
     assessment_method = Column(String(50), nullable=True)  # manual, automated, hybrid
     assessed_by = Column(UUID(as_uuid=True), nullable=True)
 
@@ -395,24 +405,26 @@ class UserRiskProfile(BaseModel, TimestampMixin, AuditMixin):
             or self.is_high_risk()
             or (
                 self.monitoring_end_date
-                and self.monitoring_end_date > datetime.utcnow()
+                and self.monitoring_end_date > datetime.now(timezone.utc)
             )
         )
 
     def is_due_for_review(self) -> bool:
         """Check if risk profile is due for review"""
-        return self.next_review_date and self.next_review_date <= datetime.utcnow()
+        return self.next_review_date and self.next_review_date <= datetime.now(
+            timezone.utc
+        )
 
     def update_risk_level(self, new_level: RiskLevel, reason: str = None) -> None:
         """Update risk level with audit trail"""
         self.risk_level = new_level
-        self.assessment_date = datetime.utcnow()
+        self.assessment_date = datetime.now(timezone.utc)
         if reason:
             if not self.risk_factors:
                 self.risk_factors = []
             self.risk_factors.append(
                 {
-                    "date": datetime.utcnow().isoformat(),
+                    "date": datetime.now(timezone.utc).isoformat(),
                     "reason": reason,
                     "level": new_level.value,
                 }

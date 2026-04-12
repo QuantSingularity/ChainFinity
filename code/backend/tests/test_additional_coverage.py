@@ -2,7 +2,7 @@
 Additional tests to boost coverage across services and models
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
@@ -133,7 +133,7 @@ class TestJWTService:
         token = jwt.create_access_token({"sub": "u1"})
         expiry = jwt.get_token_expiry(token)
         assert expiry is not None
-        assert expiry > datetime.utcnow()
+        assert expiry > datetime.now(timezone.utc)
 
     def test_is_token_expired_false(self, jwt):
         token = jwt.create_access_token({"sub": "u1"})
@@ -196,7 +196,7 @@ class TestUserModel:
 
     def test_user_is_locked(self):
         u = User(email="a@b.com", hashed_password="x")
-        u.locked_until = datetime.utcnow() + timedelta(hours=1)
+        u.locked_until = datetime.now(timezone.utc) + timedelta(hours=1)
         assert u.is_locked()
 
     def test_user_not_locked(self):
@@ -267,7 +267,9 @@ class TestUserKYCModel:
         assert not kyc.is_verified()
 
     def test_is_expired(self):
-        kyc = UserKYC(user_id=uuid4(), expires_at=datetime.utcnow() - timedelta(days=1))
+        kyc = UserKYC(
+            user_id=uuid4(), expires_at=datetime.now(timezone.utc) - timedelta(days=1)
+        )
         assert kyc.is_expired()
 
     def test_not_expired(self):
@@ -292,7 +294,7 @@ class TestUserRiskProfileModel:
 
     def test_is_due_for_review(self):
         rp = UserRiskProfile(user_id=uuid4())
-        rp.next_review_date = datetime.utcnow() - timedelta(days=1)
+        rp.next_review_date = datetime.now(timezone.utc) - timedelta(days=1)
         assert rp.is_due_for_review()
 
     def test_update_risk_level(self):
@@ -308,7 +310,7 @@ class TestComplianceModels:
             check_type="test",
             check_name="Test",
             status=ComplianceStatus.PASSED,
-            valid_until=datetime.utcnow() + timedelta(days=30),
+            valid_until=datetime.now(timezone.utc) + timedelta(days=30),
         )
         assert cc.is_valid()
 
@@ -325,9 +327,9 @@ class TestComplianceModels:
             activity_type="test",
             activity_description="test",
             suspicious_indicators={},
-            activity_start_date=datetime.utcnow(),
+            activity_start_date=datetime.now(timezone.utc),
             filing_required=True,
-            filing_deadline=datetime.utcnow() - timedelta(days=1),
+            filing_deadline=datetime.now(timezone.utc) - timedelta(days=1),
         )
         assert sar.is_filing_overdue()
 
@@ -411,7 +413,8 @@ class TestComplianceServiceExtended:
     @pytest.mark.asyncio
     async def test_check_transaction_patterns_round(self, svc):
         tx = Transaction(
-            value_usd=Decimal("10000.00"), created_at=datetime.utcnow().replace(hour=2)
+            value_usd=Decimal("10000.00"),
+            created_at=datetime.now(timezone.utc).replace(hour=2),
         )
         result = await svc._check_transaction_patterns(tx)
         assert result["risk_score"] > 0

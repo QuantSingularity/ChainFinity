@@ -7,7 +7,7 @@ import logging
 import os
 import sys
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -229,7 +229,7 @@ class RiskService:
                 operational_risk=Decimal(0),
                 overall_risk_score=Decimal(0),
                 risk_grade="N/A",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
         historical_days = 252
         asset_symbols = [asset.symbol for asset in assets]
@@ -310,7 +310,7 @@ class RiskService:
             operational_risk=Decimal(0),
             overall_risk_score=overall_risk_score,
             risk_grade=self._determine_risk_grade(overall_risk_score),
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
         )
 
     async def _perform_stress_tests(self, portfolio: Portfolio) -> List[Dict[str, Any]]:
@@ -564,7 +564,7 @@ class RiskService:
                 "risk_score": 0.0,
                 "risk_level": "unknown",
                 "portfolio_id": str(portfolio_id),
-                "assessment_date": datetime.utcnow().isoformat(),
+                "assessment_date": datetime.now(timezone.utc).isoformat(),
             }
         try:
             portfolio = await self._get_portfolio_with_assets(portfolio_id, user_id)
@@ -573,7 +573,7 @@ class RiskService:
                     "risk_score": 0.0,
                     "risk_level": "unknown",
                     "portfolio_id": str(portfolio_id),
-                    "assessment_date": datetime.utcnow().isoformat(),
+                    "assessment_date": datetime.now(timezone.utc).isoformat(),
                 }
             risk_metrics = await self._calculate_risk_metrics(portfolio)
             stress_test_results = await self._perform_stress_tests(portfolio)
@@ -584,7 +584,7 @@ class RiskService:
             risk_assessment = RiskAssessment(
                 portfolio_id=portfolio_id,
                 user_id=user_id,
-                assessment_date=datetime.utcnow(),
+                assessment_date=datetime.now(timezone.utc),
                 risk_score=overall_risk_score,
                 risk_grade=risk_grade,
                 var_1d=risk_metrics.var_1d,
@@ -647,7 +647,7 @@ class RiskService:
             risk_level = self._determine_user_risk_level(risk_score)
             user_risk_profile.risk_level = risk_level
             user_risk_profile.risk_score = risk_score
-            user_risk_profile.assessment_date = datetime.utcnow()
+            user_risk_profile.assessment_date = datetime.now(timezone.utc)
             user_risk_profile.questionnaire_responses = assessment_data
             user_risk_profile.assessment_data = assessment_data
             limits = self._calculate_risk_based_limits(risk_level, assessment_data)
@@ -690,7 +690,7 @@ class RiskService:
             )
             monitoring_result = {
                 "portfolio_id": str(portfolio_id),
-                "monitoring_timestamp": datetime.utcnow().isoformat(),
+                "monitoring_timestamp": datetime.now(timezone.utc).isoformat(),
                 "current_risk_score": float(current_metrics.overall_risk_score),
                 "risk_grade": current_metrics.risk_grade,
                 "alerts": alerts + concentration_alerts + correlation_alerts,
@@ -727,7 +727,7 @@ class RiskService:
                 "portfolio_id": str(portfolio_id),
                 "confidence_level": confidence_level,
                 "time_horizon": time_horizon,
-                "calculation_date": datetime.utcnow().isoformat(),
+                "calculation_date": datetime.now(timezone.utc).isoformat(),
                 "methods": {},
             }
             historical_var = self._calculate_historical_var(
@@ -798,7 +798,7 @@ class RiskService:
                     operational_risk=Decimal("0.0"),
                     overall_risk_score=Decimal("50.0"),
                     risk_grade="Medium",
-                    timestamp=datetime.utcnow(),
+                    timestamp=datetime.now(timezone.utc),
                 )
             returns_array = np.array(returns_data)
             var_1d = self._calculate_historical_var(returns_data, 0.95, 1)
@@ -840,7 +840,7 @@ class RiskService:
                 operational_risk=operational_risk,
                 overall_risk_score=overall_risk_score,
                 risk_grade=risk_grade,
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
         except Exception as e:
             logger.error(f"Error calculating risk metrics: {e}")
@@ -966,7 +966,9 @@ class RiskService:
         """Calculate portfolio beta and alpha relative to market"""
         try:
             market_data = await self.market_data_service.get_historical_data(
-                "BTC", datetime.utcnow() - timedelta(days=252), datetime.utcnow()
+                "BTC",
+                datetime.now(timezone.utc) - timedelta(days=252),
+                datetime.now(timezone.utc),
             )
             if not market_data or len(market_data) < len(returns):
                 return (Decimal("1.0"), Decimal("0.0"))

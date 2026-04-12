@@ -4,11 +4,12 @@ Enhanced transaction tracking with compliance and monitoring
 """
 
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from sqlalchemy import (
     JSON,
+    UUID,
     Boolean,
     Column,
     DateTime,
@@ -20,7 +21,6 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from .base import AuditMixin, BaseModel, TimestampMixin
@@ -260,7 +260,7 @@ class TransactionAlert(BaseModel, TimestampMixin, AuditMixin):
     def resolve(self, notes: str = None, resolved_by: str = None) -> None:
         """Resolve the alert"""
         self.status = "resolved"
-        self.resolved_at = datetime.utcnow()
+        self.resolved_at = datetime.now(timezone.utc)
         if notes:
             self.resolution_notes = notes
         if resolved_by:
@@ -288,8 +288,12 @@ class TransactionPattern(BaseModel, TimestampMixin):
     confidence_score = Column(Numeric(5, 2), nullable=False)
 
     # Detection
-    first_detected = Column(DateTime, default=datetime.utcnow, nullable=False)
-    last_detected = Column(DateTime, default=datetime.utcnow, nullable=False)
+    first_detected = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
+    last_detected = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
     detection_count = Column(Integer, default=1, nullable=False)
 
     # Status
@@ -301,7 +305,7 @@ class TransactionPattern(BaseModel, TimestampMixin):
 
     def update_detection(self) -> None:
         """Update pattern detection timestamp and count"""
-        self.last_detected = datetime.utcnow()
+        self.last_detected = datetime.now(timezone.utc)
         self.detection_count += 1
 
 
@@ -334,19 +338,19 @@ class TransactionBatch(BaseModel, TimestampMixin, AuditMixin):
     def start_processing(self) -> None:
         """Start batch processing"""
         self.status = "processing"
-        self.started_at = datetime.utcnow()
+        self.started_at = datetime.now(timezone.utc)
 
     def complete_processing(self) -> None:
         """Complete batch processing"""
         self.status = "completed"
-        self.completed_at = datetime.utcnow()
+        self.completed_at = datetime.now(timezone.utc)
 
     def fail_processing(self, error: str) -> None:
         """Mark batch processing as failed"""
         self.status = "failed"
-        self.completed_at = datetime.utcnow()
+        self.completed_at = datetime.now(timezone.utc)
         if self.error_log is None:
             self.error_log = []
         self.error_log.append(
-            {"timestamp": datetime.utcnow().isoformat(), "error": error}
+            {"timestamp": datetime.now(timezone.utc).isoformat(), "error": error}
         )

@@ -4,7 +4,7 @@ Tests all portfolio management functionality with edge cases and error scenarios
 """
 
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
@@ -60,7 +60,7 @@ class TestPortfolioService:
             total_value=Decimal("100000.00"),
             cash_balance=Decimal("10000.00"),
             is_active=True,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
 
     @pytest.fixture
@@ -76,7 +76,7 @@ class TestPortfolioService:
             current_price=Decimal("50000.00"),
             current_value=Decimal("125000.00"),
             allocation_percentage=Decimal("80.0"),
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(timezone.utc),
         )
 
     @pytest.mark.asyncio
@@ -571,11 +571,11 @@ class TestPortfolioService:
         with patch.object(
             portfolio_service, "_get_current_price", return_value=Decimal("100.0")
         ):
-            start_time = datetime.utcnow()
+            start_time = datetime.now(timezone.utc)
             total_value = await portfolio_service.calculate_portfolio_value(
                 sample_portfolio.id, sample_portfolio.user_id
             )
-            end_time = datetime.utcnow()
+            end_time = datetime.now(timezone.utc)
         execution_time = (end_time - start_time).total_seconds()
         assert execution_time < 1.0
         assert total_value > 0
@@ -642,7 +642,7 @@ def create_mock_portfolio(user_id: UUID, **kwargs) -> Portfolio:
         "total_value": Decimal("100000.00"),
         "cash_balance": Decimal("10000.00"),
         "is_active": True,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
     }
     defaults.update(kwargs)
     return Portfolio(**defaults)
@@ -660,7 +660,7 @@ def create_mock_asset(portfolio_id: UUID, **kwargs) -> PortfolioAsset:
         "current_price": Decimal("55000.00"),
         "current_value": Decimal("55000.00"),
         "allocation_percentage": Decimal("55.0"),
-        "last_updated": datetime.utcnow(),
+        "last_updated": datetime.now(timezone.utc),
     }
     defaults.update(kwargs)
     return PortfolioAsset(**defaults)

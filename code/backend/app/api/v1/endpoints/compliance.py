@@ -3,7 +3,7 @@ Compliance endpoints
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, List, Optional
 from uuid import UUID
 
@@ -161,7 +161,7 @@ async def get_compliance_status(
                 "failed": failed_checks,
                 "pending": pending_checks,
             },
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
     except Exception as e:
@@ -295,7 +295,7 @@ async def generate_regulatory_report(
             report_status="generated",
             report_data={
                 "generated_by": str(current_user.id),
-                "generated_at": datetime.utcnow().isoformat(),
+                "generated_at": datetime.now(timezone.utc).isoformat(),
                 "report_type": report_type,
                 "period": {
                     "start": start_date.isoformat(),

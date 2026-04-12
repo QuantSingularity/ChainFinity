@@ -6,7 +6,7 @@ Handles user CRUD, profile management, authentication, and security
 import base64
 import logging
 import secrets
-from datetime import datetime
+from datetime import datetime, timezone
 from io import BytesIO
 from typing import Any, Dict, List, Optional
 
@@ -60,7 +60,7 @@ class UserService:
                 email=user_data.email.lower(),
                 hashed_password=hashed_password,
                 status=UserStatus.PENDING,
-                created_at=datetime.utcnow(),
+                created_at=datetime.now(timezone.utc),
             )
             self.db.add(user)
             await self.db.flush()
@@ -77,7 +77,7 @@ class UserService:
             risk_profile = UserRiskProfile(
                 user_id=user.id,
                 risk_level=RiskLevel.MEDIUM,
-                assessment_date=datetime.utcnow(),
+                assessment_date=datetime.now(timezone.utc),
             )
             self.db.add(risk_profile)
             await self.db.commit()
@@ -140,7 +140,7 @@ class UserService:
                 user.email_verified = False
             if "primary_wallet_address" in update_data:
                 user.primary_wallet_address = update_data["primary_wallet_address"]
-            user.updated_at = datetime.utcnow()
+            user.updated_at = datetime.now(timezone.utc)
             await self.db.commit()
             logger.info(f"User updated successfully: {user.email}")
             return user
@@ -176,7 +176,7 @@ class UserService:
             for field, value in update_data.items():
                 if hasattr(profile, field):
                     setattr(profile, field, value)
-            profile.updated_at = datetime.utcnow()
+            profile.updated_at = datetime.now(timezone.utc)
             await self.db.commit()
             logger.info(f"User profile updated successfully: {user_id}")
             return profile
@@ -219,8 +219,8 @@ class UserService:
                 raise ValueError("User not found")
             user.status = UserStatus.DEACTIVATED
             user.status_reason = reason
-            user.status_changed_at = datetime.utcnow()
-            user.updated_at = datetime.utcnow()
+            user.status_changed_at = datetime.now(timezone.utc)
+            user.updated_at = datetime.now(timezone.utc)
             await self.db.commit()
             logger.info(f"User deactivated: {user.email}, reason: {reason}")
         except Exception as e:
@@ -308,11 +308,11 @@ class UserService:
             if not user:
                 raise ValueError("User not found")
             user.email_verified = True
-            user.email_verified_at = datetime.utcnow()
-            user.updated_at = datetime.utcnow()
+            user.email_verified_at = datetime.now(timezone.utc)
+            user.updated_at = datetime.now(timezone.utc)
             if user.status == UserStatus.PENDING:
                 user.status = UserStatus.ACTIVE
-                user.status_changed_at = datetime.utcnow()
+                user.status_changed_at = datetime.now(timezone.utc)
             await self.db.commit()
             await cache.delete(cache_key)
             logger.info(f"Email verified successfully: {user.email}")
@@ -336,8 +336,8 @@ class UserService:
                 raise ValueError("Current password is incorrect")
             self._validate_password_strength(new_password)
             user.hashed_password = pwd_context.hash(new_password)
-            user.password_changed_at = datetime.utcnow()
-            user.updated_at = datetime.utcnow()
+            user.password_changed_at = datetime.now(timezone.utc)
+            user.updated_at = datetime.now(timezone.utc)
             await self.db.commit()
             logger.info(f"Password changed successfully for user: {user.email}")
         except Exception as e:
@@ -397,7 +397,7 @@ class UserService:
             user.mfa_enabled = True
             user.mfa_secret = secret
             user.backup_codes = hashed_backup_codes
-            user.updated_at = datetime.utcnow()
+            user.updated_at = datetime.now(timezone.utc)
             await self.db.commit()
             await cache.delete(cache_key)
             logger.info(f"MFA enabled successfully for user: {user.email}")
@@ -422,7 +422,7 @@ class UserService:
             user.mfa_enabled = False
             user.mfa_secret = None
             user.backup_codes = None
-            user.updated_at = datetime.utcnow()
+            user.updated_at = datetime.now(timezone.utc)
             await self.db.commit()
             logger.info(f"MFA disabled successfully for user: {user.email}")
         except Exception as e:
@@ -480,7 +480,7 @@ class UserService:
             for stored_code in user.backup_codes:
                 if pwd_context.verify(backup_code, stored_code):
                     user.backup_codes.remove(stored_code)
-                    user.updated_at = datetime.utcnow()
+                    user.updated_at = datetime.now(timezone.utc)
                     await self.db.commit()
                     return True
             return False

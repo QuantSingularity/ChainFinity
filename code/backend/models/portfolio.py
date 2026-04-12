@@ -4,12 +4,13 @@ Multi-asset portfolio management with risk tracking
 """
 
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Dict
 
 from sqlalchemy import (
     JSON,
+    UUID,
     Boolean,
     Column,
     DateTime,
@@ -21,7 +22,6 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from .base import AuditMixin, BaseModel, TimestampMixin
@@ -124,7 +124,9 @@ class Portfolio(BaseModel, TimestampMixin, AuditMixin):
     beta = Column(Numeric(10, 6), nullable=True)
 
     # Last Update
-    last_updated = Column(DateTime, default=datetime.utcnow, nullable=False)
+    last_updated = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
     last_rebalanced = Column(DateTime, nullable=True)
     next_rebalance = Column(DateTime, nullable=True)
 
@@ -192,7 +194,7 @@ class Portfolio(BaseModel, TimestampMixin, AuditMixin):
     def update_metrics(self) -> None:
         """Update portfolio metrics"""
         self.total_value_usd = self.calculate_total_value()
-        self.last_updated = datetime.utcnow()
+        self.last_updated = datetime.now(timezone.utc)
 
 
 class PortfolioAsset(BaseModel, TimestampMixin, AuditMixin):
@@ -283,7 +285,7 @@ class PortfolioAsset(BaseModel, TimestampMixin, AuditMixin):
         self.current_value_usd = self.quantity * new_price
         self.unrealized_pnl = self.calculate_unrealized_pnl()
         self.unrealized_pnl_percentage = self.calculate_unrealized_pnl_percentage()
-        self.last_price_update = datetime.utcnow()
+        self.last_price_update = datetime.now(timezone.utc)
 
     def add_quantity(self, quantity: Decimal, cost: Decimal) -> None:
         """Add to asset quantity and update cost basis"""
@@ -296,7 +298,7 @@ class PortfolioAsset(BaseModel, TimestampMixin, AuditMixin):
         if total_quantity > 0:
             self.average_cost = total_cost / total_quantity
 
-        self.last_quantity_update = datetime.utcnow()
+        self.last_quantity_update = datetime.now(timezone.utc)
 
     def remove_quantity(self, quantity: Decimal) -> Decimal:
         """Remove asset quantity and calculate realized P&L"""
@@ -313,7 +315,7 @@ class PortfolioAsset(BaseModel, TimestampMixin, AuditMixin):
         self.quantity -= quantity
         self.cost_basis -= cost_reduction
 
-        self.last_quantity_update = datetime.utcnow()
+        self.last_quantity_update = datetime.now(timezone.utc)
 
         return realized_pnl if "realized_pnl" in locals() else Decimal("0")
 

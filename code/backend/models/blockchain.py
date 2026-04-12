@@ -4,10 +4,11 @@ Network management, smart contracts, and events
 """
 
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import (
     JSON,
+    UUID,
     Boolean,
     Column,
     DateTime,
@@ -19,7 +20,6 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from .base import AuditMixin, BaseModel, TimestampMixin
@@ -134,7 +134,7 @@ class BlockchainNetwork(BaseModel, TimestampMixin, AuditMixin):
 
     def update_health_metrics(self, response_time: int, success: bool) -> None:
         """Update network health metrics"""
-        self.last_health_check = datetime.utcnow()
+        self.last_health_check = datetime.now(timezone.utc)
 
         # Update average response time (simple moving average)
         if self.avg_response_time_ms is None:
@@ -310,12 +310,12 @@ class ContractEvent(BaseModel, TimestampMixin):
     def mark_processed(self) -> None:
         """Mark event as processed"""
         self.is_processed = True
-        self.processed_at = datetime.utcnow()
+        self.processed_at = datetime.now(timezone.utc)
 
     def mark_processing_error(self, error: str) -> None:
         """Mark event processing error"""
         self.processing_error = error
-        self.processed_at = datetime.utcnow()
+        self.processed_at = datetime.now(timezone.utc)
 
 
 class BlockchainSync(BaseModel, TimestampMixin):
@@ -353,7 +353,9 @@ class BlockchainSync(BaseModel, TimestampMixin):
     )  # running, completed, failed, paused
 
     # Timing
-    started_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    started_at = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
     completed_at = Column(DateTime, nullable=True)
     estimated_completion = Column(DateTime, nullable=True)
 
@@ -381,21 +383,21 @@ class BlockchainSync(BaseModel, TimestampMixin):
             self.progress_percentage = (self.processed_blocks / self.total_blocks) * 100
 
         # Calculate blocks per second
-        elapsed_seconds = (datetime.utcnow() - self.started_at).total_seconds()
+        elapsed_seconds = (datetime.now(timezone.utc) - self.started_at).total_seconds()
         if elapsed_seconds > 0:
             self.blocks_per_second = self.processed_blocks / elapsed_seconds
 
     def complete_sync(self) -> None:
         """Mark sync as completed"""
         self.status = "completed"
-        self.completed_at = datetime.utcnow()
+        self.completed_at = datetime.now(timezone.utc)
         self.progress_percentage = 100
 
     def fail_sync(self, error: str) -> None:
         """Mark sync as failed"""
         self.status = "failed"
         self.last_error = error
-        self.last_error_at = datetime.utcnow()
+        self.last_error_at = datetime.now(timezone.utc)
         self.error_count += 1
 
 
@@ -428,7 +430,9 @@ class GasTracker(BaseModel, TimestampMixin):
     block_utilization = Column(Numeric(5, 2), nullable=True)  # 0-100%
 
     # Timing
-    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    timestamp = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True
+    )
 
     # Source
     data_source = Column(String(50), nullable=False)  # ethgasstation, blocknative, etc.

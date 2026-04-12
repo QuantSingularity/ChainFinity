@@ -4,10 +4,11 @@ Risk assessment, monitoring, and alerting
 """
 
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import (
     JSON,
+    UUID,
     Boolean,
     Column,
     DateTime,
@@ -19,7 +20,6 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from .base import AuditMixin, BaseModel, TimestampMixin
@@ -106,7 +106,9 @@ class RiskAssessment(BaseModel, TimestampMixin, AuditMixin):
     assessment_results = Column(JSON, nullable=False)
 
     # Validity
-    valid_from = Column(DateTime, default=datetime.utcnow, nullable=False)
+    valid_from = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
     valid_until = Column(DateTime, nullable=True, index=True)
     is_current = Column(Boolean, default=True, nullable=False, index=True)
 
@@ -135,7 +137,7 @@ class RiskAssessment(BaseModel, TimestampMixin, AuditMixin):
     def is_valid(self) -> bool:
         """Check if risk assessment is still valid"""
         return self.is_current and (
-            self.valid_until is None or self.valid_until > datetime.utcnow()
+            self.valid_until is None or self.valid_until > datetime.now(timezone.utc)
         )
 
     def is_high_risk(self) -> bool:
@@ -145,7 +147,7 @@ class RiskAssessment(BaseModel, TimestampMixin, AuditMixin):
     def expire(self) -> None:
         """Mark assessment as expired"""
         self.is_current = False
-        self.valid_until = datetime.utcnow()
+        self.valid_until = datetime.now(timezone.utc)
 
 
 class RiskMetrics(BaseModel, TimestampMixin):
@@ -181,7 +183,7 @@ class RiskMetrics(BaseModel, TimestampMixin):
     period_start = Column(DateTime, nullable=True, index=True)
     period_end = Column(DateTime, nullable=True, index=True)
     calculation_date = Column(
-        DateTime, default=datetime.utcnow, nullable=False, index=True
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )
 
     # Benchmarks and Thresholds
@@ -273,12 +275,13 @@ class AlertRule(BaseModel, TimestampMixin, AuditMixin):
     def is_due_for_execution(self) -> bool:
         """Check if rule is due for execution"""
         return self.is_active and (
-            self.next_execution is None or self.next_execution <= datetime.utcnow()
+            self.next_execution is None
+            or self.next_execution <= datetime.now(timezone.utc)
         )
 
     def record_execution(self, alerts_generated: int = 0) -> None:
         """Record rule execution"""
-        self.last_executed = datetime.utcnow()
+        self.last_executed = datetime.now(timezone.utc)
         self.total_executions += 1
         self.total_alerts_generated += alerts_generated
 
@@ -366,7 +369,7 @@ class RiskAlert(BaseModel, TimestampMixin, AuditMixin):
     def acknowledge(self, acknowledged_by: str) -> None:
         """Acknowledge the alert"""
         self.status = AlertStatus.ACKNOWLEDGED
-        self.acknowledged_at = datetime.utcnow()
+        self.acknowledged_at = datetime.now(timezone.utc)
         self.assigned_to = acknowledged_by
 
     def resolve(
@@ -376,7 +379,7 @@ class RiskAlert(BaseModel, TimestampMixin, AuditMixin):
         self.status = (
             AlertStatus.FALSE_POSITIVE if is_false_positive else AlertStatus.RESOLVED
         )
-        self.resolved_at = datetime.utcnow()
+        self.resolved_at = datetime.now(timezone.utc)
         self.updated_by = resolved_by
         if notes:
             self.resolution_notes = notes
@@ -384,7 +387,7 @@ class RiskAlert(BaseModel, TimestampMixin, AuditMixin):
     def escalate(self, reason: str = None) -> None:
         """Escalate the alert"""
         self.escalation_level += 1
-        self.escalated_at = datetime.utcnow()
+        self.escalated_at = datetime.now(timezone.utc)
         if reason:
             self.escalation_reason = reason
 
@@ -456,7 +459,7 @@ class RiskLimit(BaseModel, TimestampMixin, AuditMixin):
             if not self.is_breached:
                 self.is_breached = True
                 self.breach_count += 1
-                self.last_breach_date = datetime.utcnow()
+                self.last_breach_date = datetime.now(timezone.utc)
         else:
             self.is_breached = False
 

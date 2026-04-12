@@ -5,7 +5,7 @@ Handles KYC verification, AML screening, transaction monitoring, and regulatory 
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, Dict, Optional
 from uuid import UUID
@@ -351,7 +351,7 @@ class ComplianceService:
 
         if self.db is not None and transaction.user_id:
             try:
-                cutoff = datetime.utcnow() - timedelta(hours=24)
+                cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
                 result = await self.db.execute(
                     select(func.count(Transaction.id)).where(
                         and_(
@@ -436,7 +436,7 @@ class ComplianceService:
         try:
             amount = transaction.value_usd or transaction.amount_usd or Decimal("0")
             sar = SuspiciousActivityReport(
-                sar_number=f"SAR-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
+                sar_number=f"SAR-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}",
                 user_id=transaction.user_id,
                 transaction_ids=[str(transaction.id)],
                 activity_type="high_risk_transaction",
@@ -445,10 +445,10 @@ class ComplianceService:
                 total_amount=amount,
                 currency="USD",
                 activity_start_date=getattr(transaction, "timestamp", None)
-                or getattr(transaction, "created_at", datetime.utcnow()),
-                activity_end_date=datetime.utcnow(),
+                or getattr(transaction, "created_at", datetime.now(timezone.utc)),
+                activity_end_date=datetime.now(timezone.utc),
                 filing_required=True,
-                filing_deadline=datetime.utcnow() + timedelta(days=30),
+                filing_deadline=datetime.now(timezone.utc) + timedelta(days=30),
             )
             self.db.add(sar)
             await self.db.commit()
@@ -468,7 +468,7 @@ class ComplianceService:
         total_amount = Decimal("0")
         metadata: Dict[str, Any] = {
             "report_type": report_type,
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "period_start": period_start.isoformat(),
             "period_end": period_end.isoformat(),
         }

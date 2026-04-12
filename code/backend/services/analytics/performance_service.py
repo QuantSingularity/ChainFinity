@@ -5,7 +5,7 @@ Comprehensive portfolio performance analysis with institutional-grade metrics
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
@@ -145,7 +145,7 @@ class PerformanceService:
             )
             report = {
                 "portfolio_id": str(portfolio_id),
-                "report_date": datetime.utcnow().isoformat(),
+                "report_date": datetime.now(timezone.utc).isoformat(),
                 "period": period,
                 "performance_metrics": {
                     "total_return": float(performance_data.total_return),
@@ -373,7 +373,7 @@ class PerformanceService:
 
     def _get_date_range(self, period: str) -> Tuple[datetime, datetime]:
         """Get start and end dates for period"""
-        end_date = datetime.utcnow()
+        end_date = datetime.now(timezone.utc)
         if period == "1d":
             start_date = end_date - timedelta(days=1)
         elif period == "7d":

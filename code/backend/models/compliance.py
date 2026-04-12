@@ -4,11 +4,12 @@ AML, audit trails, and regulatory reporting
 """
 
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import (
     JSON,
+    UUID,
     Boolean,
     Column,
     DateTime,
@@ -20,7 +21,6 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from .base import AuditMixin, BaseModel, TimestampMixin
@@ -146,7 +146,7 @@ class AuditLog(BaseModel, TimestampMixin):
         self.changes[field] = {
             "old": old_value,
             "new": new_value,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
     def add_metadata(self, key: str, value: Any) -> None:
@@ -216,7 +216,10 @@ class ComplianceCheck(BaseModel, TimestampMixin, AuditMixin):
         """Check if compliance check is still valid"""
         return (
             not self.is_expired
-            and (self.valid_until is None or self.valid_until > datetime.utcnow())
+            and (
+                self.valid_until is None
+                or self.valid_until > datetime.now(timezone.utc)
+            )
             and self.status in [ComplianceStatus.PASSED, ComplianceStatus.EXEMPTED]
         )
 
@@ -228,7 +231,7 @@ class ComplianceCheck(BaseModel, TimestampMixin, AuditMixin):
         """Approve manual review"""
         self.status = ComplianceStatus.PASSED
         self.reviewed_by = reviewer_id
-        self.reviewed_at = datetime.utcnow()
+        self.reviewed_at = datetime.now(timezone.utc)
         if notes:
             self.review_notes = notes
 
@@ -236,7 +239,7 @@ class ComplianceCheck(BaseModel, TimestampMixin, AuditMixin):
         """Reject manual review"""
         self.status = ComplianceStatus.FAILED
         self.reviewed_by = reviewer_id
-        self.reviewed_at = datetime.utcnow()
+        self.reviewed_at = datetime.now(timezone.utc)
         if notes:
             self.review_notes = notes
 
@@ -310,7 +313,7 @@ class RegulatoryReport(BaseModel, TimestampMixin, AuditMixin):
         """Mark report as submitted"""
         self.status = ReportStatus.SUBMITTED
         self.submitted_by = submitted_by
-        self.submitted_at = datetime.utcnow()
+        self.submitted_at = datetime.now(timezone.utc)
         if reference:
             self.submission_reference = reference
 
@@ -347,7 +350,9 @@ class SuspiciousActivityReport(BaseModel, TimestampMixin, AuditMixin):
     # Timeline
     activity_start_date = Column(DateTime, nullable=True, index=True)
     activity_end_date = Column(DateTime, nullable=True)
-    detection_date = Column(DateTime, default=datetime.utcnow, nullable=False)
+    detection_date = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
 
     # Filing Information
     filing_required = Column(Boolean, default=True, nullable=False)
@@ -397,12 +402,12 @@ class SuspiciousActivityReport(BaseModel, TimestampMixin, AuditMixin):
             self.filing_required
             and not self.filed_at
             and self.filing_deadline
-            and self.filing_deadline < datetime.utcnow()
+            and self.filing_deadline < datetime.now(timezone.utc)
         )
 
     def file_report(self, reference: str = None) -> None:
         """Mark SAR as filed"""
-        self.filed_at = datetime.utcnow()
+        self.filed_at = datetime.now(timezone.utc)
         if reference:
             self.filing_reference = reference
 
@@ -441,7 +446,7 @@ class ComplianceRule(BaseModel, TimestampMixin, AuditMixin):
         return (
             self.is_active
             and self.next_execution
-            and self.next_execution <= datetime.utcnow()
+            and self.next_execution <= datetime.now(timezone.utc)
         )
 
 

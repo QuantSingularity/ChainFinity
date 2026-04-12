@@ -3,7 +3,7 @@ Risk management endpoints
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, List, Optional
 from uuid import UUID
 
@@ -138,7 +138,7 @@ async def get_portfolio_risk_metrics(
 
         return {
             "portfolio_id": str(portfolio_id),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "metrics": {
                 "var_1d": str(metrics.var_1d) if metrics else "0",
                 "var_5d": str(metrics.var_5d) if metrics else "0",
@@ -184,7 +184,7 @@ async def stress_test_portfolio(
         return {
             "portfolio_id": str(portfolio_id),
             "scenario": scenario,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "results": results,
         }
 

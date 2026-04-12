@@ -6,7 +6,7 @@ Comprehensive portfolio management with analytics, risk management, and complian
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 from uuid import UUID
@@ -83,7 +83,7 @@ class PortfolioService:
             cash_balance=initial_cash,
             total_value=initial_cash,
             is_active=True,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
         self.db.add(portfolio)
         await self.db.commit()
@@ -187,7 +187,7 @@ class PortfolioService:
             current_price=current_price or purchase_price,
             current_value=quantity * (current_price or purchase_price),
             allocation_percentage=Decimal("0"),
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(timezone.utc),
         )
         self.db.add(asset)
 
@@ -243,7 +243,7 @@ class PortfolioService:
         asset.current_value = new_quantity * (
             current_price or asset.current_price or Decimal("0")
         )
-        asset.last_updated = datetime.utcnow()
+        asset.last_updated = datetime.now(timezone.utc)
 
         await self.db.commit()
         return asset

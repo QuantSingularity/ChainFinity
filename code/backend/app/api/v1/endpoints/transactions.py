@@ -3,7 +3,7 @@ Transaction endpoints
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, List, Optional
 from uuid import UUID
 
@@ -194,7 +194,7 @@ async def update_transaction(
         if transaction_data.transaction_hash is not None:
             transaction.transaction_hash = transaction_data.transaction_hash
 
-        transaction.updated_at = datetime.utcnow()
+        transaction.updated_at = datetime.now(timezone.utc)
 
         await db.commit()
         await db.refresh(transaction)
@@ -236,8 +236,8 @@ async def delete_transaction(
             )
 
         # Soft delete
-        transaction.deleted_at = datetime.utcnow()
-        transaction.updated_at = datetime.utcnow()
+        transaction.deleted_at = datetime.now(timezone.utc)
+        transaction.updated_at = datetime.now(timezone.utc)
 
         await db.commit()
 
@@ -282,7 +282,7 @@ async def analyze_transaction(
             "transaction_id": str(transaction_id),
             "risk_level": "low",
             "compliance_status": "passed",
-            "analysis_timestamp": datetime.utcnow().isoformat(),
+            "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
             "checks": {
                 "amount_check": {
                     "passed": True,

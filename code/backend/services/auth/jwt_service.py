@@ -3,7 +3,7 @@ JWT token service for authentication
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 
 from config.settings import settings
@@ -31,12 +31,14 @@ class JWTService:
         """
         to_encode = data.copy()
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(timezone.utc) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(
+            expire = datetime.now(timezone.utc) + timedelta(
                 minutes=self.access_token_expire_minutes
             )
-        to_encode.update({"exp": expire, "iat": datetime.utcnow(), "type": "access"})
+        to_encode.update(
+            {"exp": expire, "iat": datetime.now(timezone.utc), "type": "access"}
+        )
         try:
             encoded_jwt = jwt.encode(
                 to_encode, self.secret_key, algorithm=self.algorithm
@@ -54,10 +56,14 @@ class JWTService:
         """
         to_encode = data.copy()
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(timezone.utc) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(days=self.refresh_token_expire_days)
-        to_encode.update({"exp": expire, "iat": datetime.utcnow(), "type": "refresh"})
+            expire = datetime.now(timezone.utc) + timedelta(
+                days=self.refresh_token_expire_days
+            )
+        to_encode.update(
+            {"exp": expire, "iat": datetime.now(timezone.utc), "type": "refresh"}
+        )
         try:
             encoded_jwt = jwt.encode(
                 to_encode, self.secret_key, algorithm=self.algorithm
@@ -76,7 +82,9 @@ class JWTService:
             if payload.get("type") != "access":
                 raise JWTError("Invalid token type")
             exp = payload.get("exp")
-            if exp and datetime.fromtimestamp(exp) < datetime.utcnow():
+            if exp and datetime.fromtimestamp(exp, tz=timezone.utc) < datetime.now(
+                timezone.utc
+            ):
                 raise JWTError("Token has expired")
             return payload
         except JWTError as e:
@@ -95,7 +103,9 @@ class JWTService:
             if payload.get("type") != "refresh":
                 raise JWTError("Invalid token type")
             exp = payload.get("exp")
-            if exp and datetime.fromtimestamp(exp) < datetime.utcnow():
+            if exp and datetime.fromtimestamp(exp, tz=timezone.utc) < datetime.now(
+                timezone.utc
+            ):
                 raise JWTError("Token has expired")
             return payload
         except JWTError as e:
@@ -123,7 +133,7 @@ class JWTService:
             payload = self.decode_token_without_verification(token)
             exp = payload.get("exp")
             if exp:
-                return datetime.fromtimestamp(exp)
+                return datetime.fromtimestamp(exp, tz=timezone.utc)
             return None
         except Exception:
             return None
@@ -135,7 +145,11 @@ class JWTService:
         try:
             expiry = self.get_token_expiry(token)
             if expiry:
-                return expiry < datetime.utcnow()
+                return (
+                    expiry.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc)
+                    if expiry.tzinfo is None
+                    else expiry < datetime.now(timezone.utc)
+                )
             return True
         except Exception:
             return True
@@ -146,8 +160,14 @@ class JWTService:
         """
         try:
             expiry = self.get_token_expiry(token)
-            if expiry and expiry > datetime.utcnow():
-                return expiry - datetime.utcnow()
+            if expiry and (
+                expiry.replace(tzinfo=timezone.utc) if expiry.tzinfo is None else expiry
+            ) > datetime.now(timezone.utc):
+                return (
+                    expiry.replace(tzinfo=timezone.utc)
+                    if expiry.tzinfo is None
+                    else expiry
+                ) - datetime.now(timezone.utc)
             return None
         except Exception:
             return None
