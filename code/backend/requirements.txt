@@ -3,8 +3,6 @@ fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic[email]==2.5.2
 pydantic-settings==2.1.0
-# Added explicitly to satisfy pydantic[email]
-email-validator>=2.0.0
 
 # Database
 sqlalchemy==2.0.23
@@ -73,3 +71,7 @@ kombu==5.3.4
 python-dateutil==2.8.2
 pytz==2023.3
 click==8.1.7
+email-validator>=2.0.0
+# Added for QR Code generation in UserService
+qrcode==7.4.2
+pillow==10.1.0
