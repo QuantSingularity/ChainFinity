@@ -2,11 +2,12 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, UUID
+from sqlalchemy import JSON, UUID, Boolean, Column, DateTime, Integer, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
+
 
 class BaseModel(Base):
     __abstract__ = True
@@ -32,10 +33,10 @@ class BaseModel(Base):
 
 class TimestampMixin:
     created_at = Column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(timezone.utc), 
-        nullable=False, 
-        index=True
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True,
     )
     updated_at = Column(
         DateTime(timezone=True),
