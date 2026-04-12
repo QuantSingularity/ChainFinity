@@ -1,8 +1,10 @@
 # Core Framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-pydantic==2.5.2
+pydantic[email]==2.5.2
 pydantic-settings==2.1.0
+# Added explicitly to satisfy pydantic[email]
+email-validator>=2.0.0
 
 # Database
 sqlalchemy==2.0.23
@@ -22,7 +24,6 @@ redis==5.0.1
 hiredis==2.2.3
 
 # Blockchain
-# Upgraded to 6.15.0+ to fix pkg_resources dependency and ChainID warnings
 web3>=6.15.0
 eth-account>=0.11.0
 eth-utils>=2.3.1
@@ -35,7 +36,6 @@ aiohttp==3.9.1
 # Environment & Configuration
 python-dotenv==1.0.0
 pyyaml==6.0.1
-# Explicitly required for Python 3.11+ compatibility in CI
 setuptools>=69.0.0
 
 # Monitoring & Logging
@@ -54,7 +54,6 @@ pandas==2.1.4
 scipy==1.11.4
 
 # Testing
-# Upgraded pytest to 8.x to resolve PluggyTeardownRaisedWarning
 pytest>=8.0.0
 pytest-asyncio>=0.23.0
 pytest-cov==4.1.0
