@@ -9,7 +9,7 @@
 ChainFinity is an advanced cross-chain DeFi risk management platform that leverages AI and quantitative models to analyze, predict, and mitigate risks across multiple blockchain networks.
 
 <div align="center">
-  <img src="docs/images/ChainFinity_dashboard.bmp" alt="ChainFinity Dashboard" width="80%">
+  <img src="docs/images/homepage.bmp" alt="ChainFinity HomePage" width="80%">
 </div>
 
 ## Table of Contents
