@@ -58,7 +58,43 @@ jobs:
             --check "**/*.{js,jsx,ts,tsx,json,html,css,md,sol,yml,yaml}"
 
   # ============================================================
-  # Job 2 -- Backend Tests (Python / Pytest)
+  # Job 2 -- Blockchain (Smart Contract) Compile & Test
+  # ============================================================
+  # Previously nothing in CI actually compiled or ran the Solidity test
+  # suite - code_quality only checked contract *formatting* via Prettier.
+  # A contract change that broke compilation or a test could merge with a
+  # fully green CI run.
+  blockchain_tests:
+    name: Blockchain Compile & Test
+    runs-on: ubuntu-latest
+    needs: code_quality
+
+    defaults:
+      run:
+        working-directory: code/blockchain
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: code/blockchain/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile contracts
+        run: npm run compile
+
+      - name: Run contract test suite
+        run: npm test
+
+  # ============================================================
+  # Job 3 -- Backend Tests (Python / Pytest)
   # ============================================================
   backend_tests:
     name: Backend Tests
@@ -107,7 +143,7 @@ jobs:
           retention-days: 30
 
   # ============================================================
-  # Job 3 -- Web Frontend Build
+  # Job 4 -- Web Frontend Build
   # ============================================================
   web-frontend_test_and_build:
     name: Web-Frontend Test & Build
@@ -147,7 +183,7 @@ jobs:
           retention-days: 7
 
   # ============================================================
-  # Job 4 -- Mobile Frontend (Expo) Build & Test
+  # Job 5 -- Mobile Frontend (Expo) Build & Test
   # ============================================================
   mobile_frontend:
     name: Mobile-Frontend Test & Build

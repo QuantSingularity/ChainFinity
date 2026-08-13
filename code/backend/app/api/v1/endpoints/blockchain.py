@@ -12,7 +12,14 @@ from config.database import get_async_session
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from models.blockchain import BlockchainNetwork, ContractEvent, SmartContract
 from models.user import User
-from schemas.blockchain import ContractResponse, EventResponse, NetworkResponse
+from schemas.blockchain import (
+    ContractResponse,
+    DeployedContractResponse,
+    DeployedContractsResponse,
+    EventResponse,
+    NetworkResponse,
+)
+from services.blockchain import BlockchainUnavailableError, web3_client
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -232,19 +239,30 @@ async def verify_blockchain_address(
     Verify blockchain address format and validity
     """
     try:
-        # Basic validation
-        is_valid = False
+        # web3's is_address covers what a hand-rolled `len(address) == 42`
+        # check doesn't: non-hex characters, and (via is_checksum_address)
+        # a mixed-case address whose checksum doesn't match its digits -
+        # both silently passed the old length-only check.
+        is_valid = web3_client.is_valid_address(address)
         address_type = "unknown"
+        checksum_address = None
 
-        if network.lower() in ["ethereum", "polygon", "bsc"]:
-            # Check if it's a valid Ethereum-style address
-            if address.startswith("0x") and len(address) == 42:
-                is_valid = True
-                address_type = "EOA"  # Externally Owned Account
-                # Could check if it's a contract by querying the network
+        if is_valid:
+            checksum_address = web3_client.to_checksum_address(address)
+            try:
+                is_contract = await web3_client.is_contract_address(address)
+                address_type = "contract" if is_contract else "EOA"
+            except BlockchainUnavailableError as exc:
+                # Format is still valid even if we can't reach the chain to
+                # tell EOA from contract - report that distinctly from an
+                # actually-invalid address instead of returning "unknown"
+                # silently for both cases.
+                logger.info(f"Could not classify address {address}: {exc}")
+                address_type = "unknown (RPC unavailable)"
 
         return {
             "address": address,
+            "checksum_address": checksum_address,
             "network": network,
             "is_valid": is_valid,
             "address_type": address_type,
@@ -267,20 +285,33 @@ async def get_address_balance(
     db: AsyncSession = Depends(get_async_session),
 ) -> Any:
     """
-    Get balance for a blockchain address
+    Get the native-currency balance for a blockchain address on the
+    configured RPC network (see ETH_RPC_URL). "network" is currently
+    informational only - this backend talks to a single configured chain;
+    per-network routing (Polygon, BSC, ...) would need a
+    network -> Web3Client mapping in services.blockchain.
     """
+    if not web3_client.is_valid_address(address):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid blockchain address",
+        )
     try:
-        # In a real implementation, this would query the blockchain
-        # For now, return a mock response
+        balance_wei = await web3_client.get_balance(address)
         return {
             "address": address,
             "network": network,
-            "balance": "0",
-            "balance_usd": "0",
+            "balance": str(balance_wei / 10**18),
+            "balance_wei": str(balance_wei),
             "tokens": [],
             "last_updated": datetime.now(timezone.utc).isoformat(),
         }
-
+    except BlockchainUnavailableError as e:
+        logger.warning(f"Blockchain unavailable while fetching balance: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Blockchain RPC endpoint is currently unavailable",
+        )
     except Exception as e:
         logger.error(f"Error getting address balance: {e}")
         raise HTTPException(
@@ -295,13 +326,32 @@ async def get_gas_price(
     db: AsyncSession = Depends(get_async_session),
 ) -> Any:
     """
-    Get current gas price for a network
+    Get the current gas price from the configured RPC network. Falls back to
+    a clearly-labeled estimate (rather than erroring the whole request) when
+    the RPC endpoint isn't reachable, since this is typically a secondary
+    display widget rather than something a transaction is submitted from.
     """
     try:
-        # Mock gas price response
+        gas_price_wei = await web3_client.get_gas_price()
+        gas_price_gwei = gas_price_wei / 10**9
         return {
             "network": network,
             "timestamp": datetime.now(timezone.utc).isoformat(),
+            "live": True,
+            "gas_prices": {
+                "slow": str(round(gas_price_gwei * 0.9, 2)),
+                "standard": str(round(gas_price_gwei, 2)),
+                "fast": str(round(gas_price_gwei * 1.2, 2)),
+                "rapid": str(round(gas_price_gwei * 1.5, 2)),
+            },
+            "unit": "gwei",
+        }
+    except BlockchainUnavailableError as e:
+        logger.info(f"Gas price RPC call failed, returning estimate: {e}")
+        return {
+            "network": network,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "live": False,
             "gas_prices": {
                 "slow": "20",
                 "standard": "25",
@@ -310,13 +360,44 @@ async def get_gas_price(
             },
             "unit": "gwei",
         }
-
     except Exception as e:
         logger.error(f"Error getting gas price: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve gas price",
         )
+
+
+@router.get("/deployed-contracts", response_model=DeployedContractsResponse)
+async def get_deployed_contracts() -> Any:
+    """
+    Address book for ChainFinity's own protocol contracts (AssetVault,
+    CrossChainManager, InstitutionalDeFiProtocol, GovernanceToken,
+    InstitutionalGovernance) on the connected network. This is the
+    integration point clients (web/mobile) use to know what to call - see
+    web-frontend/src/services/api.js's blockchainAPI.getDeployedContracts.
+
+    `connected: false` with an empty/partial contract list means the RPC
+    endpoint (ETH_RPC_URL) isn't reachable right now, not that the contracts
+    don't exist - addresses resolved from BLOCKCHAIN_DEPLOYMENT_FILE or the
+    explicit *_ADDRESS settings are still returned either way.
+    """
+    contracts = web3_client.get_deployed_contracts()
+    connected = await web3_client.is_connected()
+    chain_id = await web3_client.get_chain_id() if connected else None
+
+    return DeployedContractsResponse(
+        chain_id=chain_id,
+        connected=connected,
+        contracts=[
+            DeployedContractResponse(
+                name=name,
+                address=contract.address,
+                has_abi=bool(contract.abi),
+            )
+            for name, contract in sorted(contracts.items())
+        ],
+    )
 
 
 # ── Frontend convenience endpoints ───────────────────────────────────────────
@@ -442,18 +523,36 @@ async def get_eth_balance(
     db: AsyncSession = Depends(get_async_session),
 ) -> Any:
     """
-    Return the current user's native ETH balance. Uses the user's primary
-    wallet address when available.
+    Return the current user's native ETH balance, read live from the
+    configured RPC network for their linked primary_wallet_address.
     """
+    wallet = getattr(current_user, "primary_wallet_address", None)
+
+    if not wallet:
+        return {
+            "address": None,
+            "network": "ethereum",
+            "balance": None,
+            "balance_wei": None,
+            "message": "No wallet address linked to this account",
+            "last_updated": datetime.now(timezone.utc).isoformat(),
+        }
+
     try:
-        wallet = getattr(current_user, "primary_wallet_address", None)
+        balance_wei = await web3_client.get_balance(wallet)
         return {
             "address": wallet,
             "network": "ethereum",
-            "balance": "4.2",
-            "balance_usd": "12600.00",
+            "balance": str(balance_wei / 10**18),
+            "balance_wei": str(balance_wei),
             "last_updated": datetime.now(timezone.utc).isoformat(),
         }
+    except BlockchainUnavailableError as e:
+        logger.warning(f"Blockchain unavailable while fetching ETH balance: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Blockchain RPC endpoint is currently unavailable",
+        )
     except Exception as e:
         logger.error(f"Error getting ETH balance: {e}")
         raise HTTPException(

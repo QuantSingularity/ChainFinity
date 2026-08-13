@@ -164,19 +164,76 @@ def event_loop() -> Any:
 
 @pytest.fixture
 def mock_blockchain_service(monkeypatch: Any) -> Any:
-    """Mock blockchain service for testing."""
+    """
+    Mock services.blockchain.client.web3_client (the singleton used by
+    app/api/v1/endpoints/blockchain.py) so tests can exercise blockchain
+    endpoints without a real RPC connection. Patches the singleton's own
+    attributes rather than the module path, so it works regardless of
+    whether a caller did `from services.blockchain import web3_client`
+    (binding its own local reference) or looked it up via the module.
+    """
+    from services.blockchain import web3_client as real_client
+    from services.blockchain.client import DeployedContract
+    from web3 import AsyncWeb3
 
-    class MockBlockchainService:
-        async def get_transaction(self, tx_hash: str):
+    class MockWeb3Client:
+        def __init__(self) -> None:
+            self.chain_id = 31337
+            self.gas_price_wei = 25_000_000_000  # 25 gwei
+            self.balances: dict[str, int] = {}
+            self.deployed_contracts: dict[str, DeployedContract] = {
+                "AssetVault": DeployedContract(
+                    name="AssetVault",
+                    address="0x5FbDB2315678afecb367f032d93F642f64180aa3",
+                )
+            }
+
+        def is_valid_address(self, address: str) -> bool:
+            # Calls the real, static web3 validator directly (NOT via
+            # real_client, which by the time this mock is installed IS
+            # this mock - going through it here would recurse forever).
+            if not isinstance(address, str):
+                return False
+            return AsyncWeb3.is_address(address)
+
+        def to_checksum_address(self, address: str) -> str:
+            return AsyncWeb3.to_checksum_address(address)
+
+        async def is_connected(self) -> bool:
+            return True
+
+        async def get_chain_id(self) -> int:
+            return self.chain_id
+
+        async def get_gas_price(self) -> int:
+            return self.gas_price_wei
+
+        async def get_balance(self, address: str) -> int:
+            return self.balances.get(address.lower(), 0)
+
+        async def get_transaction(self, tx_hash: str) -> dict:
             return {"hash": tx_hash, "status": "confirmed", "block_number": 12345678}
 
-        async def get_balance(self, address: str):
-            return {"balance": "1000000000000000000"}
+        async def is_contract_address(self, address: str) -> bool:
+            return False
 
-    monkeypatch.setattr(
-        "services.blockchain.blockchain_service.BlockchainService",
-        MockBlockchainService,
-    )
+        def get_deployed_contracts(self) -> dict[str, DeployedContract]:
+            return self.deployed_contracts
+
+    mock = MockWeb3Client()
+    for attr in (
+        "is_valid_address",
+        "to_checksum_address",
+        "is_connected",
+        "get_chain_id",
+        "get_gas_price",
+        "get_balance",
+        "is_contract_address",
+        "get_deployed_contracts",
+    ):
+        monkeypatch.setattr(real_client, attr, getattr(mock, attr))
+
+    return mock
 
 
 @pytest.fixture

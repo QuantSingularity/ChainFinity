@@ -762,9 +762,9 @@ contract InstitutionalDeFiProtocol is ReentrancyGuard, Pausable, AccessControl {
      */
     function _performComplianceCheck(
         address user,
-        address token,
-        uint256 amount,
-        string memory operation
+        address /* token */,
+        uint256 /* amount */,
+        string memory /* operation */
     ) internal view returns (bool) {
         // Dedicated blacklist mapping. The previous implementation granted
         // blacklisted users EMERGENCY_ROLE, which would have handed every
@@ -800,8 +800,8 @@ contract InstitutionalDeFiProtocol is ReentrancyGuard, Pausable, AccessControl {
      * @dev Internal function to get governance token balance
      */
     function _getGovernanceTokenBalance(
-        address user
-    ) internal view returns (uint256) {
+        address /* user */
+    ) internal pure returns (uint256) {
         // Placeholder for getting governance token balance
         return 0;
     }
@@ -809,7 +809,7 @@ contract InstitutionalDeFiProtocol is ReentrancyGuard, Pausable, AccessControl {
     /**
      * @dev Internal function to get governance token total supply
      */
-    function _getGovernanceTokenTotalSupply() internal view returns (uint256) {
+    function _getGovernanceTokenTotalSupply() internal pure returns (uint256) {
         // Placeholder for getting governance token total supply
         return 0;
     }

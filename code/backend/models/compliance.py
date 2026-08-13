@@ -9,7 +9,6 @@ from typing import Any
 
 from sqlalchemy import (
     JSON,
-    UUID,
     Boolean,
     Column,
     DateTime,
@@ -20,6 +19,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    Uuid,
 )
 from sqlalchemy.orm import relationship
 
@@ -94,7 +94,7 @@ class AuditLog(BaseModel, TimestampMixin):
 
     # User and Session
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
     )
     session_id = Column(String(255), nullable=True, index=True)
 
@@ -170,10 +170,10 @@ class ComplianceCheck(BaseModel, TimestampMixin, AuditMixin):
 
     # Subject of Check
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
     )
     transaction_id = Column(
-        UUID(as_uuid=True), ForeignKey("transactions.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("transactions.id"), nullable=True, index=True
     )
     entity_type = Column(String(50), nullable=True)
     entity_id = Column(String(255), nullable=True)
@@ -189,7 +189,7 @@ class ComplianceCheck(BaseModel, TimestampMixin, AuditMixin):
 
     # Review Information
     requires_manual_review = Column(Boolean, default=False, nullable=False, index=True)
-    reviewed_by = Column(UUID(as_uuid=True), nullable=True)
+    reviewed_by = Column(Uuid(as_uuid=True), nullable=True)
     reviewed_at = Column(DateTime, nullable=True)
     review_notes = Column(Text, nullable=True)
 
@@ -270,21 +270,21 @@ class RegulatoryReport(BaseModel, TimestampMixin, AuditMixin):
     summary_statistics = Column(JSON, nullable=True)
 
     # Generation Details
-    generated_by = Column(UUID(as_uuid=True), nullable=True)
+    generated_by = Column(Uuid(as_uuid=True), nullable=True)
     generated_at = Column(DateTime, nullable=True)
     generation_parameters = Column(JSON, nullable=True)
 
     # Review and Approval
-    reviewed_by = Column(UUID(as_uuid=True), nullable=True)
+    reviewed_by = Column(Uuid(as_uuid=True), nullable=True)
     reviewed_at = Column(DateTime, nullable=True)
     review_notes = Column(Text, nullable=True)
 
-    approved_by = Column(UUID(as_uuid=True), nullable=True)
+    approved_by = Column(Uuid(as_uuid=True), nullable=True)
     approved_at = Column(DateTime, nullable=True)
     approval_notes = Column(Text, nullable=True)
 
     # Submission Details
-    submitted_by = Column(UUID(as_uuid=True), nullable=True)
+    submitted_by = Column(Uuid(as_uuid=True), nullable=True)
     submitted_at = Column(DateTime, nullable=True)
     submission_reference = Column(String(255), nullable=True)
     submission_response = Column(JSON, nullable=True)
@@ -330,7 +330,7 @@ class SuspiciousActivityReport(BaseModel, TimestampMixin, AuditMixin):
 
     # Subject Information
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
     )
     transaction_ids = Column(JSON, nullable=True)  # List of related transaction IDs
 
@@ -361,7 +361,7 @@ class SuspiciousActivityReport(BaseModel, TimestampMixin, AuditMixin):
     filing_reference = Column(String(255), nullable=True)
 
     # Investigation
-    investigated_by = Column(UUID(as_uuid=True), nullable=True)
+    investigated_by = Column(Uuid(as_uuid=True), nullable=True)
     investigation_notes = Column(Text, nullable=True)
     investigation_completed = Column(Boolean, default=False, nullable=False)
 

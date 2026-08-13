@@ -75,6 +75,38 @@ services:
     tmpfs:
       - /tmp
 
+  # ── Blockchain (local dev only) ───────────────────────────────────────────
+  # A Hardhat node with the ChainFinity contracts already deployed to it.
+  # NOT part of staging/production, which deploy to a real network instead
+  # (see scripts/deploy_chainfinity.sh and hardhat.config.js's testnet/
+  # mainnet networks) - this exists purely so `docker-compose up` gives
+  # local development a chain to talk to. The backend picks up the
+  # deployed addresses from blockchain_deployments (see the backend
+  # service's BLOCKCHAIN_DEPLOYMENT_FILE below) with no manual config.
+  blockchain:
+    build:
+      context: ..
+      dockerfile: infrastructure/docker/Dockerfile.blockchain
+    image: chainfinity/blockchain:local
+    restart: unless-stopped
+    volumes:
+      - blockchain_deployments:/app/deployments
+    ports:
+      - "127.0.0.1:8545:8545"
+    networks:
+      - backend
+    healthcheck:
+      <<: *hc-defaults
+      test:
+        [
+          "CMD-SHELL",
+          'curl -fsS -X POST -H ''Content-Type: application/json'' --data ''{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}'' http://localhost:8545 || exit 1',
+        ]
+      start_period: 60s
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+
   # ── Backend ────────────────────────────────────────────────────────────────
   backend:
     build:
@@ -88,6 +120,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      # Soft dependency (not service_healthy): the backend's blockchain
+      # endpoints already degrade gracefully (503 "unavailable", not a
+      # crash - see services/blockchain/web3_client.py) if the node isn't
+      # ready yet, so there's no need to block backend startup on it.
+      blockchain:
+        condition: service_started
     environment:
       ENVIRONMENT: development
       DEBUG: "true"
@@ -100,12 +138,20 @@ services:
       METRICS_PORT: "9090"
       ENABLE_METRICS: "true"
       ENABLE_AUDIT_LOGGING: "true"
+      # "blockchain" resolves via Docker's internal DNS to the service
+      # above. BLOCKCHAIN_DEPLOYMENT_FILE points at the manifest that
+      # service's entrypoint (blockchain-entrypoint.sh) writes to the
+      # shared blockchain_deployments volume after deploying.
+      ETH_RPC_URL: http://blockchain:8545
+      ETH_CHAIN_ID: "31337"
+      BLOCKCHAIN_DEPLOYMENT_FILE: /app/deployments/contracts.localhost.json
     ports:
       - "127.0.0.1:8080:8080"
       - "127.0.0.1:9091:9090"
     volumes:
       - backend_uploads:/app/uploads
       - backend_logs:/app/logs
+      - blockchain_deployments:/app/deployments:ro
     networks:
       - backend
       - frontend
@@ -241,6 +287,7 @@ volumes:
   redis_data:
   backend_uploads:
   backend_logs:
+  blockchain_deployments:
   prometheus_data:
   grafana_data:
   alertmanager_data:

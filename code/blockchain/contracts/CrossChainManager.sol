@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
 import {IAny2EVMMessageReceiver} from "@chainlink/contracts-ccip/contracts/interfaces/IAny2EVMMessageReceiver.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
@@ -35,7 +34,6 @@ contract CrossChainManager is
     ReentrancyGuard,
     AccessControlEnumerable,
     Pausable,
-    Initializable,
     IAny2EVMMessageReceiver
 {
     using SafeERC20 for IERC20;
@@ -110,14 +108,21 @@ contract CrossChainManager is
     );
 
     /**
-     * @dev Initialize function for upgradeable pattern
+     * @dev Constructor.
+     *
+     * As with AssetVault, this contract is deployed directly (not behind a
+     * proxy) everywhere in this repo. State that used to live in a separate
+     * `initialize(...)` call - gated by OpenZeppelin's `Initializable` -
+     * moved into the constructor so role assignment happens atomically with
+     * deployment instead of leaving a front-runnable window where the
+     * freshly deployed contract sits uninitialized on-chain.
      */
-    function initialize(
+    constructor(
         address admin,
         address operator,
         address emergency,
         address routerAddress
-    ) public initializer {
+    ) {
         require(admin != address(0), "Invalid admin");
         require(routerAddress != address(0), "Invalid router");
 

@@ -8,7 +8,6 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import (
     JSON,
-    UUID,
     Boolean,
     Column,
     DateTime,
@@ -19,6 +18,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    Uuid,
 )
 from sqlalchemy.orm import relationship
 
@@ -213,7 +213,7 @@ class UserProfile(BaseModel, TimestampMixin, AuditMixin, EncryptedMixin):
     __tablename__ = "user_profiles"
 
     user_id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         ForeignKey("users.id"),
         nullable=False,
         unique=True,
@@ -267,7 +267,7 @@ class UserKYC(BaseModel, TimestampMixin, AuditMixin, EncryptedMixin):
     __tablename__ = "user_kyc"
 
     user_id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         ForeignKey("users.id"),
         nullable=False,
         unique=True,
@@ -317,7 +317,7 @@ class UserKYC(BaseModel, TimestampMixin, AuditMixin, EncryptedMixin):
     pep_match = Column(Boolean, default=False, nullable=False)
 
     # Review Information
-    reviewed_by = Column(UUID(as_uuid=True), nullable=True)
+    reviewed_by = Column(Uuid(as_uuid=True), nullable=True)
     reviewed_at = Column(DateTime, nullable=True)
     review_notes = Column(Text, nullable=True)
 
@@ -362,7 +362,7 @@ class UserRiskProfile(BaseModel, TimestampMixin, AuditMixin):
     __tablename__ = "user_risk_profiles"
 
     user_id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         ForeignKey("users.id"),
         nullable=False,
         unique=True,
@@ -381,7 +381,7 @@ class UserRiskProfile(BaseModel, TimestampMixin, AuditMixin):
         DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
     assessment_method = Column(String(50), nullable=True)  # manual, automated, hybrid
-    assessed_by = Column(UUID(as_uuid=True), nullable=True)
+    assessed_by = Column(Uuid(as_uuid=True), nullable=True)
 
     # Risk Limits
     daily_transaction_limit = Column(Numeric(20, 8), nullable=True)

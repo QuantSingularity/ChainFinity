@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 
 from sqlalchemy import (
     JSON,
-    UUID,
     Boolean,
     Column,
     DateTime,
@@ -19,6 +18,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    Uuid,
 )
 from sqlalchemy.orm import relationship
 
@@ -75,13 +75,13 @@ class RiskAssessment(BaseModel, TimestampMixin, AuditMixin):
 
     # Assessment Subject
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
     )
     portfolio_id = Column(
-        UUID(as_uuid=True), ForeignKey("portfolios.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("portfolios.id"), nullable=True, index=True
     )
     transaction_id = Column(
-        UUID(as_uuid=True), ForeignKey("transactions.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("transactions.id"), nullable=True, index=True
     )
 
     # Assessment Details
@@ -113,7 +113,7 @@ class RiskAssessment(BaseModel, TimestampMixin, AuditMixin):
     is_current = Column(Boolean, default=True, nullable=False, index=True)
 
     # Review Information
-    reviewed_by = Column(UUID(as_uuid=True), nullable=True)
+    reviewed_by = Column(Uuid(as_uuid=True), nullable=True)
     reviewed_at = Column(DateTime, nullable=True)
     review_notes = Column(Text, nullable=True)
 
@@ -159,10 +159,10 @@ class RiskMetrics(BaseModel, TimestampMixin):
 
     # Metric Subject
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
     )
     portfolio_id = Column(
-        UUID(as_uuid=True), ForeignKey("portfolios.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("portfolios.id"), nullable=True, index=True
     )
 
     # Metric Details
@@ -256,10 +256,10 @@ class AlertRule(BaseModel, TimestampMixin, AuditMixin):
     # Ownership / scoping — alert rules are created per user and (optionally)
     # per portfolio by the risk API.
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
     )
     portfolio_id = Column(
-        UUID(as_uuid=True), ForeignKey("portfolios.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("portfolios.id"), nullable=True, index=True
     )
 
     # Rule Details
@@ -325,18 +325,18 @@ class RiskAlert(BaseModel, TimestampMixin, AuditMixin):
 
     # Alert Source
     alert_rule_id = Column(
-        UUID(as_uuid=True), ForeignKey("alert_rules.id"), nullable=False, index=True
+        Uuid(as_uuid=True), ForeignKey("alert_rules.id"), nullable=False, index=True
     )
 
     # Alert Subject
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
     )
     portfolio_id = Column(
-        UUID(as_uuid=True), ForeignKey("portfolios.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("portfolios.id"), nullable=True, index=True
     )
     transaction_id = Column(
-        UUID(as_uuid=True), ForeignKey("transactions.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("transactions.id"), nullable=True, index=True
     )
 
     # Alert Details
@@ -354,7 +354,7 @@ class RiskAlert(BaseModel, TimestampMixin, AuditMixin):
     status = Column(
         Enum(AlertStatus), default=AlertStatus.OPEN, nullable=False, index=True
     )
-    assigned_to = Column(UUID(as_uuid=True), nullable=True, index=True)
+    assigned_to = Column(Uuid(as_uuid=True), nullable=True, index=True)
     acknowledged_at = Column(DateTime, nullable=True)
     resolved_at = Column(DateTime, nullable=True)
     resolution_notes = Column(Text, nullable=True)
@@ -425,10 +425,10 @@ class RiskLimit(BaseModel, TimestampMixin, AuditMixin):
 
     # Limit Subject
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
     )
     portfolio_id = Column(
-        UUID(as_uuid=True), ForeignKey("portfolios.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("portfolios.id"), nullable=True, index=True
     )
 
     # Limit Details

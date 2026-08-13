@@ -5,14 +5,15 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 /**
  * @title Secure AssetVault
  * @dev Secure vault for managing user assets with multi-sig, fees, and emergency controls
  */
-contract AssetVault is ReentrancyGuard, AccessControl, Pausable, Initializable {
+contract AssetVault is ReentrancyGuard, AccessControl, Pausable {
+    using SafeERC20 for IERC20;
     // Role definitions
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
@@ -87,14 +88,30 @@ contract AssetVault is ReentrancyGuard, AccessControl, Pausable, Initializable {
     );
 
     /**
-     * @dev Initialize function for upgradeable pattern
+     * @dev Constructor.
+     *
+     * Previously this state was set through a separate `initialize(...)`
+     * call gated by OpenZeppelin's `Initializable`, but the contract is
+     * deployed directly everywhere in this repo (deploy script and tests)
+     * rather than behind a proxy. That combination leaves a real window: a
+     * freshly deployed, uninitialized vault sits on-chain between the
+     * deploy and initialize transactions, and anyone who sees the pending
+     * deploy in the mempool can front-run it and call initialize() first to
+     * grant themselves DEFAULT_ADMIN_ROLE. Folding the same logic into the
+     * constructor makes deployment atomic and removes that window. (If this
+     * contract is ever deployed behind an upgradeable proxy, reintroduce
+     * Initializable/initializer at that point.)
      */
-    function initialize(
+    constructor(
         address admin,
         address operator,
         address emergency,
         address _feeCollector
-    ) public initializer {
+    ) {
+        require(admin != address(0), "Invalid admin");
+        require(operator != address(0), "Invalid operator");
+        require(emergency != address(0), "Invalid emergency");
+
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(ADMIN_ROLE, admin);
         _grantRole(OPERATOR_ROLE, operator);
@@ -161,18 +178,13 @@ contract AssetVault is ReentrancyGuard, AccessControl, Pausable, Initializable {
         uint256 fee = (amount * depositFeeRate) / 10000;
         uint256 netAmount = amount - fee;
 
-        // Transfer tokens
-        require(
-            IERC20(token).transferFrom(msg.sender, address(this), amount),
-            "Transfer failed"
-        );
+        // Transfer tokens. safeTransferFrom handles both non-standard ERC20s
+        // that don't return a bool (e.g. USDT) and ones that do.
+        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
 
         // Transfer fee to collector if applicable
         if (fee > 0 && feeCollector != address(0)) {
-            require(
-                IERC20(token).transfer(feeCollector, fee),
-                "Fee transfer failed"
-            );
+            IERC20(token).safeTransfer(feeCollector, fee);
         }
 
         // Update user balances
@@ -311,14 +323,11 @@ contract AssetVault is ReentrancyGuard, AccessControl, Pausable, Initializable {
         }
 
         // Transfer tokens
-        require(IERC20(token).transfer(user, netAmount), "Transfer failed");
+        IERC20(token).safeTransfer(user, netAmount);
 
         // Transfer fee to collector if applicable
         if (fee > 0 && feeCollector != address(0)) {
-            require(
-                IERC20(token).transfer(feeCollector, fee),
-                "Fee transfer failed"
-            );
+            IERC20(token).safeTransfer(feeCollector, fee);
         }
 
         emit AssetWithdrawn(user, token, netAmount, fee);

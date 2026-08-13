@@ -390,19 +390,20 @@ contract InstitutionalGovernance is ReentrancyGuard, Pausable, AccessControl {
 
     /**
      * @dev Delegate voting power to another address
-     * @param delegate Delegate address
+     * @param delegateAddress Delegate address
      */
-    function delegate(address delegate) external nonReentrant {
-        require(delegate != address(0), "Invalid delegate address");
-        require(delegate != msg.sender, "Cannot delegate to self");
+    function delegate(address delegateAddress) external nonReentrant {
+        require(delegateAddress != address(0), "Invalid delegate address");
+        require(delegateAddress != msg.sender, "Cannot delegate to self");
 
-        // Only the caller's own (non-delegated) balance can be delegated.
         uint256 balance = governanceToken.balanceOf(msg.sender);
-        uint256 available = balance.sub(delegatedOut[msg.sender]);
-        require(available > 0, "No voting power to delegate");
 
-        // A delegator may only have one active delegate at a time; revoke the
-        // previous one first so accounting stays consistent.
+        // A delegator may only have one active delegate at a time; revoke
+        // the previous one FIRST so its share of the balance is freed up
+        // again before we check how much is available to re-delegate.
+        // Checking availability before this revocation would make it
+        // impossible to switch delegates in one call once the caller's
+        // entire balance was already delegated out.
         address previous = activeDelegate[msg.sender];
         if (
             previous != address(0) && delegations[msg.sender][previous].isActive
@@ -411,58 +412,67 @@ contract InstitutionalGovernance is ReentrancyGuard, Pausable, AccessControl {
             _revokeDelegation(msg.sender, previous);
             votingPower[previous] = votingPower[previous].sub(prevAmount);
             delegatedOut[msg.sender] = delegatedOut[msg.sender].sub(prevAmount);
-            available = balance.sub(delegatedOut[msg.sender]);
         }
+
+        // Only the caller's own (now non-delegated) balance can be delegated.
+        uint256 available = balance.sub(delegatedOut[msg.sender]);
+        require(available > 0, "No voting power to delegate");
 
         uint256 amount = available;
 
-        delegations[msg.sender][delegate] = Delegation({
-            delegate: delegate,
+        delegations[msg.sender][delegateAddress] = Delegation({
+            delegate: delegateAddress,
             amount: amount,
             timestamp: block.timestamp,
             isActive: true
         });
-        activeDelegate[msg.sender] = delegate;
+        activeDelegate[msg.sender] = delegateAddress;
 
         // Credit the delegate's RECEIVED power and record the delegator's
         // delegated-out amount (no underflow: delegatedOut starts at 0).
-        votingPower[delegate] = votingPower[delegate].add(amount);
+        votingPower[delegateAddress] = votingPower[delegateAddress].add(amount);
         delegatedOut[msg.sender] = delegatedOut[msg.sender].add(amount);
 
-        emit DelegationCreated(msg.sender, delegate, amount);
+        emit DelegationCreated(msg.sender, delegateAddress, amount);
     }
 
     /**
      * @dev Revoke delegation
      */
     function revokeDelegation() external nonReentrant {
-        address delegate = activeDelegate[msg.sender];
-        require(delegate != address(0), "No active delegation to revoke");
+        address currentDelegate = activeDelegate[msg.sender];
         require(
-            delegations[msg.sender][delegate].isActive,
+            currentDelegate != address(0),
+            "No active delegation to revoke"
+        );
+        require(
+            delegations[msg.sender][currentDelegate].isActive,
             "No active delegation to revoke"
         );
 
-        uint256 amount = delegations[msg.sender][delegate].amount;
+        uint256 amount = delegations[msg.sender][currentDelegate].amount;
 
-        _revokeDelegation(msg.sender, delegate);
+        _revokeDelegation(msg.sender, currentDelegate);
         activeDelegate[msg.sender] = address(0);
 
         // Return the delegated power: reduce the delegate's received power
         // and clear the delegator's delegated-out balance.
-        votingPower[delegate] = votingPower[delegate].sub(amount);
+        votingPower[currentDelegate] = votingPower[currentDelegate].sub(amount);
         delegatedOut[msg.sender] = delegatedOut[msg.sender].sub(amount);
 
-        emit DelegationRevoked(msg.sender, delegate);
+        emit DelegationRevoked(msg.sender, currentDelegate);
     }
 
     /**
      * @dev Internal function to revoke delegation
      */
-    function _revokeDelegation(address delegator, address delegate) internal {
-        delegations[delegator][delegate].isActive = false;
-        delegations[delegator][delegate].amount = 0;
-        delegations[delegator][delegate].delegate = address(0);
+    function _revokeDelegation(
+        address delegator,
+        address delegateAddress
+    ) internal {
+        delegations[delegator][delegateAddress].isActive = false;
+        delegations[delegator][delegateAddress].amount = 0;
+        delegations[delegator][delegateAddress].delegate = address(0);
     }
 
     /**
@@ -613,7 +623,7 @@ contract InstitutionalGovernance is ReentrancyGuard, Pausable, AccessControl {
      * @dev Internal function to get voting weight based on mechanism
      */
     function _getVotingWeight(
-        uint256 proposalId,
+        uint256 /* proposalId */,
         address user,
         VotingMechanism mechanism
     ) internal view returns (uint256) {

@@ -1,113 +1,303 @@
-// Working AssetVault deposit/withdraw test (Hardhat 2, ethers v6, CommonJS).
+// CrossChainManager tests (Hardhat 2, ethers v6, CommonJS).
 //
-// The previous test imported a nonexistent ../scripts/deploy module and
-// called manager.createPosition(...), a method that exists on no contract in
-// this repository, so it could never run. This exercises the real, fixed
-// AssetVault flows instead: fee-adjusted deposits, small direct withdrawals,
-// and the multi-sig escrow path for large withdrawals (including the
-// review fix that escrows funds at request time and refunds on cancel).
+// Uses MockCCIPRouter (contracts/mocks/MockCCIPRouter.sol) to stand in for
+// the real Chainlink CCIP router: it charges a configurable fixed fee on
+// ccipSend, and exposes `deliver` so a test can play the role of the
+// off-chain CCIP network relaying a message into `ccipReceive`.
 const { expect } = require("chai");
 const hre = require("hardhat");
 const { ethers } = hre;
 
 const TOKENS = (n) => ethers.parseEther(n.toString());
 
-describe("AssetVault", () => {
-  let vault, token, admin, operator, emergency, feeCollector, user;
+// Chain selectors pre-registered by the constructor.
+const ETH_SELECTOR = 5009297550715157269n;
+const ARBITRUM_SELECTOR = 4949039107694359620n;
+const UNSUPPORTED_SELECTOR = 999999999999999999n;
+
+describe("CrossChainManager", () => {
+  let manager, token, router;
+  let admin, operator, emergency, user, remoteManager, other;
 
   beforeEach(async () => {
-    [admin, operator, emergency, feeCollector, user] =
+    [admin, operator, emergency, user, remoteManager, other] =
       await ethers.getSigners();
 
     const Token = await ethers.getContractFactory("MockERC20");
     token = await Token.deploy("Mock", "MCK", TOKENS(1_000_000));
     await token.waitForDeployment();
 
-    const Vault = await ethers.getContractFactory("AssetVault");
-    vault = await Vault.deploy();
-    await vault.waitForDeployment();
-    await vault.initialize(
+    const Router = await ethers.getContractFactory("MockCCIPRouter");
+    router = await Router.deploy(TOKENS(0)); // fee configured per-test
+    await router.waitForDeployment();
+
+    const Manager = await ethers.getContractFactory("CrossChainManager");
+    manager = await Manager.deploy(
       admin.address,
       operator.address,
       emergency.address,
-      feeCollector.address,
+      await router.getAddress(),
     );
+    await manager.waitForDeployment();
 
-    // Fund the user and approve the vault.
+    // Trust "remoteManager" as the CrossChainManager deployment on Arbitrum.
+    await manager
+      .connect(admin)
+      .setTrustedRemote(ARBITRUM_SELECTOR, remoteManager.address);
+
     await token.transfer(user.address, TOKENS(500_000));
     await token
       .connect(user)
-      .approve(await vault.getAddress(), TOKENS(500_000));
+      .approve(await manager.getAddress(), TOKENS(500_000));
   });
 
-  it("credits a deposit net of the deposit fee", async () => {
-    await vault.connect(user).deposit(await token.getAddress(), TOKENS(1000));
-    // depositFeeRate is 10 bps (0.1%): 1000 -> 999 net.
-    const balance = await vault.getBalance(
-      user.address,
-      await token.getAddress(),
-    );
-    expect(balance).to.equal(TOKENS(999));
+  describe("initiateTransfer", () => {
+    it("pulls tokens, charges the CCIP fee, and refunds any excess", async () => {
+      await router.setFixedFee(ethers.parseEther("0.01"));
+
+      const amount = TOKENS(1000);
+      const before = await ethers.provider.getBalance(user.address);
+
+      const tx = await manager.connect(user).initiateTransfer(
+        await token.getAddress(),
+        amount,
+        ARBITRUM_SELECTOR,
+        other.address,
+        { value: ethers.parseEther("1") }, // overpay on purpose
+      );
+      const receipt = await tx.wait();
+      const gasCost = receipt.gasUsed * receipt.gasPrice;
+
+      await expect(tx).to.emit(manager, "TransferInitiated");
+
+      // 0.2% default LP fee is retained by the contract; the rest is
+      // escrowed as bridge liquidity - either way tokens leave the user.
+      expect(await token.balanceOf(await manager.getAddress())).to.equal(
+        amount,
+      );
+
+      const after = await ethers.provider.getBalance(user.address);
+      // Only the router's fixed fee (0.01 ETH) plus gas should have left the
+      // user's balance - the 1 ETH - 0.01 ETH excess must be refunded.
+      const spent = before - after;
+      expect(spent - gasCost).to.equal(ethers.parseEther("0.01"));
+    });
+
+    it("rejects transfers to a chain with no trusted remote registered", async () => {
+      // Ethereum mainnet selector is "supported" by default but has no
+      // trusted remote configured in this test.
+      await expect(
+        manager
+          .connect(user)
+          .initiateTransfer(
+            await token.getAddress(),
+            TOKENS(100),
+            ETH_SELECTOR,
+            other.address,
+          ),
+      ).to.be.revertedWith("No trusted remote for chain");
+    });
+
+    it("rejects transfers to an unsupported chain", async () => {
+      await expect(
+        manager
+          .connect(user)
+          .initiateTransfer(
+            await token.getAddress(),
+            TOKENS(100),
+            UNSUPPORTED_SELECTOR,
+            other.address,
+          ),
+      ).to.be.revertedWith("Unsupported target chain");
+    });
+
+    it("enforces the per-address cooldown between transfers", async () => {
+      await manager
+        .connect(user)
+        .initiateTransfer(
+          await token.getAddress(),
+          TOKENS(100),
+          ARBITRUM_SELECTOR,
+          other.address,
+        );
+
+      await expect(
+        manager
+          .connect(user)
+          .initiateTransfer(
+            await token.getAddress(),
+            TOKENS(100),
+            ARBITRUM_SELECTOR,
+            other.address,
+          ),
+      ).to.be.revertedWith("Transfer cooldown active");
+    });
+
+    it("rejects amounts above the per-transfer limit", async () => {
+      await manager
+        .connect(admin)
+        .updateRateLimit(TOKENS(500), 0 /* no cooldown, for this test */);
+
+      await expect(
+        manager
+          .connect(user)
+          .initiateTransfer(
+            await token.getAddress(),
+            TOKENS(1000),
+            ARBITRUM_SELECTOR,
+            other.address,
+          ),
+      ).to.be.revertedWith("Amount exceeds transfer limit");
+    });
+
+    it("enforces the daily circuit breaker across multiple transfers", async () => {
+      await manager.connect(admin).updateRateLimit(TOKENS(1_000_000), 0);
+      await manager.connect(admin).updateCircuitBreaker(TOKENS(150));
+
+      await manager
+        .connect(user)
+        .initiateTransfer(
+          await token.getAddress(),
+          TOKENS(100),
+          ARBITRUM_SELECTOR,
+          other.address,
+        );
+
+      await expect(
+        manager
+          .connect(user)
+          .initiateTransfer(
+            await token.getAddress(),
+            TOKENS(100),
+            ARBITRUM_SELECTOR,
+            other.address,
+          ),
+      ).to.be.revertedWith("Daily transfer limit reached");
+    });
   });
 
-  it("processes a small withdrawal directly", async () => {
-    await vault.connect(user).deposit(await token.getAddress(), TOKENS(1000));
-    await vault.connect(user).withdraw(await token.getAddress(), TOKENS(500));
-    const balance = await vault.getBalance(
-      user.address,
-      await token.getAddress(),
-    );
-    expect(balance).to.equal(TOKENS(499)); // 999 deposited - 500 withdrawn
+  describe("ccipReceive", () => {
+    async function encodeMessage(receiver, tokenAddr, amount) {
+      return ethers.AbiCoder.defaultAbiCoder().encode(
+        ["address", "address", "address", "uint256"],
+        [user.address, receiver, tokenAddr, amount],
+      );
+    }
+
+    beforeEach(async () => {
+      // Fund the manager so it can pay out an inbound transfer, mirroring
+      // tokens that would already be escrowed as bridge liquidity.
+      await token.transfer(await manager.getAddress(), TOKENS(1000));
+    });
+
+    it("pays out a message relayed by the router from a trusted remote", async () => {
+      const data = await encodeMessage(
+        other.address,
+        await token.getAddress(),
+        TOKENS(500),
+      );
+
+      await expect(
+        router.deliver(
+          await manager.getAddress(),
+          ARBITRUM_SELECTOR,
+          remoteManager.address,
+          data,
+        ),
+      ).to.changeTokenBalance(token, other, TOKENS(500));
+    });
+
+    it("reverts if called by anything other than the router", async () => {
+      const data = await encodeMessage(
+        other.address,
+        await token.getAddress(),
+        TOKENS(500),
+      );
+      const message = {
+        messageId: ethers.ZeroHash,
+        sourceChainSelector: ARBITRUM_SELECTOR,
+        sender: ethers.AbiCoder.defaultAbiCoder().encode(
+          ["address"],
+          [remoteManager.address],
+        ),
+        data,
+        destTokenAmounts: [],
+      };
+
+      await expect(
+        manager.connect(other).ccipReceive(message),
+      ).to.be.revertedWith("Sender not router");
+    });
+
+    it("reverts a message from an untrusted sender on a supported chain", async () => {
+      const data = await encodeMessage(
+        other.address,
+        await token.getAddress(),
+        TOKENS(500),
+      );
+
+      // `other` is not the registered trusted remote for Arbitrum.
+      await expect(
+        router.deliver(
+          await manager.getAddress(),
+          ARBITRUM_SELECTOR,
+          other.address,
+          data,
+        ),
+      ).to.be.revertedWith("Untrusted remote sender");
+    });
+
+    it("reverts a message from an unsupported source chain", async () => {
+      const data = await encodeMessage(
+        other.address,
+        await token.getAddress(),
+        TOKENS(500),
+      );
+
+      await expect(
+        router.deliver(
+          await manager.getAddress(),
+          UNSUPPORTED_SELECTOR,
+          remoteManager.address,
+          data,
+        ),
+      ).to.be.revertedWith("Unsupported source chain");
+    });
   });
 
-  it("escrows large withdrawals and pays out after enough approvals", async () => {
-    // Lower the threshold so a modest amount routes through the multi-sig path.
-    await vault.connect(admin).updateThresholds(TOKENS(100), 2);
-    await vault.connect(user).deposit(await token.getAddress(), TOKENS(1000));
+  describe("fee distribution", () => {
+    it("distributes collected LP fees pro-rata and leaves bridge principal untouched", async () => {
+      await manager.connect(admin).addLiquidityProvider(user.address, 1); // 100% of shares
+      const otherToken = await token.getAddress();
 
-    await expect(
-      vault.connect(user).withdraw(await token.getAddress(), TOKENS(500)),
-    ).to.emit(vault, "WithdrawalRequested");
+      await manager
+        .connect(user)
+        .initiateTransfer(
+          otherToken,
+          TOKENS(1000),
+          ARBITRUM_SELECTOR,
+          other.address,
+        );
 
-    // Funds are escrowed immediately: internal balance drops right away.
-    const escrowed = await vault.getBalance(
-      user.address,
-      await token.getAddress(),
-    );
-    expect(escrowed).to.equal(TOKENS(499)); // 999 - 500 escrowed
+      // 0.2% default LP fee on 1000 tokens = 2 tokens.
+      expect(await manager.collectedFees(otherToken)).to.equal(TOKENS(2));
 
-    const before = await token.balanceOf(user.address);
-    await vault.connect(operator).approveWithdrawal(0);
-    // Second distinct operator approval. Grant the role to another signer.
-    await vault
-      .connect(admin)
-      .grantRole(await vault.OPERATOR_ROLE(), emergency.address);
-    await vault.connect(emergency).approveWithdrawal(0);
+      const before = await token.balanceOf(user.address);
+      await manager.connect(operator).distributeFees(otherToken);
+      const after = await token.balanceOf(user.address);
 
-    const after = await token.balanceOf(user.address);
-    expect(after).to.be.greaterThan(before);
-  });
+      expect(after - before).to.equal(TOKENS(2));
+      // Only the fee pot moved - bridge principal (998 tokens) stays put.
+      expect(await token.balanceOf(await manager.getAddress())).to.equal(
+        TOKENS(998),
+      );
+    });
 
-  it("refunds escrow when a pending withdrawal is cancelled", async () => {
-    await vault.connect(admin).updateThresholds(TOKENS(100), 2);
-    await vault.connect(user).deposit(await token.getAddress(), TOKENS(1000));
-    await vault.connect(user).withdraw(await token.getAddress(), TOKENS(500));
-
-    await expect(vault.connect(user).cancelWithdrawal(0)).to.emit(
-      vault,
-      "WithdrawalCancelled",
-    );
-
-    const balance = await vault.getBalance(
-      user.address,
-      await token.getAddress(),
-    );
-    expect(balance).to.equal(TOKENS(999)); // escrow fully refunded
-  });
-
-  it("rejects setting required approvals to zero", async () => {
-    await expect(
-      vault.connect(admin).updateThresholds(TOKENS(100), 0),
-    ).to.be.revertedWith("Approvals must be at least 1");
+    it("reverts distributing fees for a token with nothing collected", async () => {
+      await manager.connect(admin).addLiquidityProvider(user.address, 1);
+      await expect(
+        manager.connect(operator).distributeFees(await token.getAddress()),
+      ).to.be.revertedWith("No fees to distribute");
+    });
   });
 });

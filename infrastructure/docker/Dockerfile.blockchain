@@ -1,0 +1,41 @@
+# syntax=docker/dockerfile:1
+# ChainFinity local dev blockchain node.
+#
+# NOT used for staging/production - those deploy to a real network (see
+# scripts/deploy_chainfinity.sh and code/blockchain/hardhat.config.js's
+# testnet/mainnet networks) and don't need a node of their own. This image
+# exists purely so `docker-compose up` gives local development something to
+# integrate against out of the box: a Hardhat node plus the ChainFinity
+# contracts already deployed to it, with the address+ABI manifest written to
+# a shared volume the backend service mounts (see docker-compose.yml's
+# blockchain_deployments volume and BLOCKCHAIN_DEPLOYMENT_FILE).
+#
+# Build context must be the REPOSITORY ROOT (see docker-compose.yml), to
+# match how Dockerfile.backend/Dockerfile.frontend are built.
+FROM node:20-bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY code/blockchain/package.json code/blockchain/package-lock.json ./
+RUN npm ci
+
+COPY code/blockchain/ .
+RUN npm run compile
+
+EXPOSE 8545
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=5 \
+    CMD curl -fsS -X POST -H "Content-Type: application/json" \
+        --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' \
+        http://localhost:8545 || exit 1
+
+COPY infrastructure/docker/blockchain-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

@@ -53,6 +53,27 @@ command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
+# Maps ENVIRONMENT to the Hardhat network name defined in
+# code/blockchain/hardhat.config.js. Shared by deploy_blockchain() (to
+# deploy to the right network) and deploy_backend() (to point the backend
+# at that network's deployment manifest) so the two can't drift apart.
+network_for_environment() {
+  case "$1" in
+    "development")
+      echo "localhost"
+      ;;
+    "staging")
+      echo "testnet"
+      ;;
+    "production")
+      echo "mainnet"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 # Function to load environment variables
 load_env() {
   if [ -f "$ENV_FILE" ]; then
@@ -117,21 +138,10 @@ deploy_blockchain() {
     fi
 
     local network
-    case "$ENVIRONMENT" in
-      "development")
-        network="localhost"
-        ;;
-      "staging")
-        network="testnet"
-        ;;
-      "production")
-        network="mainnet"
-        ;;
-      *)
-        log "ERROR" "Unknown environment: $ENVIRONMENT"
-        return 1
-        ;;
-    esac
+    network="$(network_for_environment "$ENVIRONMENT")" || {
+      log "ERROR" "Unknown environment: $ENVIRONMENT"
+      return 1
+    }
 
     log "INFO" "Deploying contracts to $network network..."
 
@@ -180,17 +190,88 @@ deploy_backend() {
       pip install -r requirements.txt --quiet
     fi
 
-    # Create environment-specific configuration
+    # Create environment-specific configuration.
+    #
+    # config/settings.py (a pydantic-settings BaseSettings) reads from a
+    # .env file plus real process environment variables - it does NOT
+    # import config/<environment>.py. A previous version of this script
+    # only wrote the latter, so DATABASE_URL/REDIS_URL/blockchain settings
+    # generated here were silently never read by the running app. Both are
+    # written now: .env because it's what the app actually reads, and
+    # config/<environment>.py kept alongside it purely as a
+    # human-readable record of what was generated for this deploy.
     local config_dir="$backend_dir/config"
     mkdir -p "$config_dir"
     local config_file="$config_dir/$ENVIRONMENT.py"
+    local env_file="$backend_dir/.env"
 
     if [ "$DRY_RUN" = false ]; then
       # Securely generate a secret key if not set in .env
       local secret_key="${SECRET_KEY:-$(openssl rand -hex 32)}"
+      local encryption_key="${ENCRYPTION_KEY:-$(openssl rand -hex 32)}"
+
+      # Resolve the same Hardhat network deploy_blockchain() just deployed
+      # to (or will deploy to, if run in the same invocation), so the
+      # backend points at the manifest deploy.js wrote for THAT network
+      # rather than guessing.
+      local network
+      network="$(network_for_environment "$ENVIRONMENT")" || {
+        log "ERROR" "Unknown environment: $ENVIRONMENT"
+        return 1
+      }
+      local eth_rpc_url eth_chain_id
+      case "$network" in
+        "localhost")
+          eth_rpc_url="http://127.0.0.1:8545"
+          eth_chain_id="31337"
+          ;;
+        "testnet")
+          eth_rpc_url="${TESTNET_RPC_URL:-}"
+          eth_chain_id="${TESTNET_CHAIN_ID:-11155111}"
+          ;;
+        "mainnet")
+          eth_rpc_url="${MAINNET_RPC_URL:-}"
+          eth_chain_id="1"
+          ;;
+      esac
+      local deployment_file="$PROJECT_DIR/code/blockchain/deployments/contracts.$network.json"
+
+      cat > "$env_file" << EOF
+# ChainFinity Backend Configuration
+# Environment: $ENVIRONMENT
+# Generated on: $(date)
+# Written by scripts/deploy_chainfinity.sh:deploy_backend - do not edit by
+# hand, it will be overwritten on the next deploy.
+
+ENVIRONMENT=$ENVIRONMENT
+DEBUG=$([ "$ENVIRONMENT" = "development" ] && echo "true" || echo "false")
+
+# Database
+DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://postgres:postgres@localhost:5432/chainfinity}
+
+# Redis
+REDIS_URL=${REDIS_URL:-redis://localhost:6379/0}
+
+# Blockchain - see code/backend/config/settings.py's blockchain property
+# and code/backend/services/blockchain/web3_client.py. ETH_RPC_URL/
+# ETH_CHAIN_ID point at the network deploy_blockchain() deployed to, and
+# BLOCKCHAIN_DEPLOYMENT_FILE is the address+ABI manifest scripts/deploy.js
+# wrote there - both env vars are picked up with no other config needed.
+ETH_RPC_URL=$eth_rpc_url
+ETH_CHAIN_ID=$eth_chain_id
+BLOCKCHAIN_DEPLOYMENT_FILE=$deployment_file
+ETHERSCAN_API_KEY=${ETHERSCAN_API_KEY:-}
+
+# Security
+SECRET_KEY=$secret_key
+ENCRYPTION_KEY=$encryption_key
+EOF
+      chmod 600 "$env_file"
+      log "INFO" "Created backend environment file: $env_file"
 
       cat > "$config_file" << EOF
-# ChainFinity Backend Configuration
+# ChainFinity Backend Configuration (reference copy - see $env_file for the
+# file the application actually loads)
 # Environment: $ENVIRONMENT
 # Generated on: $(date)
 
@@ -204,8 +285,10 @@ DATABASE_URL = "${DATABASE_URL:-postgresql+asyncpg://postgres:postgres@localhost
 REDIS_URL = "${REDIS_URL:-redis://localhost:6379/0}"
 
 # Blockchain
-BLOCKCHAIN_NETWORK = "$ENVIRONMENT"
-INFURA_API_KEY = "${INFURA_API_KEY:-your_infura_api_key}"
+BLOCKCHAIN_NETWORK = "$network"
+ETH_RPC_URL = "$eth_rpc_url"
+ETH_CHAIN_ID = $eth_chain_id
+BLOCKCHAIN_DEPLOYMENT_FILE = "$deployment_file"
 ETHERSCAN_API_KEY = "${ETHERSCAN_API_KEY:-your_etherscan_api_key}"
 
 # Security

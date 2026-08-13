@@ -83,8 +83,36 @@ class Settings(BaseSettings):
     BSC_CHAIN_ID: int = Field(default=56)
     GAS_PRICE_STRATEGY: str = Field(default="medium")
     MAX_GAS_PRICE: int = Field(default=100)
+    # RPC request timeout, in seconds. Applies to every call the backend
+    # makes to ETH_RPC_URL (see services/blockchain/client.py). Kept
+    # short so a misconfigured/unreachable node degrades an API response
+    # in ~5s instead of hanging the request.
+    WEB3_REQUEST_TIMEOUT: int = Field(default=5)
+
+    # ChainFinity protocol contract addresses on ETH_RPC_URL / ETH_CHAIN_ID.
+    # For local development these are picked up automatically from
+    # code/blockchain/deployments/contracts.<network>.json (see
+    # BLOCKCHAIN_DEPLOYMENT_FILE below and Web3Client._load_deployment) after
+    # running `npm run deploy:localhost` in code/blockchain - you don't need
+    # to copy addresses here by hand. Set these explicitly for staging/
+    # production, where they take priority over the deployment file.
     GOVERNANCE_TOKEN_ADDRESS: Optional[str] = None
     ASSET_VAULT_ADDRESS: Optional[str] = None
+    CROSS_CHAIN_MANAGER_ADDRESS: Optional[str] = None
+    DEFI_PROTOCOL_ADDRESS: Optional[str] = None
+    GOVERNANCE_ADDRESS: Optional[str] = None
+
+    # Path to the JSON manifest scripts/deploy.js writes (address + ABI per
+    # contract). Relative paths are resolved against the backend package
+    # root (see services/blockchain/client.py:_BACKEND_ROOT), not the
+    # process's current working directory. Defaults to the localhost
+    # deployment produced by the blockchain workspace's own dev workflow
+    # (see code/blockchain/README and scripts/run_chainfinity.sh) so a
+    # fresh local checkout works with zero configuration once contracts are
+    # deployed.
+    BLOCKCHAIN_DEPLOYMENT_FILE: str = Field(
+        default="../blockchain/deployments/contracts.localhost.json"
+    )
     ETHERSCAN_API_KEY: Optional[str] = None
     POLYGONSCAN_API_KEY: Optional[str] = None
 
@@ -261,8 +289,13 @@ class Settings(BaseSettings):
                 self.BSC_CHAIN_ID = settings.BSC_CHAIN_ID
                 self.GAS_PRICE_STRATEGY = settings.GAS_PRICE_STRATEGY
                 self.MAX_GAS_PRICE = settings.MAX_GAS_PRICE
+                self.WEB3_REQUEST_TIMEOUT = settings.WEB3_REQUEST_TIMEOUT
                 self.GOVERNANCE_TOKEN_ADDRESS = settings.GOVERNANCE_TOKEN_ADDRESS
                 self.ASSET_VAULT_ADDRESS = settings.ASSET_VAULT_ADDRESS
+                self.CROSS_CHAIN_MANAGER_ADDRESS = settings.CROSS_CHAIN_MANAGER_ADDRESS
+                self.DEFI_PROTOCOL_ADDRESS = settings.DEFI_PROTOCOL_ADDRESS
+                self.GOVERNANCE_ADDRESS = settings.GOVERNANCE_ADDRESS
+                self.BLOCKCHAIN_DEPLOYMENT_FILE = settings.BLOCKCHAIN_DEPLOYMENT_FILE
                 self.ETHERSCAN_API_KEY = settings.ETHERSCAN_API_KEY
                 self.POLYGONSCAN_API_KEY = settings.POLYGONSCAN_API_KEY
 

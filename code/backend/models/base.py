@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from sqlalchemy import JSON, UUID, Boolean, Column, DateTime, Integer, String
+from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, Uuid
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import declarative_base
 
@@ -11,7 +11,7 @@ Base = declarative_base()
 
 class BaseModel(Base):
     __abstract__ = True
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
     @declared_attr
     def __tablename__(cls: Any) -> str:
@@ -61,8 +61,8 @@ class SoftDeleteMixin:
 
 
 class AuditMixin:
-    created_by = Column(UUID(as_uuid=True), nullable=True, index=True)
-    updated_by = Column(UUID(as_uuid=True), nullable=True, index=True)
+    created_by = Column(Uuid(as_uuid=True), nullable=True, index=True)
+    updated_by = Column(Uuid(as_uuid=True), nullable=True, index=True)
     audit_metadata = Column(JSON, nullable=True)
 
     def set_audit_info(

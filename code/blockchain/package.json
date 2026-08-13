@@ -4,12 +4,17 @@
   "description": "ChainFinity smart contracts: asset vault, cross-chain manager, DeFi protocol, and governance",
   "scripts": {
     "compile": "hardhat compile",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "node": "hardhat node",
+    "deploy:localhost": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:testnet": "hardhat run scripts/deploy.js --network testnet",
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network mainnet"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "@openzeppelin/hardhat-upgrades": "^2.5.1",
-    "hardhat": "^2.22.0"
+    "dotenv": "^17.4.2",
+    "hardhat": "^2.22.0",
+    "solc": "^0.8.19"
   },
   "dependencies": {
     "@chainlink/contracts-ccip": "^1.4.0",

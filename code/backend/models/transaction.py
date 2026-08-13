@@ -9,7 +9,6 @@ from decimal import Decimal
 
 from sqlalchemy import (
     JSON,
-    UUID,
     Boolean,
     Column,
     DateTime,
@@ -20,6 +19,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    Uuid,
 )
 from sqlalchemy.orm import relationship, synonym
 
@@ -77,12 +77,12 @@ class Transaction(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
 
     # User Association
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
     )
 
     # Portfolio Association (optional — a transaction may be wallet-level)
     portfolio_id = Column(
-        UUID(as_uuid=True), ForeignKey("portfolios.id"), nullable=True, index=True
+        Uuid(as_uuid=True), ForeignKey("portfolios.id"), nullable=True, index=True
     )
 
     # Blockchain Information
@@ -238,10 +238,10 @@ class TransactionAlert(BaseModel, TimestampMixin, AuditMixin):
     __tablename__ = "transaction_alerts"
 
     transaction_id = Column(
-        UUID(as_uuid=True), ForeignKey("transactions.id"), nullable=False, index=True
+        Uuid(as_uuid=True), ForeignKey("transactions.id"), nullable=False, index=True
     )
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
     )
 
     # Alert Details
@@ -254,7 +254,7 @@ class TransactionAlert(BaseModel, TimestampMixin, AuditMixin):
     status = Column(
         String(20), default="open", nullable=False, index=True
     )  # open, investigating, resolved, false_positive
-    assigned_to = Column(UUID(as_uuid=True), nullable=True)
+    assigned_to = Column(Uuid(as_uuid=True), nullable=True)
     resolved_at = Column(DateTime, nullable=True)
     resolution_notes = Column(Text, nullable=True)
 
@@ -288,7 +288,7 @@ class TransactionPattern(BaseModel, TimestampMixin):
     __tablename__ = "transaction_patterns"
 
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
     )
 
     # Pattern Details

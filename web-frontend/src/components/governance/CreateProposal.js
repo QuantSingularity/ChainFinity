@@ -1,5 +1,6 @@
 import SendIcon from "@mui/icons-material/Send";
 import {
+  Autocomplete,
   Box,
   Button,
   Card,
@@ -8,7 +9,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { blockchainAPI } from "../../services/api";
 import { isValidAddress } from "../../utils/helpers";
 
 const CreateProposal = ({ onSubmit }) => {
@@ -20,6 +22,29 @@ const CreateProposal = ({ onSubmit }) => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  // ChainFinity's own deployed contracts (AssetVault, CrossChainManager,
+  // etc.), fetched so the target-address field can offer them by name
+  // instead of requiring the proposer to know/paste a raw address. This is
+  // a convenience only - free text (any valid address) is still accepted,
+  // and an empty list here (e.g. backend unreachable) just leaves the
+  // field behaving like a plain text input.
+  const [knownContracts, setKnownContracts] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    blockchainAPI
+      .getDeployedContracts()
+      .then((response) => {
+        if (!cancelled) setKnownContracts(response.data.contracts || []);
+      })
+      .catch(() => {
+        // Backend/RPC unreachable - the field just falls back to free text.
+        if (!cancelled) setKnownContracts([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const validate = () => {
     const e = {};
@@ -40,6 +65,13 @@ const CreateProposal = ({ onSubmit }) => {
   const handleChange = (field) => (e) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
+  };
+
+  const setTargetAddress = (value) => {
+    setForm((prev) => ({ ...prev, targetAddress: value || "" }));
+    if (errors.targetAddress) {
+      setErrors((prev) => ({ ...prev, targetAddress: undefined }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -104,17 +136,51 @@ const CreateProposal = ({ onSubmit }) => {
             sx={{ mb: 3 }}
           />
 
-          <TextField
+          <Autocomplete
+            freeSolo
             fullWidth
-            label="Target Contract Address (Optional)"
-            placeholder="0x..."
-            value={form.targetAddress}
-            onChange={handleChange("targetAddress")}
-            error={Boolean(errors.targetAddress)}
-            helperText={
-              errors.targetAddress ||
-              "The contract address this proposal will interact with"
+            options={knownContracts}
+            getOptionLabel={(option) =>
+              typeof option === "string" ? option : option.address
             }
+            filterOptions={(options, state) => {
+              const input = state.inputValue.trim().toLowerCase();
+              if (!input) return options;
+              return options.filter(
+                (o) =>
+                  o.name.toLowerCase().includes(input) ||
+                  o.address.toLowerCase().includes(input),
+              );
+            }}
+            inputValue={form.targetAddress}
+            onInputChange={(_e, value) => setTargetAddress(value)}
+            onChange={(_e, option) =>
+              setTargetAddress(
+                option && typeof option !== "string" ? option.address : option,
+              )
+            }
+            renderOption={(props, option) => (
+              <Box component="li" {...props} key={option.address}>
+                <Box>
+                  <Typography variant="body2">{option.name}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {option.address}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Target Contract Address (Optional)"
+                placeholder="0x... or select a ChainFinity contract"
+                error={Boolean(errors.targetAddress)}
+                helperText={
+                  errors.targetAddress ||
+                  "The contract address this proposal will interact with"
+                }
+              />
+            )}
             sx={{ mb: 3 }}
           />
 

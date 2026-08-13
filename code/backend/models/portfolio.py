@@ -10,7 +10,6 @@ from typing import Dict
 
 from sqlalchemy import (
     JSON,
-    UUID,
     Boolean,
     Column,
     DateTime,
@@ -21,6 +20,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    Uuid,
 )
 from sqlalchemy.orm import relationship
 
@@ -76,7 +76,7 @@ class Portfolio(BaseModel, TimestampMixin, AuditMixin):
     __tablename__ = "portfolios"
 
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
     )
 
     # Portfolio Details
@@ -209,7 +209,7 @@ class PortfolioAsset(BaseModel, TimestampMixin, AuditMixin):
     __tablename__ = "portfolio_assets"
 
     portfolio_id = Column(
-        UUID(as_uuid=True), ForeignKey("portfolios.id"), nullable=False, index=True
+        Uuid(as_uuid=True), ForeignKey("portfolios.id"), nullable=False, index=True
     )
 
     # Asset Details
@@ -332,7 +332,7 @@ class AssetAllocation(BaseModel, TimestampMixin, AuditMixin):
     __tablename__ = "asset_allocations"
 
     portfolio_id = Column(
-        UUID(as_uuid=True), ForeignKey("portfolios.id"), nullable=False, index=True
+        Uuid(as_uuid=True), ForeignKey("portfolios.id"), nullable=False, index=True
     )
 
     # Asset Details
@@ -369,7 +369,7 @@ class PortfolioSnapshot(BaseModel, TimestampMixin):
     __tablename__ = "portfolio_snapshots"
 
     portfolio_id = Column(
-        UUID(as_uuid=True), ForeignKey("portfolios.id"), nullable=False, index=True
+        Uuid(as_uuid=True), ForeignKey("portfolios.id"), nullable=False, index=True
     )
 
     # Snapshot Data
@@ -406,7 +406,7 @@ class PortfolioPerformance(BaseModel, TimestampMixin):
     __tablename__ = "portfolio_performance"
 
     portfolio_id = Column(
-        UUID(as_uuid=True), ForeignKey("portfolios.id"), nullable=False, index=True
+        Uuid(as_uuid=True), ForeignKey("portfolios.id"), nullable=False, index=True
     )
 
     # Time Period

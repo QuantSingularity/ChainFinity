@@ -59,6 +59,18 @@ export const blockchainAPI = {
   getTokenBalance: (tokenAddress, network = "ethereum") =>
     api.get(`/api/v1/blockchain/balance/${tokenAddress}?network=${network}`),
   getEthBalance: () => api.get("/api/v1/blockchain/eth-balance"),
+  getGasPrice: (network = "ethereum") =>
+    api.get(`/api/v1/blockchain/gas-price?network=${network}`),
+  verifyAddress: (address, network = "ethereum") =>
+    api.post(
+      `/api/v1/blockchain/verify-address?address=${encodeURIComponent(address)}&network=${network}`,
+    ),
+  // ChainFinity's own deployed contract addresses (AssetVault,
+  // CrossChainManager, InstitutionalDeFiProtocol, GovernanceToken,
+  // InstitutionalGovernance) for the network the backend is connected to.
+  // This is how the frontend learns what to call instead of hardcoding
+  // addresses at build time - see services/blockchain/web3_client.py.
+  getDeployedContracts: () => api.get("/api/v1/blockchain/deployed-contracts"),
 };
 
 // Helper function to handle API errors

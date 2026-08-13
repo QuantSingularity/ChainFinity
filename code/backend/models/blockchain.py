@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 
 from sqlalchemy import (
     JSON,
-    UUID,
     Boolean,
     Column,
     DateTime,
@@ -19,6 +18,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    Uuid,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -171,7 +171,7 @@ class SmartContract(BaseModel, TimestampMixin, AuditMixin):
     __tablename__ = "smart_contracts"
 
     network_id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         ForeignKey("blockchain_networks.id"),
         nullable=False,
         index=True,
@@ -267,7 +267,7 @@ class ContractEvent(BaseModel, TimestampMixin):
     __tablename__ = "contract_events"
 
     contract_id = Column(
-        UUID(as_uuid=True), ForeignKey("smart_contracts.id"), nullable=False, index=True
+        Uuid(as_uuid=True), ForeignKey("smart_contracts.id"), nullable=False, index=True
     )
 
     # Event Details
@@ -337,7 +337,7 @@ class BlockchainSync(BaseModel, TimestampMixin):
     __tablename__ = "blockchain_sync"
 
     network_id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         ForeignKey("blockchain_networks.id"),
         nullable=False,
         index=True,
@@ -420,7 +420,7 @@ class GasTracker(BaseModel, TimestampMixin):
     __tablename__ = "gas_tracker"
 
     network_id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         ForeignKey("blockchain_networks.id"),
         nullable=False,
         index=True,
