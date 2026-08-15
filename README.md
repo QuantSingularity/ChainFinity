@@ -14,7 +14,7 @@ ChainFinity is a full-stack cross-chain DeFi platform: a FastAPI backend that se
 
 - [Overview](#overview)
 - [Project Structure](#project-structure)
-- [What Is Actually Implemented](#what-is-actually-implemented)
+- [Feature Status](#feature-status)
 - [Technology Stack](#technology-stack)
 - [Architecture](#architecture)
 - [Installation and Setup](#installation-and-setup)
@@ -63,25 +63,29 @@ ChainFinity/
 └── README.md
 ```
 
-## What Is Actually Implemented
+## Feature Status
 
 ### Application tier (wired and tested)
 
-- **API.** FastAPI backend exposing versioned endpoints under `/api/v1` for auth, users, portfolios, transactions, compliance, risk, and blockchain, plus a `/health` check.
-- **Auth.** bcrypt password hashing, JWT access and refresh tokens, and an MFA setup flow. The signing key is read from `SECRET_KEY`, and the app refuses to start in production if it is left at the default value or is shorter than 32 characters.
-- **Multi-source pricing.** Prices are aggregated across CoinGecko, CoinMarketCap, Binance, CryptoCompare, Alpha Vantage, and Yahoo Finance.
-- **Correlation and volatility model.** A TensorFlow model backs the risk service's correlation and volatility estimates, with a deterministic mock predictor as a fallback when no trained model file is present, so the risk endpoints never hard-fail.
-- **Data layer.** SQLAlchemy (async) over PostgreSQL, with Redis for caching and distributed rate limiting, and Alembic managing migrations.
-- **Smart contracts.** Hardhat-managed Solidity 0.8.19 contracts: an asset vault, a Chainlink CCIP cross-chain manager with circuit breakers and rate limiting, a lending-style DeFi protocol with collateral-ratio and liquidation-threshold parameters, and an OpenZeppelin Governor plus timelock for token-weighted DAO voting.
-- **Web dashboard.** React app covering Home, Dashboard, Portfolio, Transactions, Governance (with an analytics view), Settings, and authentication screens.
-- **Mobile app.** React Native (Expo) app covering the same functional areas (dashboard, portfolio, transactions, governance, settings, authentication) through Expo Router's file-based navigation.
-- **Guest login.** Both clients recognize a fixed demo credential (`guest@chainfinity.io` or `demo@chainfinity.io`) that creates a local session without calling the backend.
+| Component                            | Details                                                                                                                                                                                                                                                                                                      |
+| :----------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **API**                              | FastAPI backend exposing versioned endpoints under `/api/v1` for auth, users, portfolios, transactions, compliance, risk, and blockchain, plus a `/health` check.                                                                                                                                            |
+| **Auth**                             | bcrypt password hashing, JWT access and refresh tokens, and an MFA setup flow. The signing key is read from `SECRET_KEY`, and the app refuses to start in production if it is left at the default value or is shorter than 32 characters.                                                                    |
+| **Multi-source pricing**             | Prices are aggregated across CoinGecko, CoinMarketCap, Binance, CryptoCompare, Alpha Vantage, and Yahoo Finance.                                                                                                                                                                                             |
+| **Correlation and volatility model** | A TensorFlow model backs the risk service's correlation and volatility estimates, with a deterministic mock predictor as a fallback when no trained model file is present, so the risk endpoints never hard-fail.                                                                                            |
+| **Data layer**                       | SQLAlchemy (async) over PostgreSQL, with Redis for caching and distributed rate limiting, and Alembic managing migrations.                                                                                                                                                                                   |
+| **Smart contracts**                  | Hardhat-managed Solidity 0.8.19 contracts: an asset vault, a Chainlink CCIP cross-chain manager with circuit breakers and rate limiting, a lending-style DeFi protocol with collateral-ratio and liquidation-threshold parameters, and an OpenZeppelin Governor plus timelock for token-weighted DAO voting. |
+| **Web dashboard**                    | React app covering Home, Dashboard, Portfolio, Transactions, Governance (with an analytics view), Settings, and authentication screens.                                                                                                                                                                      |
+| **Mobile app**                       | React Native (Expo) app covering the same functional areas (dashboard, portfolio, transactions, governance, settings, authentication) through Expo Router's file-based navigation.                                                                                                                           |
+| **Guest login**                      | Both clients recognize a fixed demo credential (`guest@chainfinity.io` or `demo@chainfinity.io`) that creates a local session without calling the backend.                                                                                                                                                   |
 
 ### Research tier (library modules)
 
-- **Exploit detection.** Isolation Forest anomaly detection over transaction patterns.
-- **Liquidity crisis model.** Statistical model for early liquidity-stress signals.
-- **Smart money tracking.** K-means clustering over wallet activity to group similar behavior.
+| Component                  | Details                                                            |
+| :------------------------- | :----------------------------------------------------------------- |
+| **Exploit detection**      | Isolation Forest anomaly detection over transaction patterns.      |
+| **Liquidity crisis model** | Statistical model for early liquidity-stress signals.              |
+| **Smart money tracking**   | K-means clustering over wallet activity to group similar behavior. |
 
 These modules are part of the codebase, unit-tested, and can be imported and run; unlike the correlation and volatility model, the backend does not currently call them from a live API route.
 
