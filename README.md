@@ -7,7 +7,7 @@
 ChainFinity is a full-stack cross-chain DeFi platform: a FastAPI backend that serves auth, users, portfolios, transactions, compliance, risk, and blockchain APIs, a React web dashboard, and a React Native (Expo) mobile app. Alongside the application is a set of Hardhat-managed Solidity contracts for cross-chain transfers, an asset vault, a lending-style protocol, and DAO governance, plus a small research library of machine-learning models for correlation, exploit, liquidity, and smart-money analysis.
 
 <div align="center">
-  <img src="docs/images/homepage.bmp" alt="ChainFinity HomePage" width="80%">
+  <img src="docs/images/homepage.bmp" alt="ChainFinity HomePage" width="100%">
 </div>
 
 ## Table of Contents
