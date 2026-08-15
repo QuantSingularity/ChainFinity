@@ -1,12 +1,10 @@
 # ChainFinity
 
-![CI/CD Status](https://img.shields.io/github/actions/workflow/status/quantsingularity/ChainFinity/cicd.yml?branch=main&label=CI/CD&logo=github)
-[![Test Coverage](https://img.shields.io/badge/coverage-79%25-yellow)](https://github.com/quantsingularity/ChainFinity/actions)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![CI/CD Status](https://img.shields.io/github/actions/workflow/status/quantsingularity/ChainFinity/cicd.yml?branch=main&label=CI%2FCD&logo=github)
 
 ## Cross-Chain DeFi Risk Management Platform
 
-ChainFinity is an advanced cross-chain DeFi risk management platform that leverages AI and quantitative models to analyze, predict, and mitigate risks across multiple blockchain networks.
+ChainFinity is a full-stack cross-chain DeFi platform: a FastAPI backend that serves auth, users, portfolios, transactions, compliance, risk, and blockchain APIs, a React web dashboard, and a React Native (Expo) mobile app. Alongside the application is a set of Hardhat-managed Solidity contracts for cross-chain transfers, an asset vault, a lending-style protocol, and DAO governance, plus a small research library of machine-learning models for correlation, exploit, liquidity, and smart-money analysis.
 
 <div align="center">
   <img src="docs/images/homepage.bmp" alt="ChainFinity HomePage" width="80%">
@@ -16,11 +14,12 @@ ChainFinity is an advanced cross-chain DeFi risk management platform that levera
 
 - [Overview](#overview)
 - [Project Structure](#project-structure)
-- [Key Features](#key-features)
-- [Tech Stack](#tech-stack)
+- [What Is Actually Implemented](#what-is-actually-implemented)
+- [Technology Stack](#technology-stack)
 - [Architecture](#architecture)
-- [Installation](#installation)
-- [Deployment](#deployment)
+- [Installation and Setup](#installation-and-setup)
+- [Running the Stack](#running-the-stack)
+- [API Surface](#api-surface)
 - [Testing](#testing)
 - [CI/CD Pipeline](#cicd-pipeline)
 - [Documentation](#documentation)
@@ -29,324 +28,229 @@ ChainFinity is an advanced cross-chain DeFi risk management platform that levera
 
 ## Overview
 
-ChainFinity provides comprehensive risk management solutions for DeFi protocols and users operating across multiple blockchain networks. By combining AI-driven predictive analytics with cross-chain communication protocols, ChainFinity enables real-time risk assessment, automated hedging strategies, and optimized capital efficiency across the fragmented DeFi ecosystem.
+ChainFinity demonstrates a cross-chain DeFi risk workflow across a real, runnable codebase. The application tier (backend, smart contracts, and two clients) is fully wired and covered by tests. Alongside it sits a small research library of ML models: one (correlation and volatility) is wired into the live risk service, and the others (exploit detection, liquidity crisis, smart-money tracking) are tested but not yet connected to a live endpoint.
 
 ## Project Structure
 
-The project is organized into several main components:
-
 ```
 ChainFinity/
-├── code/                   # Core backend logic, services, and shared utilities
-├── docs/                   # Project documentation
-├── infrastructure/         # DevOps, deployment, and infra-related code
-├── mobile-frontend/        # Mobile application
-├── web-frontend/           # Web dashboard
-├── scripts/                # Automation, setup, and utility scripts
-├── LICENSE                 # License information
-└── README.md               # Project overview and instructions
+├── code/
+│   ├── backend/             # FastAPI service: API, auth, services, DB, infra
+│   │   ├── app/             # FastAPI app, endpoints (v1 API)
+│   │   ├── config/          # Settings and database config
+│   │   ├── middleware/      # Auth, rate limit, security, logging, audit
+│   │   ├── models/          # SQLAlchemy models
+│   │   ├── services/        # Auth, portfolio, risk, market, compliance, blockchain
+│   │   ├── migrations/      # Alembic migrations
+│   │   ├── tests/           # Backend test suite
+│   │   ├── docker-compose.yml
+│   │   └── requirements.txt
+│   ├── blockchain/          # Hardhat project
+│   │   ├── contracts/       # AssetVault, CrossChainManager, DeFiProtocol, Governance
+│   │   ├── test/            # Hardhat test suite
+│   │   ├── scripts/         # Deploy scripts
+│   │   └── subgraph/        # The Graph schema (not yet indexed)
+│   └── ai_models/           # Research ML library
+│       ├── train_correlation_model.py   # Wired into the risk service
+│       ├── exploit_detection_model.py   # Library only
+│       ├── liquidity_crisis_model.py    # Library only
+│       └── smart_money_tracker.py       # Library only
+├── web-frontend/            # React (Create React App) dashboard
+├── mobile-frontend/         # React Native + Expo app
+├── infrastructure/          # Docker, Kubernetes, Terraform, Ansible, monitoring
+├── scripts/                 # Setup, test, deploy, and monitoring scripts
+├── docs/                    # Documentation (this directory)
+└── README.md
 ```
 
-## Key Features
+## What Is Actually Implemented
 
-### Cross-Chain Risk Analytics
+### Application tier (wired and tested)
 
-| Feature                        | Description                                                                |
-| :----------------------------- | :------------------------------------------------------------------------- |
-| **Multi-Chain Monitoring**     | Real-time data collection and analysis across 15+ blockchain networks      |
-| **Risk Correlation Matrix**    | Identification of cross-chain risk correlations and contagion paths        |
-| **Protocol Risk Scoring**      | Comprehensive risk assessment of DeFi protocols across multiple dimensions |
-| **Liquidity Analysis**         | Deep liquidity analysis across DEXs and lending platforms                  |
-| **Bridge Security Monitoring** | Risk assessment of cross-chain bridges and wrapped assets                  |
+- **API.** FastAPI backend exposing versioned endpoints under `/api/v1` for auth, users, portfolios, transactions, compliance, risk, and blockchain, plus a `/health` check.
+- **Auth.** bcrypt password hashing, JWT access and refresh tokens, and an MFA setup flow. The signing key is read from `SECRET_KEY`, and the app refuses to start in production if it is left at the default value or is shorter than 32 characters.
+- **Multi-source pricing.** Prices are aggregated across CoinGecko, CoinMarketCap, Binance, CryptoCompare, Alpha Vantage, and Yahoo Finance.
+- **Correlation and volatility model.** A TensorFlow model backs the risk service's correlation and volatility estimates, with a deterministic mock predictor as a fallback when no trained model file is present, so the risk endpoints never hard-fail.
+- **Data layer.** SQLAlchemy (async) over PostgreSQL, with Redis for caching and distributed rate limiting, and Alembic managing migrations.
+- **Smart contracts.** Hardhat-managed Solidity 0.8.19 contracts: an asset vault, a Chainlink CCIP cross-chain manager with circuit breakers and rate limiting, a lending-style DeFi protocol with collateral-ratio and liquidation-threshold parameters, and an OpenZeppelin Governor plus timelock for token-weighted DAO voting.
+- **Web dashboard.** React app covering Home, Dashboard, Portfolio, Transactions, Governance (with an analytics view), Settings, and authentication screens.
+- **Mobile app.** React Native (Expo) app covering the same functional areas (dashboard, portfolio, transactions, governance, settings, authentication) through Expo Router's file-based navigation.
+- **Guest login.** Both clients recognize a fixed demo credential (`guest@chainfinity.io` or `demo@chainfinity.io`) that creates a local session without calling the backend.
 
-### AI-Powered Prediction Models
+### Research tier (library modules)
 
-| Feature                             | Description                                              |
-| :---------------------------------- | :------------------------------------------------------- |
-| **Market Volatility Forecasting**   | LSTM-based models for predicting price volatility        |
-| **Smart Money Tracking**            | AI analysis of whale wallet movements across chains      |
-| **Protocol Exploit Prediction**     | Anomaly detection for potential security vulnerabilities |
-| **Liquidity Crisis Alerts**         | Early warning system for potential liquidity crises      |
-| **Correlation Breakdown Detection** | Identification of unusual correlation patterns           |
+- **Exploit detection.** Isolation Forest anomaly detection over transaction patterns.
+- **Liquidity crisis model.** Statistical model for early liquidity-stress signals.
+- **Smart money tracking.** K-means clustering over wallet activity to group similar behavior.
 
-### Automated Risk Management
+These modules are part of the codebase, unit-tested, and can be imported and run; unlike the correlation and volatility model, the backend does not currently call them from a live API route.
 
-| Feature                           | Description                                               |
-| :-------------------------------- | :-------------------------------------------------------- |
-| **Cross-Chain Hedging**           | Automated position hedging across multiple networks       |
-| **Dynamic Collateral Management** | Optimal collateral allocation based on risk models        |
-| **Liquidation Protection**        | Proactive measures to prevent liquidations                |
-| **Flash Loan Defense**            | Protection against flash loan attack vectors              |
-| **MEV Protection**                | Strategies to mitigate maximal extractable value exposure |
+Not part of this project, despite appearing in earlier drafts of this document: automated hedging execution, flash loan defense, MEV protection, TimescaleDB, IPFS storage, live Chainlink price oracles (Chainlink here is used for CCIP messaging, not pricing), a live ArgoCD pipeline, and third-party KYC/AML providers (the hooks exist but currently point at stub endpoints).
 
-### Cross-Chain Infrastructure
+## Technology Stack
 
-| Feature                  | Description                                                          |
-| :----------------------- | :------------------------------------------------------------------- |
-| **CCIP Integration**     | Chainlink Cross-Chain Interoperability Protocol for secure messaging |
-| **Multi-Chain Oracles**  | Decentralized price feeds across all supported networks              |
-| **Gas Optimization**     | Efficient cross-chain transactions with optimal gas usage            |
-| **Unified Liquidity**    | Aggregated liquidity access across multiple DEXs and chains          |
-| **Cross-Chain Identity** | Unified identity and reputation system across networks               |
+| Area            | Technology                                                                                       |
+| :-------------- | :----------------------------------------------------------------------------------------------- |
+| Blockchain      | Solidity 0.8.19, OpenZeppelin v4, Chainlink CCIP, Hardhat                                        |
+| Backend API     | Python 3.11+, FastAPI, Uvicorn, Pydantic v2                                                      |
+| Auth            | bcrypt, PyJWT, an MFA (TOTP) service                                                             |
+| Data layer      | SQLAlchemy 2 (async), Alembic, PostgreSQL, Redis                                                 |
+| ML / Quant      | TensorFlow (correlation and volatility), scikit-learn (Isolation Forest, K-means)                |
+| Market data     | CoinGecko, CoinMarketCap, Binance, CryptoCompare, Alpha Vantage, Yahoo Finance                   |
+| Web frontend    | React 18, Create React App, Material-UI, TanStack Query, Ethers.js 6, Recharts                   |
+| Mobile frontend | React Native, Expo, Expo Router, axios                                                           |
+| Infrastructure  | Docker, Docker Compose, Kubernetes, Terraform (including an AWS EKS cluster), Ansible            |
+| Monitoring      | Prometheus, Grafana, Alertmanager                                                                |
+| CI/CD           | GitHub Actions                                                                                   |
+| Testing         | pytest (backend), Hardhat (contracts), React Testing Library and Playwright (web), Jest (mobile) |
 
-## Tech Stack
-
-**Blockchain**
-
-- Solidity 0.8 for smart contracts
-- Chainlink CCIP for cross-chain communication
-- Hardhat for development and testing
-- The Graph for blockchain data indexing
-
-**Backend**
-
-- FastAPI for high-performance API endpoints
-- NumPy and SciPy for numerical computations
-- Pandas for data manipulation and analysis
-- WebSocket for real-time data streaming
-
-**AI/ML**
-
-- TensorFlow 2.12 for deep learning models
-- LSTM Networks for time series prediction
-- Prophet for trend forecasting
-- Scikit-learn for statistical models
-
-**Frontend**
-
-- React 18 with TypeScript for UI
-- Recharts for data visualization
-- Ethers.js 6 for blockchain interaction
-- Material-UI for component library
-
-**Database**
-
-- TimescaleDB for time-series data
-- Redis for caching and real-time data
-- PostgreSQL for relational data
-- IPFS for decentralized storage
-
-**Infrastructure**
-
-- Kubernetes for container orchestration
-- Terraform for infrastructure as code
-- AWS EKS for managed Kubernetes
-- ArgoCD for GitOps deployment
+Not part of this project, despite being common in this space: TimescaleDB, IPFS, GraphQL (the subgraph schema exists but is not deployed or indexed), and ArgoCD.
 
 ## Architecture
 
+ChainFinity is organized in tiers rather than a sprawl of microservices:
+
 ```
-ChainFinity/
-├── Frontend Layer
-│   ├── Risk Dashboard
-│   ├── Analytics Interface
-│   ├── Strategy Builder
-│   └── Admin Panel
-├── API Gateway
-│   ├── Authentication
-│   ├── Rate Limiting
-│   ├── Request Routing
-│   └── Response Caching
-├── Risk Engine
-│   ├── Risk Calculator
-│   ├── Position Monitor
-│   ├── Alert Generator
-│   └── Strategy Executor
-├── AI Models
-│   ├── Volatility Predictor
-│   ├── Correlation Analyzer
-│   ├── Anomaly Detector
-│   └── Trend Forecaster
-├── Quant Library
-│   ├── Risk Metrics
-│   ├── Portfolio Optimization
-│   ├── Hedging Algorithms
-│   └── Backtesting Engine
-├── Cross-Chain Manager
-│   ├── CCIP Integration
-│   ├── Bridge Monitor
-│   ├── Gas Optimizer
-│   └── Transaction Router
-└── Data Layer
-    ├── TimescaleDB
-    ├── Redis Cache
-    ├── The Graph Indexers
-    └── IPFS Storage
+Clients
+  ├── web-frontend (React)               ── HTTP/JSON ──┐
+  └── mobile-frontend (React Native)     ── HTTP/JSON ──┤
+                                                        ▼
+Backend (FastAPI)
+  ├── Endpoints (/api/v1/*)  auth, users, portfolios, transactions,
+  │                          compliance, risk, blockchain
+  ├── Middleware             security, CORS, trusted-host, rate limit (Redis),
+  │                          auth, logging, audit
+  ├── Services               portfolio, risk, market data, compliance, blockchain (web3.py)
+  └── Data layer              PostgreSQL (async SQLAlchemy + Alembic), Redis
+                                                        ▼
+Blockchain (Hardhat / Solidity 0.8.19)
+  AssetVault · CrossChainManager (Chainlink CCIP) · DeFiProtocol · Governance (Governor + Timelock)
+
+Research library (code/ai_models)
+  correlation & volatility (wired into the risk service, mock fallback if untrained)
+  exploit detection · liquidity crisis · smart-money tracking (library only, unit-tested)
 ```
 
-## Installation
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detail.
+
+## Installation and Setup
+
+Prerequisites: Python 3.11+ and Node.js 18+. Docker is optional.
 
 ```bash
-# Clone repository
 git clone https://github.com/quantsingularity/ChainFinity.git
 cd ChainFinity
 
-# Install dependencies
-cd code/blockchain && npm install
-cd ../backend && pip install -r requirements.txt
-cd ../frontend && npm install
+# Blockchain
+cd code/blockchain
+npm install
 
-# Configure environment
-cp .env.example .env
-# Add your API keys and chain configurations
+# Backend
+cd ../backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
 
-# Start services
-docker-compose -f infrastructure/docker-compose.dev.yml up -d
-cd code/blockchain && npx hardhat node
-cd ../backend && uvicorn app:app --reload
-cd ../frontend && npm start
+# Web frontend
+cd ../../web-frontend
+npm install
+
+# Mobile frontend
+cd ../mobile-frontend
+npm install
 ```
 
-For a quick setup using the provided script:
+Full, environment-specific instructions are in [docs/INSTALLATION.md](docs/INSTALLATION.md).
+
+## Running the Stack
 
 ```bash
-# Clone and setup
-git clone https://github.com/quantsingularity/ChainFinity.git
-cd ChainFinity
-./setup_chainfinity_env.sh
-./run_chainfinity.sh
+# 1) Supporting services (from infrastructure/, Docker required)
+docker compose -f docker-compose.yml up -d postgres redis
+
+# 2) Blockchain node (from code/blockchain)
+npx hardhat node                # local chain at http://127.0.0.1:8545
+
+# 3) Backend (from code/backend, venv active)
+uvicorn app.main:app --reload   # serves http://0.0.0.0:8000, docs at /docs
+
+# 4) Web dashboard (from web-frontend)
+npm start                       # http://localhost:3000
+
+# 5) Mobile app (from mobile-frontend)
+npm start                       # press w for web, a for Android, i for iOS
 ```
 
-## Deployment
+The web dashboard reads its API base URL from `REACT_APP_API_URL` (default `http://localhost:8000`). The mobile app reads `EXPO_PUBLIC_API_URL` (same default).
 
-### Local Development
+See [docs/USAGE.md](docs/USAGE.md) and [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
 
-```bash
-# Start all services locally
-docker-compose up -d
-```
+## API Surface
 
-### Staging Environment
+Base URL `http://localhost:8000`. Interactive docs at `/docs` (Swagger) and `/redoc`.
 
-```bash
-# Deploy to staging
-./deploy.sh staging
-```
+| Group        | Prefix                 | Highlights                                                                                |
+| :----------- | :--------------------- | :---------------------------------------------------------------------------------------- |
+| Health       | `/health`, `/`         | Liveness check                                                                            |
+| Auth         | `/api/v1/auth`         | `login`, `refresh`, `logout`, `me`, `mfa/setup`                                           |
+| Users        | `/api/v1/users`        | `me`, `me/profile`, `me/kyc`, `me/risk-profile`                                           |
+| Portfolios   | `/api/v1/portfolios`   | list/create, `{id}`, `{id}/assets`                                                        |
+| Transactions | `/api/v1/transactions` | list, `{id}`, `{id}/analyze`                                                              |
+| Compliance   | `/api/v1/compliance`   | `checks`, `audit-logs`, `reports`, `suspicious-activities`                                |
+| Risk         | `/api/v1/risk`         | `assess/{portfolio_id}`, `metrics/{portfolio_id}`, `stress-test/{portfolio_id}`, `alerts` |
+| Blockchain   | `/api/v1/blockchain`   | `networks`, `contracts`, `events`, `balance/{address}`                                    |
 
-### Production Environment
-
-```bash
-# Deploy to production
-./deploy.sh production
-```
+Full request and response shapes are in [docs/API.md](docs/API.md).
 
 ## Testing
 
-The project maintains comprehensive test coverage across all components to ensure reliability and security.
-
-### Test Coverage
-
-| Component           | Coverage | Status |
-| ------------------- | -------- | ------ |
-| Smart Contracts     | 85%      | ✅     |
-| Risk Engine         | 82%      | ✅     |
-| Cross-Chain Manager | 78%      | ✅     |
-| AI Models           | 75%      | ✅     |
-| Backend Services    | 80%      | ✅     |
-| Frontend Components | 72%      | ✅     |
-| Overall             | 79%      | ✅     |
-
-### Smart Contract Tests
-
-| Test Type          | Description                  |
-| :----------------- | :--------------------------- |
-| Unit tests         | For all contract functions   |
-| Integration tests  | For cross-chain interactions |
-| Security tests     | Using Slither and Mythril    |
-| Optimization tests | For gas usage                |
-
-### Backend Tests
-
-| Test Type                     | Description                              |
-| :---------------------------- | :--------------------------------------- |
-| API endpoint tests            | To ensure correct routing and response   |
-| Service layer unit tests      | For core business logic                  |
-| Database integration tests    | To verify data persistence and retrieval |
-| WebSocket communication tests | For real-time data streaming             |
-
-### AI Model Tests
-
-| Test Type                          | Description                              |
-| :--------------------------------- | :--------------------------------------- |
-| Model accuracy validation          | To ensure predictive power               |
-| Prediction performance tests       | To check speed and efficiency            |
-| Data pipeline tests                | To verify data flow and transformation   |
-| Cross-chain data consistency tests | To ensure data integrity across networks |
-
-### Frontend Tests
-
-| Test Type                  | Description                                  |
-| :------------------------- | :------------------------------------------- |
-| Component tests            | With React Testing Library for UI elements   |
-| Integration tests          | With Cypress for feature flows               |
-| End-to-end user flow tests | To verify complete user journeys             |
-| Web3 integration tests     | For blockchain connectivity and transactions |
-
-### Running Tests
-
 ```bash
-# Run smart contract tests
-cd code/blockchain
+# Smart contracts (from code/blockchain)
 npx hardhat test
 
-# Run backend tests
-cd code/backend
+# Backend (from code/backend)
 pytest
 
-# Run frontend tests
-cd code/frontend
+# Web (from web-frontend)
 npm test
+npm run test:e2e     # Playwright end-to-end tests
 
-# Run all tests
-./run_all_tests.sh
+# Mobile (from mobile-frontend)
+npm test
 ```
+
+The backend suite includes unit tests for auth and the web3 client, integration tests for the blockchain endpoints, and a dedicated `tests/test_ai_models.py` covering the correlation, exploit-detection, liquidity-crisis, and smart-money-tracking models. The Hardhat suite covers each Solidity contract individually.
 
 ## CI/CD Pipeline
 
-ChainFinity uses GitHub Actions for continuous integration and deployment:
+GitHub Actions (`.github/workflows/cicd.yml`) runs five jobs on push, pull request, and manual dispatch:
 
-| Stage                | Control Area                    | Institutional-Grade Detail                                                              |
-| :------------------- | :------------------------------ | :-------------------------------------------------------------------------------------- |
-| **Formatting Check** | Change Triggers                 | Enforced on all `push` and `pull_request` events to `main` and `develop`                |
-|                      | Manual Oversight                | On-demand execution via controlled `workflow_dispatch`                                  |
-|                      | Source Integrity                | Full repository checkout with complete Git history for auditability                     |
-|                      | Python Runtime Standardization  | Python 3.10 with deterministic dependency caching                                       |
-|                      | Backend Code Hygiene            | `autoflake` to detect unused imports/variables using non-mutating diff-based validation |
-|                      | Backend Style Compliance        | `black --check` to enforce institutional formatting standards                           |
-|                      | Non-Intrusive Validation        | Temporary workspace comparison to prevent unauthorized source modification              |
-|                      | Node.js Runtime Control         | Node.js 18 with locked dependency installation via `npm ci`                             |
-|                      | Web Frontend Formatting Control | Prettier checks for web-facing assets                                                   |
-|                      | Mobile Frontend Formatting      | Prettier enforcement for mobile application codebases                                   |
-|                      | Documentation Governance        | Repository-wide Markdown formatting enforcement                                         |
-|                      | Infrastructure Configuration    | Prettier validation for YAML/YML infrastructure definitions                             |
-|                      | Compliance Gate                 | Any formatting deviation fails the pipeline and blocks merge                            |
+| Job                          | Depends on          | What it does                                                                       |
+| :--------------------------- | :------------------ | :--------------------------------------------------------------------------------- |
+| Code Quality Checks          | -                   | Python formatter checks and a repository-wide Prettier check                       |
+| Blockchain Compile & Test    | Code Quality Checks | Installs dependencies, compiles the Solidity contracts, and runs the Hardhat suite |
+| Backend Tests                | Code Quality Checks | Runs the pytest suite with coverage and uploads the coverage report as an artifact |
+| Web-Frontend Test & Build    | Code Quality Checks | Runs the frontend test suite and produces the production web build                 |
+| Mobile-Frontend Test & Build | Code Quality Checks | Runs the Jest suite and produces the Expo web export                               |
 
 ## Documentation
 
-For detailed documentation, please refer to the following resources:
-
-| Document                    | Path                 | Description                                                 |
-| :-------------------------- | :------------------- | :---------------------------------------------------------- |
-| **README**                  | `README.md`          | High-level overview, project scope, and quickstart          |
-| **API Reference**           | `API.md`             | Detailed documentation for all API endpoints                |
-| **CLI Reference**           | `CLI.md`             | Command-line interface usage, commands, and examples        |
-| **Installation Guide**      | `INSTALLATION.md`    | Step-by-step installation and environment setup             |
-| **User Guide**              | `USAGE.md`           | Comprehensive guide for end-users, workflows, and examples  |
-| **Contributing Guidelines** | `CONTRIBUTING.md`    | Contribution process, coding standards, and PR requirements |
-| **Architecture Overview**   | `ARCHITECTURE.md`    | System architecture, components, and design rationale       |
-| **Configuration Guide**     | `CONFIGURATION.md`   | Configuration options, environment variables, and tuning    |
-| **Feature Matrix**          | `FEATURE_MATRIX.md`  | Feature capabilities, coverage, and roadmap alignment       |
-| **Troubleshooting**         | `TROUBLESHOOTING.md` | Common issues, diagnostics, and remediation steps           |
+| Document                                           | Contents                               |
+| :------------------------------------------------- | :------------------------------------- |
+| [docs/README.md](docs/README.md)                   | Documentation index                    |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)       | System architecture                    |
+| [docs/API.md](docs/API.md)                         | REST API reference                     |
+| [docs/INSTALLATION.md](docs/INSTALLATION.md)       | Setup for all components               |
+| [docs/CONFIGURATION.md](docs/CONFIGURATION.md)     | Environment variables and config       |
+| [docs/USAGE.md](docs/USAGE.md)                     | Running and using the platform         |
+| [docs/CLI.md](docs/CLI.md)                         | Helper scripts reference               |
+| [docs/FEATURE_MATRIX.md](docs/FEATURE_MATRIX.md)   | Feature status, implemented vs planned |
+| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Common issues and fixes                |
+| [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)       | Contribution guide                     |
+| [docs/examples/](docs/examples/)                   | Worked examples                        |
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 ## License
 
