@@ -17,13 +17,13 @@ High-level system architecture, component diagrams, and design decisions for the
 
 ChainFinity is a multi-layered, microservices-oriented platform for cross-chain DeFi risk management. The system consists of:
 
-1. **Frontend Layer** — Web and mobile interfaces for user interaction
-2. **API Gateway** — RESTful API with authentication and rate limiting
-3. **Business Logic Layer** — Core services for risk analysis, compliance, and portfolio management
-4. **AI/ML Engine** — Machine learning models for predictive analytics
-5. **Blockchain Layer** — Smart contracts and cross-chain integration
-6. **Data Layer** — Persistent storage and caching
-7. **Infrastructure Layer** — Deployment, monitoring, and CI/CD
+1. **Frontend Layer** - Web and mobile interfaces for user interaction
+2. **API Gateway** - RESTful API with authentication and rate limiting
+3. **Business Logic Layer** - Core services for risk analysis, compliance, and portfolio management
+4. **AI/ML Engine** - Machine learning models for predictive analytics
+5. **Blockchain Layer** - Smart contracts and cross-chain integration
+6. **Data Layer** - Persistent storage and caching
+7. **Infrastructure Layer** - Deployment, monitoring, and CI/CD
 
 ## Architecture Diagram
 
@@ -118,11 +118,11 @@ graph TB
 
 **Key Components:**
 
-- `Dashboard.js` — Main user dashboard with portfolio overview
-- `Portfolio.js` — Portfolio management interface
-- `RiskAnalysis.js` — Risk metrics visualization
-- `Transactions.js` — Transaction history and monitoring
-- `Settings.js` — User settings and preferences
+- `Dashboard.js` - Main user dashboard with portfolio overview
+- `Portfolio.js` - Portfolio management interface
+- `RiskAnalysis.js` - Risk metrics visualization
+- `Transactions.js` - Transaction history and monitoring
+- `Settings.js` - User settings and preferences
 
 **File Structure:**
 
@@ -158,13 +158,13 @@ web-frontend/
 
 **Endpoints:**
 
-- `/api/v1/auth/` — Authentication endpoints
-- `/api/v1/users/` — User management
-- `/api/v1/portfolios/` — Portfolio operations
-- `/api/v1/transactions/` — Transaction queries
-- `/api/v1/risk/` — Risk assessment
-- `/api/v1/compliance/` — Compliance checks
-- `/api/v1/blockchain/` — Blockchain operations
+- `/api/v1/auth/` - Authentication endpoints
+- `/api/v1/users/` - User management
+- `/api/v1/portfolios/` - Portfolio operations
+- `/api/v1/transactions/` - Transaction queries
+- `/api/v1/risk/` - Risk assessment
+- `/api/v1/compliance/` - Compliance checks
+- `/api/v1/blockchain/` - Blockchain operations
 
 **File Structure:**
 
@@ -210,13 +210,13 @@ code/backend/
 
 **Execution Order (outer to inner):**
 
-1. **SecurityMiddleware** — Security headers (HSTS, CSP, X-Frame-Options)
-2. **CORSMiddleware** — Cross-origin resource sharing
-3. **TrustedHostMiddleware** — Host validation (production)
-4. **RateLimitMiddleware** — API rate limiting (Redis-backed)
-5. **AuthMiddleware** — JWT token validation
-6. **LoggingMiddleware** — Request/response logging
-7. **AuditMiddleware** — Audit trail recording
+1. **SecurityMiddleware** - Security headers (HSTS, CSP, X-Frame-Options)
+2. **CORSMiddleware** - Cross-origin resource sharing
+3. **TrustedHostMiddleware** - Host validation (production)
+4. **RateLimitMiddleware** - API rate limiting (Redis-backed)
+5. **AuthMiddleware** - JWT token validation
+6. **LoggingMiddleware** - Request/response logging
+7. **AuditMiddleware** - Audit trail recording
 
 ### Blockchain Components
 
@@ -423,7 +423,7 @@ sequenceDiagram
 | SQLAlchemy  | 2.0.23  | ORM                    |
 | Alembic     | 1.13.1  | Database migrations    |
 | PostgreSQL  | 15+     | Relational database    |
-| TimescaleDB | —       | Time-series extension  |
+| TimescaleDB | -       | Time-series extension  |
 | Redis       | 7+      | Cache and sessions     |
 | Web3.py     | 6.11.1  | Blockchain interaction |
 | TensorFlow  | 2.x     | Machine learning       |
@@ -451,69 +451,69 @@ sequenceDiagram
 | Hardhat        | 3.0.0   | Development framework   |
 | OpenZeppelin   | 5.4.0   | Security libraries      |
 | Chainlink CCIP | Latest  | Cross-chain messaging   |
-| Ethers.js      | —       | Contract interaction    |
+| Ethers.js      | -       | Contract interaction    |
 
 ## Design Patterns
 
 ### Backend Patterns
 
-1. **Repository Pattern** — Data access abstraction (SQLAlchemy models)
-2. **Service Pattern** — Business logic encapsulation
-3. **Dependency Injection** — FastAPI dependency system
-4. **Factory Pattern** — Database session creation
-5. **Strategy Pattern** — Multiple authentication methods
-6. **Observer Pattern** — WebSocket event broadcasting
-7. **Middleware Pattern** — Request/response processing
+1. **Repository Pattern** - Data access abstraction (SQLAlchemy models)
+2. **Service Pattern** - Business logic encapsulation
+3. **Dependency Injection** - FastAPI dependency system
+4. **Factory Pattern** - Database session creation
+5. **Strategy Pattern** - Multiple authentication methods
+6. **Observer Pattern** - WebSocket event broadcasting
+7. **Middleware Pattern** - Request/response processing
 
 ### Smart Contract Patterns
 
-1. **Access Control** — Role-based permissions (OpenZeppelin)
-2. **Circuit Breaker** — Emergency pause functionality
-3. **Rate Limiting** — Time-based transfer limits
-4. **Pull Over Push** — User-initiated withdrawals
-5. **Checks-Effects-Interactions** — Reentrancy prevention
-6. **Upgradeable Contracts** — Initializable pattern
+1. **Access Control** - Role-based permissions (OpenZeppelin)
+2. **Circuit Breaker** - Emergency pause functionality
+3. **Rate Limiting** - Time-based transfer limits
+4. **Pull Over Push** - User-initiated withdrawals
+5. **Checks-Effects-Interactions** - Reentrancy prevention
+6. **Upgradeable Contracts** - Initializable pattern
 
 ## Security Architecture
 
 ### Defense in Depth
 
-1. **Network Layer** — HTTPS, TLS 1.3, firewall rules
-2. **Application Layer** — Input validation, output encoding, CORS
-3. **Authentication Layer** — JWT, MFA, session management
-4. **Authorization Layer** — RBAC, resource-level permissions
-5. **Data Layer** — Encryption at rest, field-level encryption
-6. **Blockchain Layer** — Smart contract audits, access control
+1. **Network Layer** - HTTPS, TLS 1.3, firewall rules
+2. **Application Layer** - Input validation, output encoding, CORS
+3. **Authentication Layer** - JWT, MFA, session management
+4. **Authorization Layer** - RBAC, resource-level permissions
+5. **Data Layer** - Encryption at rest, field-level encryption
+6. **Blockchain Layer** - Smart contract audits, access control
 
 ### Security Features
 
-- **Password Policy** — Minimum 8 characters, complexity requirements
-- **Token Expiration** — Access tokens: 30 min, Refresh tokens: 7 days
-- **Rate Limiting** — 60 requests/minute per user
-- **Audit Logging** — All actions logged with retention policy
-- **Field Encryption** — PII encrypted with AES-256
-- **SQL Injection Prevention** — Parameterized queries (SQLAlchemy)
-- **XSS Prevention** — React auto-escaping, CSP headers
-- **CSRF Protection** — SameSite cookies, CORS configuration
+- **Password Policy** - Minimum 8 characters, complexity requirements
+- **Token Expiration** - Access tokens: 30 min, Refresh tokens: 7 days
+- **Rate Limiting** - 60 requests/minute per user
+- **Audit Logging** - All actions logged with retention policy
+- **Field Encryption** - PII encrypted with AES-256
+- **SQL Injection Prevention** - Parameterized queries (SQLAlchemy)
+- **XSS Prevention** - React auto-escaping, CSP headers
+- **CSRF Protection** - SameSite cookies, CORS configuration
 
 ## Scalability & Performance
 
 ### Horizontal Scaling
 
-- **API Layer** — Stateless design, load balancer compatible
-- **Database** — Read replicas, connection pooling
-- **Cache** — Redis cluster support
-- **Kubernetes** — Auto-scaling based on CPU/memory
+- **API Layer** - Stateless design, load balancer compatible
+- **Database** - Read replicas, connection pooling
+- **Cache** - Redis cluster support
+- **Kubernetes** - Auto-scaling based on CPU/memory
 
 ### Performance Optimizations
 
-- **Database Indexing** — Indexes on frequently queried fields
-- **Query Optimization** — Eager loading, query batching
-- **Response Caching** — Redis caching for expensive queries
-- **Connection Pooling** — Reuse database connections
-- **Async Operations** — Non-blocking I/O with asyncio
-- **CDN** — Static asset delivery
-- **WebSocket** — Efficient real-time updates
+- **Database Indexing** - Indexes on frequently queried fields
+- **Query Optimization** - Eager loading, query batching
+- **Response Caching** - Redis caching for expensive queries
+- **Connection Pooling** - Reuse database connections
+- **Async Operations** - Non-blocking I/O with asyncio
+- **CDN** - Static asset delivery
+- **WebSocket** - Efficient real-time updates
 
 ### Performance Metrics
 

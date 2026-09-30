@@ -1,5 +1,5 @@
 """
-ChainFinity AI Models — Data Preprocessing Pipeline
+ChainFinity AI Models - Data Preprocessing Pipeline
 Shared utilities used by all model modules:
   - VolatilityForecaster
   - CorrelationPredictor
@@ -43,7 +43,7 @@ def validate_ohlcv(df: pd.DataFrame, strict: bool = False) -> pd.DataFrame:
             neg = (df[col] < 0).sum()
             if neg:
                 logger.warning(
-                    "Column '%s' has %d negative values — set to NaN.", col, neg
+                    "Column '%s' has %d negative values - set to NaN.", col, neg
                 )
                 df.loc[df[col] < 0, col] = np.nan
     if "high" in df.columns and "low" in df.columns:

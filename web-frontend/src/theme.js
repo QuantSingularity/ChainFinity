@@ -1,4 +1,4 @@
-// theme.js — kept for backward compatibility.
+// theme.js - kept for backward compatibility.
 // The active theme is created dynamically in src/index.js (getTheme).
 // Importing this file directly is deprecated; use the ThemeProvider from index.js.
 

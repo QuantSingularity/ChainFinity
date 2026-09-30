@@ -253,7 +253,7 @@ class AlertRule(BaseModel, TimestampMixin, AuditMixin):
 
     __tablename__ = "alert_rules"
 
-    # Ownership / scoping — alert rules are created per user and (optionally)
+    # Ownership / scoping - alert rules are created per user and (optionally)
     # per portfolio by the risk API.
     user_id = Column(
         Uuid(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True

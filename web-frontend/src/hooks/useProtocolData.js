@@ -149,7 +149,7 @@ export const usePortfolioData = (walletAddress) => {
           const response = await blockchainAPI.getPortfolio(address);
           setPortfolioData(response.data);
         } else {
-          // No address — use mock data so UI is always populated
+          // No address - use mock data so UI is always populated
           setPortfolioData(MOCK_PORTFOLIO);
         }
         setError(null);

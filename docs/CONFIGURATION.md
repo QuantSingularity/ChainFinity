@@ -19,7 +19,7 @@ ChainFinity uses environment variables for configuration across all components. 
 | ----------------- | ------- | ----------------- | --------------------------------------------------- | ------------ |
 | `APP_NAME`        | string  | "ChainFinity API" | Application name displayed in API docs              | env file     |
 | `APP_VERSION`     | string  | "2.0.0"           | Application version                                 | env file     |
-| `APP_DESCRIPTION` | string  | —                 | API description                                     | env file     |
+| `APP_DESCRIPTION` | string  | -                 | API description                                     | env file     |
 | `ENVIRONMENT`     | enum    | "development"     | Environment: `development`, `staging`, `production` | env file     |
 | `DEBUG`           | boolean | false             | Enable debug mode (detailed errors)                 | env file     |
 | `HOST`            | string  | "0.0.0.0"         | Server bind address                                 | env file     |
@@ -50,8 +50,8 @@ WORKERS=4
 
 | Option              | Type    | Default | Description                       | Where to set |
 | ------------------- | ------- | ------- | --------------------------------- | ------------ |
-| `DATABASE_URL`      | string  | —       | PostgreSQL connection URL (async) | env file     |
-| `DATABASE_READ_URL` | string  | —       | Read replica URL (optional)       | env file     |
+| `DATABASE_URL`      | string  | -       | PostgreSQL connection URL (async) | env file     |
+| `DATABASE_READ_URL` | string  | -       | Read replica URL (optional)       | env file     |
 | `DB_POOL_SIZE`      | integer | 20      | Connection pool size              | env file     |
 | `DB_MAX_OVERFLOW`   | integer | 30      | Max overflow connections          | env file     |
 | `DB_POOL_TIMEOUT`   | integer | 30      | Connection timeout (seconds)      | env file     |
@@ -71,8 +71,8 @@ DATABASE_URL=postgresql+asyncpg://postgres:mypassword@localhost:5432/chainfinity
 
 | Option                         | Type    | Default | Description                  | Where to set |
 | ------------------------------ | ------- | ------- | ---------------------------- | ------------ |
-| `REDIS_URL`                    | string  | —       | Redis connection URL         | env file     |
-| `REDIS_PASSWORD`               | string  | —       | Redis password (if required) | env file     |
+| `REDIS_URL`                    | string  | -       | Redis connection URL         | env file     |
+| `REDIS_PASSWORD`               | string  | -       | Redis password (if required) | env file     |
 | `REDIS_DB`                     | integer | 0       | Redis database number        | env file     |
 | `REDIS_MAX_CONNECTIONS`        | integer | 20      | Maximum connections in pool  | env file     |
 | `REDIS_SOCKET_TIMEOUT`         | integer | 5       | Socket timeout (seconds)     | env file     |
@@ -94,7 +94,7 @@ SESSION_TTL=86400
 
 | Option                        | Type    | Default     | Description                            | Where to set |
 | ----------------------------- | ------- | ----------- | -------------------------------------- | ------------ |
-| `SECRET_KEY`                  | string  | —           | JWT signing key (**REQUIRED**)         | env file     |
+| `SECRET_KEY`                  | string  | -           | JWT signing key (**REQUIRED**)         | env file     |
 | `JWT_ALGORITHM`               | string  | "HS256"     | JWT algorithm                          | env file     |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | integer | 30          | Access token expiry                    | env file     |
 | `REFRESH_TOKEN_EXPIRE_DAYS`   | integer | 7           | Refresh token expiry                   | env file     |
@@ -108,7 +108,7 @@ SESSION_TTL=86400
 | `API_KEY_HEADER`              | string  | "X-API-Key" | API key header name                    | env file     |
 | `CORS_ORIGINS`                | string  | "\*"        | Allowed CORS origins (comma-separated) | env file     |
 | `CORS_ALLOW_CREDENTIALS`      | boolean | true        | Allow credentials in CORS              | env file     |
-| `ENCRYPTION_KEY`              | string  | —           | Field encryption key (32 chars)        | env file     |
+| `ENCRYPTION_KEY`              | string  | -           | Field encryption key (32 chars)        | env file     |
 | `FIELD_ENCRYPTION_ENABLED`    | boolean | true        | Enable field-level encryption          | env file     |
 
 **Generate SECRET_KEY:**
@@ -123,19 +123,19 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 | Option                     | Type    | Default  | Description                        | Where to set |
 | -------------------------- | ------- | -------- | ---------------------------------- | ------------ |
-| `ETH_RPC_URL`              | string  | —        | Ethereum RPC endpoint              | env file     |
-| `ETH_WEBSOCKET_URL`        | string  | —        | Ethereum WebSocket endpoint        | env file     |
+| `ETH_RPC_URL`              | string  | -        | Ethereum RPC endpoint              | env file     |
+| `ETH_WEBSOCKET_URL`        | string  | -        | Ethereum WebSocket endpoint        | env file     |
 | `ETH_CHAIN_ID`             | integer | 1        | Ethereum chain ID (1=mainnet)      | env file     |
-| `POLYGON_RPC_URL`          | string  | —        | Polygon RPC endpoint               | env file     |
+| `POLYGON_RPC_URL`          | string  | -        | Polygon RPC endpoint               | env file     |
 | `POLYGON_CHAIN_ID`         | integer | 137      | Polygon chain ID                   | env file     |
-| `BSC_RPC_URL`              | string  | —        | BSC RPC endpoint                   | env file     |
+| `BSC_RPC_URL`              | string  | -        | BSC RPC endpoint                   | env file     |
 | `BSC_CHAIN_ID`             | integer | 56       | BSC chain ID                       | env file     |
 | `GAS_PRICE_STRATEGY`       | enum    | "medium" | Gas price: `low`, `medium`, `high` | env file     |
 | `MAX_GAS_PRICE`            | integer | 100      | Maximum gas price (Gwei)           | env file     |
-| `GOVERNANCE_TOKEN_ADDRESS` | string  | —        | Deployed governance token address  | env file     |
-| `ASSET_VAULT_ADDRESS`      | string  | —        | Deployed asset vault address       | env file     |
-| `ETHERSCAN_API_KEY`        | string  | —        | Etherscan API key                  | env file     |
-| `POLYGONSCAN_API_KEY`      | string  | —        | Polygonscan API key                | env file     |
+| `GOVERNANCE_TOKEN_ADDRESS` | string  | -        | Deployed governance token address  | env file     |
+| `ASSET_VAULT_ADDRESS`      | string  | -        | Deployed asset vault address       | env file     |
+| `ETHERSCAN_API_KEY`        | string  | -        | Etherscan API key                  | env file     |
+| `POLYGONSCAN_API_KEY`      | string  | -        | Polygonscan API key                | env file     |
 
 **Example RPC URLs:**
 
@@ -158,11 +158,11 @@ BSC_RPC_URL=https://bsc-dataseed.binance.org/
 | -------------------------------- | ------- | ------------- | ------------------------------------- | ------------ |
 | `KYC_ENABLED`                    | boolean | true          | Enable KYC verification               | env file     |
 | `KYC_PROVIDER`                   | string  | "jumio"       | KYC provider: `jumio`, `onfido`, etc. | env file     |
-| `KYC_API_KEY`                    | string  | —             | KYC provider API key                  | env file     |
-| `KYC_API_SECRET`                 | string  | —             | KYC provider API secret               | env file     |
+| `KYC_API_KEY`                    | string  | -             | KYC provider API key                  | env file     |
+| `KYC_API_SECRET`                 | string  | -             | KYC provider API secret               | env file     |
 | `AML_ENABLED`                    | boolean | true          | Enable AML screening                  | env file     |
 | `AML_PROVIDER`                   | string  | "chainalysis" | AML provider                          | env file     |
-| `AML_API_KEY`                    | string  | —             | AML provider API key                  | env file     |
+| `AML_API_KEY`                    | string  | -             | AML provider API key                  | env file     |
 | `TRANSACTION_MONITORING_ENABLED` | boolean | true          | Enable transaction monitoring         | env file     |
 | `SUSPICIOUS_AMOUNT_THRESHOLD`    | float   | 10000.0       | Suspicious transaction threshold      | env file     |
 | `DAILY_TRANSACTION_LIMIT`        | float   | 50000.0       | Daily transaction limit per user      | env file     |
@@ -175,30 +175,30 @@ BSC_RPC_URL=https://bsc-dataseed.binance.org/
 | ----------------------- | ------- | ------- | ---------------------------------------------- | ------------ |
 | `LOG_LEVEL`             | enum    | "INFO"  | Log level: `DEBUG`, `INFO`, `WARNING`, `ERROR` | env file     |
 | `LOG_FORMAT`            | enum    | "json"  | Log format: `json`, `text`                     | env file     |
-| `LOG_FILE`              | string  | —       | Log file path (empty for stdout)               | env file     |
+| `LOG_FILE`              | string  | -       | Log file path (empty for stdout)               | env file     |
 | `METRICS_ENABLED`       | boolean | true    | Enable Prometheus metrics                      | env file     |
 | `METRICS_PORT`          | integer | 8001    | Metrics endpoint port                          | env file     |
 | `HEALTH_CHECK_INTERVAL` | integer | 30      | Health check interval (seconds)                | env file     |
-| `SENTRY_DSN`            | string  | —       | Sentry error tracking DSN                      | env file     |
-| `SENTRY_ENVIRONMENT`    | string  | —       | Sentry environment tag                         | env file     |
+| `SENTRY_DSN`            | string  | -       | Sentry error tracking DSN                      | env file     |
+| `SENTRY_ENVIRONMENT`    | string  | -       | Sentry environment tag                         | env file     |
 
 ### Email Configuration
 
 | Option          | Type    | Default | Description          | Where to set |
 | --------------- | ------- | ------- | -------------------- | ------------ |
-| `SMTP_HOST`     | string  | —       | SMTP server hostname | env file     |
+| `SMTP_HOST`     | string  | -       | SMTP server hostname | env file     |
 | `SMTP_PORT`     | integer | 587     | SMTP server port     | env file     |
-| `SMTP_USERNAME` | string  | —       | SMTP username        | env file     |
-| `SMTP_PASSWORD` | string  | —       | SMTP password        | env file     |
+| `SMTP_USERNAME` | string  | -       | SMTP username        | env file     |
+| `SMTP_PASSWORD` | string  | -       | SMTP password        | env file     |
 | `SMTP_USE_TLS`  | boolean | true    | Use TLS encryption   | env file     |
-| `FROM_EMAIL`    | string  | —       | Sender email address | env file     |
+| `FROM_EMAIL`    | string  | -       | Sender email address | env file     |
 
 ### Celery Configuration
 
 | Option                     | Type   | Default | Description                 | Where to set |
 | -------------------------- | ------ | ------- | --------------------------- | ------------ |
-| `CELERY_BROKER_URL`        | string | —       | Message broker URL (Redis)  | env file     |
-| `CELERY_RESULT_BACKEND`    | string | —       | Result backend URL (Redis)  | env file     |
+| `CELERY_BROKER_URL`        | string | -       | Message broker URL (Redis)  | env file     |
+| `CELERY_RESULT_BACKEND`    | string | -       | Result backend URL (Redis)  | env file     |
 | `CELERY_TASK_SERIALIZER`   | string | "json"  | Task serialization format   | env file     |
 | `CELERY_RESULT_SERIALIZER` | string | "json"  | Result serialization format | env file     |
 | `CELERY_TIMEZONE`          | string | "UTC"   | Celery timezone             | env file     |
@@ -209,9 +209,9 @@ File: `code/blockchain/.env`
 
 | Option              | Type   | Default     | Description                              | Where to set |
 | ------------------- | ------ | ----------- | ---------------------------------------- | ------------ |
-| `INFURA_PROJECT_ID` | string | —           | Infura project ID                        | env file     |
-| `ETHERSCAN_API_KEY` | string | —           | Etherscan API key for verification       | env file     |
-| `PRIVATE_KEY`       | string | —           | Deployer private key (without 0x prefix) | env file     |
+| `INFURA_PROJECT_ID` | string | -           | Infura project ID                        | env file     |
+| `ETHERSCAN_API_KEY` | string | -           | Etherscan API key for verification       | env file     |
+| `PRIVATE_KEY`       | string | -           | Deployer private key (without 0x prefix) | env file     |
 | `HARDHAT_NETWORK`   | string | "localhost" | Default network for Hardhat              | env file     |
 
 **Example:**
@@ -241,7 +241,7 @@ File: `mobile-frontend/.env`
 
 | Option                 | Type    | Default | Description      | Where to set |
 | ---------------------- | ------- | ------- | ---------------- | ------------ |
-| `NEXT_PUBLIC_API_URL`  | string  | —       | Backend API URL  | env file     |
+| `NEXT_PUBLIC_API_URL`  | string  | -       | Backend API URL  | env file     |
 | `NEXT_PUBLIC_CHAIN_ID` | integer | 1       | Default chain ID | env file     |
 
 ## Environment-Specific Configuration
@@ -283,14 +283,14 @@ METRICS_ENABLED=true
 
 ## Configuration Best Practices
 
-1. **Never commit `.env` files** — Use `.env.example` as template
-2. **Use strong secrets** — Generate with `openssl rand -hex 32`
-3. **Rotate secrets regularly** — Especially in production
-4. **Use separate databases** — Different DB for each environment
-5. **Enable monitoring** — Set up Sentry and Prometheus in production
-6. **Limit CORS origins** — Be specific in production
-7. **Use environment variables** — Never hardcode credentials
-8. **Backup configuration** — Store securely (e.g., AWS Secrets Manager)
+1. **Never commit `.env` files** - Use `.env.example` as template
+2. **Use strong secrets** - Generate with `openssl rand -hex 32`
+3. **Rotate secrets regularly** - Especially in production
+4. **Use separate databases** - Different DB for each environment
+5. **Enable monitoring** - Set up Sentry and Prometheus in production
+6. **Limit CORS origins** - Be specific in production
+7. **Use environment variables** - Never hardcode credentials
+8. **Backup configuration** - Store securely (e.g., AWS Secrets Manager)
 
 ## Configuration Validation
 

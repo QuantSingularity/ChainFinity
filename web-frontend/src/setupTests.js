@@ -5,7 +5,7 @@ import "@testing-library/jest-dom";
 // jsdom does not implement matchMedia. MUI's useMediaQuery reads `.matches`
 // and framer-motion's reduced-motion detection reads `.addListener`, so both
 // crash without this. It is defined with a plain function (not jest.fn) so it
-// survives jest's automatic mock reset between tests — the previous
+// survives jest's automatic mock reset between tests - the previous
 // jest.fn().mockImplementation lost its return value once mocks were reset,
 // which made matchMedia() return undefined and broke ~27 tests.
 Object.defineProperty(window, "matchMedia", {

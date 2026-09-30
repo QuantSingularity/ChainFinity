@@ -15,7 +15,7 @@ Comprehensive overview of ChainFinity features, their availability, modules, and
 | **Transaction Monitoring**  | Track and analyze blockchain transactions      | `code/backend/app/api/v1/endpoints/transactions.py`      | `GET /api/v1/transactions`      | [USAGE.md](./USAGE.md#workflow-5-monitor-transactions)                 | Real-time updates         |
 | **KYC/AML Compliance**      | Identity verification and compliance checks    | `code/backend/services/compliance/compliance_service.py` | `POST /api/v1/compliance/kyc`   | [API.md](./API.md#compliance-endpoints)                                | Jumio integration         |
 | **Asset Vault**             | Secure on-chain asset storage                  | `code/blockchain/contracts/AssetVault.sol`               | Smart contract call             | [USAGE.md](./USAGE.md#library-usage)                                   | ERC20 compatible          |
-| **Governance System**       | DAO governance with token voting               | `code/blockchain/contracts/governance/`                  | Smart contract call             | —                                                                      | OpenZeppelin Governor     |
+| **Governance System**       | DAO governance with token voting               | `code/blockchain/contracts/governance/`                  | Smart contract call             | -                                                                      | OpenZeppelin Governor     |
 | **Price Feeds**             | Real-time cryptocurrency price data            | `code/backend/services/external/price_feeds.py`          | WebSocket `/ws/prices`          | [USAGE.md](./USAGE.md#websocket-real-time-updates)                     | Chainlink oracles         |
 | **Market Data Service**     | Historical and real-time market analytics      | `code/backend/services/market/market_data_service.py`    | API endpoints                   | [API.md](./API.md)                                                     | Multiple data sources     |
 | **Analytics Service**       | Portfolio performance analytics                | `code/backend/services/analytics/analytics_service.py`   | API endpoints                   | [examples/portfolio-management.md](./examples/portfolio-management.md) | Sharpe ratio, VaR         |
@@ -30,7 +30,7 @@ Comprehensive overview of ChainFinity features, their availability, modules, and
 | **Correlation Analysis**  | Cross-asset correlation detection        | `code/ai_models/train_correlation_model.py` | Risk assessment API             | [examples/risk-analysis.md](./examples/risk-analysis.md) | Statistical models    |
 | **Anomaly Detection**     | Unusual transaction pattern detection    | `code/backend/services/analytics/`          | Transaction analysis            | [API.md](./API.md#transaction-endpoints)                 | Unsupervised learning |
 | **Risk Scoring**          | Automated portfolio risk scoring         | `code/backend/services/risk/`               | `POST /api/v1/risk/assess/{id}` | [examples/risk-analysis.md](./examples/risk-analysis.md) | 0-10 scale            |
-| **Data Preprocessing**    | Historical data cleaning and preparation | `code/ai_models/data_preprocessing.py`      | `--component ai` in test script | —                                                        | Pandas/NumPy          |
+| **Data Preprocessing**    | Historical data cleaning and preparation | `code/ai_models/data_preprocessing.py`      | `--component ai` in test script | -                                                        | Pandas/NumPy          |
 
 ## Blockchain Features
 
@@ -43,9 +43,9 @@ Comprehensive overview of ChainFinity features, their availability, modules, and
 | **Smart Contract Verification** | Verify contracts on Etherscan         | Hardhat plugin                      | `npx hardhat verify` | [CLI.md](./CLI.md#blockchain-commands)                                 | Production deployment |
 | **ERC20 Integration**           | Standard token support                | All contracts                       | Smart contract       | [USAGE.md](./USAGE.md#library-usage)                                   | OpenZeppelin libs     |
 | **Access Control**              | Role-based smart contract permissions | `CrossChainManager.sol`, etc.       | Smart contract       | [examples/cross-chain-transfer.md](./examples/cross-chain-transfer.md) | ADMIN, OPERATOR roles |
-| **Circuit Breakers**            | Emergency pause functionality         | `CrossChainManager.sol`             | Smart contract       | —                                                                      | Security feature      |
+| **Circuit Breakers**            | Emergency pause functionality         | `CrossChainManager.sol`             | Smart contract       | -                                                                      | Security feature      |
 | **Rate Limiting (Blockchain)**  | On-chain transfer rate limits         | `CrossChainManager.sol`             | Smart contract       | [examples/cross-chain-transfer.md](./examples/cross-chain-transfer.md) | Anti-abuse            |
-| **Fee Management**              | Liquidity provider fee distribution   | `CrossChainManager.sol`             | Smart contract       | —                                                                      | Basis points          |
+| **Fee Management**              | Liquidity provider fee distribution   | `CrossChainManager.sol`             | Smart contract       | -                                                                      | Basis points          |
 
 ## Backend Features
 
@@ -71,14 +71,14 @@ Comprehensive overview of ChainFinity features, their availability, modules, and
 | Feature                    | Short description                  | Module / File      | CLI flag / API | Example (path)                       | Notes              |
 | -------------------------- | ---------------------------------- | ------------------ | -------------- | ------------------------------------ | ------------------ |
 | **React 18 UI**            | Modern React web interface         | `web-frontend/`    | `npm start`    | [INSTALLATION.md](./INSTALLATION.md) | TypeScript support |
-| **Material-UI Components** | Pre-built UI components            | `web-frontend/`    | —              | —                                    | MUI v5             |
-| **Recharts Visualization** | Data visualization library         | `web-frontend/`    | —              | —                                    | Portfolio charts   |
-| **Web3 Integration**       | Wallet connection (MetaMask, etc.) | `web-frontend/`    | —              | —                                    | Ethers.js v6       |
-| **React Query**            | Server state management            | `web-frontend/`    | —              | —                                    | Data fetching      |
+| **Material-UI Components** | Pre-built UI components            | `web-frontend/`    | -              | -                                    | MUI v5             |
+| **Recharts Visualization** | Data visualization library         | `web-frontend/`    | -              | -                                    | Portfolio charts   |
+| **Web3 Integration**       | Wallet connection (MetaMask, etc.) | `web-frontend/`    | -              | -                                    | Ethers.js v6       |
+| **React Query**            | Server state management            | `web-frontend/`    | -              | -                                    | Data fetching      |
 | **Next.js Mobile App**     | Mobile-optimized interface         | `mobile-frontend/` | `npm run dev`  | [INSTALLATION.md](./INSTALLATION.md) | Next.js 15         |
-| **Radix UI Components**    | Accessible UI primitives           | `mobile-frontend/` | —              | —                                    | Mobile optimized   |
-| **Tailwind CSS**           | Utility-first CSS framework        | `mobile-frontend/` | —              | —                                    | Responsive design  |
-| **Dark Mode**              | Theme switching                    | Both frontends     | —              | —                                    | System preference  |
+| **Radix UI Components**    | Accessible UI primitives           | `mobile-frontend/` | -              | -                                    | Mobile optimized   |
+| **Tailwind CSS**           | Utility-first CSS framework        | `mobile-frontend/` | -              | -                                    | Responsive design  |
+| **Dark Mode**              | Theme switching                    | Both frontends     | -              | -                                    | System preference  |
 
 ## Infrastructure Features
 
@@ -102,13 +102,13 @@ Comprehensive overview of ChainFinity features, their availability, modules, and
 | **JWT Tokens**                | Secure authentication tokens | Auth service     | Login endpoint     | [API.md](./API.md#authentication)                                      | HS256 algorithm       |
 | **Refresh Tokens**            | Long-lived token refresh     | Auth service     | Refresh endpoint   | [API.md](./API.md#post-authrefresh)                                    | 7-day expiry          |
 | **Password Validation**       | Strong password requirements | Password service | Registration       | [CONFIGURATION.md](./CONFIGURATION.md#security-configuration)          | Configurable rules    |
-| **Account Lockout**           | Brute force protection       | Auth middleware  | Automatic          | —                                                                      | After failed attempts |
+| **Account Lockout**           | Brute force protection       | Auth middleware  | Automatic          | -                                                                      | After failed attempts |
 | **API Key Management**        | Alternative authentication   | User endpoints   | `X-API-Key` header | [CONFIGURATION.md](./CONFIGURATION.md)                                 | Optional              |
 | **Sensitive Data Encryption** | PII field encryption         | Security service | Automatic          | [CONFIGURATION.md](./CONFIGURATION.md#security-configuration)          | 32-char key           |
 | **Audit Trail**               | Complete action logging      | Audit middleware | Automatic          | [API.md](./API.md#compliance-endpoints)                                | Immutable logs        |
-| **Smart Contract Security**   | OpenZeppelin patterns        | All contracts    | —                  | —                                                                      | Audited libs          |
+| **Smart Contract Security**   | OpenZeppelin patterns        | All contracts    | -                  | -                                                                      | Audited libs          |
 | **ReentrancyGuard**           | Reentrancy attack protection | Smart contracts  | Automatic          | [examples/cross-chain-transfer.md](./examples/cross-chain-transfer.md) | OpenZeppelin          |
-| **Access Control Lists**      | Granular permissions         | Smart contracts  | Role management    | —                                                                      | RBAC pattern          |
+| **Access Control Lists**      | Granular permissions         | Smart contracts  | Role management    | -                                                                      | RBAC pattern          |
 
 ## Compliance Features
 
@@ -117,7 +117,7 @@ Comprehensive overview of ChainFinity features, their availability, modules, and
 | **KYC Integration**               | Identity verification        | Compliance service   | KYC endpoints                     | [API.md](./API.md#compliance-endpoints)                         | Jumio provider   |
 | **AML Screening**                 | Anti-money laundering checks | Compliance service   | Transaction monitoring            | [CONFIGURATION.md](./CONFIGURATION.md#compliance-configuration) | Chainalysis      |
 | **Transaction Limits**            | Daily transaction limits     | Compliance service   | Automatic enforcement             | [CONFIGURATION.md](./CONFIGURATION.md#compliance-configuration) | Configurable     |
-| **Suspicious Activity Reporting** | Automated SAR generation     | Compliance service   | Internal                          | —                                                               | Threshold-based  |
+| **Suspicious Activity Reporting** | Automated SAR generation     | Compliance service   | Internal                          | -                                                               | Threshold-based  |
 | **Regulatory Reporting**          | Compliance report generation | Compliance endpoints | `POST /api/v1/compliance/reports` | [API.md](./API.md#compliance-endpoints)                         | Multiple formats |
 | **Data Retention**                | Configurable log retention   | Database config      | Config in .env                    | [CONFIGURATION.md](./CONFIGURATION.md#compliance-configuration) | 7 years default  |
 

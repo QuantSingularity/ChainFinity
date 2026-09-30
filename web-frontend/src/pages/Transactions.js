@@ -556,7 +556,7 @@ const Transactions = () => {
                                     ? new Date(
                                         transaction.timestamp * 1000,
                                       ).toLocaleDateString()
-                                    : "—")}
+                                    : "-")}
                               </Typography>
                               <Typography
                                 variant="caption"

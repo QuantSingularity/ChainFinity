@@ -89,8 +89,6 @@ ChainFinity/
 
 These modules are part of the codebase, unit-tested, and can be imported and run; unlike the correlation and volatility model, the backend does not currently call them from a live API route.
 
-Not part of this project, despite appearing in earlier drafts of this document: automated hedging execution, flash loan defense, MEV protection, TimescaleDB, IPFS storage, live Chainlink price oracles (Chainlink here is used for CCIP messaging, not pricing), a live ArgoCD pipeline, and third-party KYC/AML providers (the hooks exist but currently point at stub endpoints).
-
 ## Technology Stack
 
 | Area            | Technology                                                                                       |
@@ -107,8 +105,6 @@ Not part of this project, despite appearing in earlier drafts of this document: 
 | Monitoring      | Prometheus, Grafana, Alertmanager                                                                |
 | CI/CD           | GitHub Actions                                                                                   |
 | Testing         | pytest (backend), Hardhat (contracts), React Testing Library and Playwright (web), Jest (mobile) |
-
-Not part of this project, despite being common in this space: TimescaleDB, IPFS, GraphQL (the subgraph schema exists but is not deployed or indexed), and ArgoCD.
 
 ## Architecture
 

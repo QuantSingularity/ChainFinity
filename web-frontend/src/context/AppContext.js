@@ -55,14 +55,14 @@ export const AppProvider = ({ children }) => {
           setUser(parsed);
           setIsAuthenticated(true);
 
-          // Attempt to verify token with backend (optional — fails gracefully)
+          // Attempt to verify token with backend (optional - fails gracefully)
           try {
             const response = await authAPI.getCurrentUser();
             const verifiedUser = normalizeUser(response.data);
             setUser(verifiedUser);
             localStorage.setItem("user", JSON.stringify(verifiedUser));
           } catch (_verifyErr) {
-            // Backend unreachable or token expired — keep cached user for now
+            // Backend unreachable or token expired - keep cached user for now
             // Only force logout on explicit 401 (invalid token)
             if (_verifyErr?.response?.status === 401) {
               logout();

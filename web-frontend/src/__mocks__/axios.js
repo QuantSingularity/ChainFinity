@@ -3,7 +3,7 @@
 // `create` is a PLAIN function (not jest.fn) that always returns the same
 // singleton instance. The previous version used `create: jest.fn(() => mockAxios)`,
 // but several suites call `jest.clearAllMocks()` in beforeEach, which wipes a
-// jest.fn's implementation — after that, `axios.create()` returned undefined
+// jest.fn's implementation - after that, `axios.create()` returned undefined
 // and every `axios.create().post/get` access threw. Keeping `create` as a
 // plain function makes it survive clearAllMocks while the individual verb
 // methods remain jest.fn()s whose call history can still be asserted.

@@ -564,7 +564,7 @@ class TestLiquidityCrisisModel:
 
 
 # ===========================================================================
-# volatility_forecaster tests (lightweight — no TF training)
+# volatility_forecaster tests (lightweight - no TF training)
 # ===========================================================================
 
 

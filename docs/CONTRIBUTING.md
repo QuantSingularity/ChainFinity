@@ -75,11 +75,11 @@ git checkout -b fix/bug-description
 
 **Branch Naming Convention:**
 
-- `feature/feature-name` — New features
-- `fix/bug-description` — Bug fixes
-- `docs/documentation-update` — Documentation changes
-- `refactor/code-improvement` — Code refactoring
-- `test/test-addition` — Test additions
+- `feature/feature-name` - New features
+- `fix/bug-description` - Bug fixes
+- `docs/documentation-update` - Documentation changes
+- `refactor/code-improvement` - Code refactoring
+- `test/test-addition` - Test additions
 
 ### 2. Make Changes
 
@@ -136,13 +136,13 @@ git commit -m "feat: add new risk assessment algorithm"
 
 **Types:**
 
-- `feat` — New feature
-- `fix` — Bug fix
-- `docs` — Documentation changes
-- `style` — Code style changes (formatting, no logic changes)
-- `refactor` — Code refactoring
-- `test` — Adding or updating tests
-- `chore` — Maintenance tasks
+- `feat` - New feature
+- `fix` - Bug fix
+- `docs` - Documentation changes
+- `style` - Code style changes (formatting, no logic changes)
+- `refactor` - Code refactoring
+- `test` - Adding or updating tests
+- `chore` - Maintenance tasks
 
 **Examples:**
 
@@ -534,20 +534,20 @@ describe("Portfolio Component", () => {
 
 ### Code Documentation
 
-1. **Document public APIs** — All public functions, classes, and endpoints
-2. **Use examples** — Include usage examples in docstrings
-3. **Keep it current** — Update docs when changing code
-4. **Explain why** — Not just what, but why design decisions were made
+1. **Document public APIs** - All public functions, classes, and endpoints
+2. **Use examples** - Include usage examples in docstrings
+3. **Keep it current** - Update docs when changing code
+4. **Explain why** - Not just what, but why design decisions were made
 
 ### User Documentation
 
 When adding features, update:
 
-1. **README.md** — If it changes setup or usage
-2. **API.md** — For new API endpoints
-3. **CLI.md** — For new CLI commands
-4. **FEATURE_MATRIX.md** — For new features
-5. **examples/** — Add usage examples
+1. **README.md** - If it changes setup or usage
+2. **API.md** - For new API endpoints
+3. **CLI.md** - For new CLI commands
+4. **FEATURE_MATRIX.md** - For new features
+5. **examples/** - Add usage examples
 
 ### Documentation Standards
 

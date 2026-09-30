@@ -80,7 +80,7 @@ class Transaction(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
         Uuid(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
     )
 
-    # Portfolio Association (optional — a transaction may be wallet-level)
+    # Portfolio Association (optional - a transaction may be wallet-level)
     portfolio_id = Column(
         Uuid(as_uuid=True), ForeignKey("portfolios.id"), nullable=True, index=True
     )

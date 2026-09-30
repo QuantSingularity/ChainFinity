@@ -14,29 +14,29 @@ Get started with ChainFinity in three simple steps:
 
 ### Getting Started
 
-- [Installation Guide](./INSTALLATION.md) — System requirements, installation options (pip, Docker, source), and environment setup
-- [Quick Start](./USAGE.md) — Typical usage patterns for CLI, API, and UI workflows
-- [Configuration](./CONFIGURATION.md) — Environment variables, configuration files, and network settings
+- [Installation Guide](./INSTALLATION.md) - System requirements, installation options (pip, Docker, source), and environment setup
+- [Quick Start](./USAGE.md) - Typical usage patterns for CLI, API, and UI workflows
+- [Configuration](./CONFIGURATION.md) - Environment variables, configuration files, and network settings
 
 ### Core Documentation
 
-- [API Reference](./API.md) — Complete REST API documentation with endpoints, parameters, and examples
-- [CLI Reference](./CLI.md) — Command-line interface commands, flags, and usage examples
-- [Feature Matrix](./FEATURE_MATRIX.md) — Comprehensive feature list with availability and examples
-- [Architecture](./ARCHITECTURE.md) — System design, component diagrams, and data flow
+- [API Reference](./API.md) - Complete REST API documentation with endpoints, parameters, and examples
+- [CLI Reference](./CLI.md) - Command-line interface commands, flags, and usage examples
+- [Feature Matrix](./FEATURE_MATRIX.md) - Comprehensive feature list with availability and examples
+- [Architecture](./ARCHITECTURE.md) - System design, component diagrams, and data flow
 
 ### Examples & Tutorials
 
-- [Examples Directory](./examples/) — Working code examples demonstrating key features:
+- [Examples Directory](./examples/) - Working code examples demonstrating key features:
   - [Cross-Chain Transfer Example](./examples/cross-chain-transfer.md)
   - [Risk Analysis Example](./examples/risk-analysis.md)
   - [Portfolio Management Example](./examples/portfolio-management.md)
 
 ### Development & Operations
 
-- [Contributing Guide](./CONTRIBUTING.md) — How to contribute code, documentation, and tests
-- [Troubleshooting](./TROUBLESHOOTING.md) — Common issues and their solutions
-- [Testing Guide](./TESTING.md) — Running tests, test coverage, and writing new tests
+- [Contributing Guide](./CONTRIBUTING.md) - How to contribute code, documentation, and tests
+- [Troubleshooting](./TROUBLESHOOTING.md) - Common issues and their solutions
+- [Testing Guide](./TESTING.md) - Running tests, test coverage, and writing new tests
 
 ## Project Overview
 

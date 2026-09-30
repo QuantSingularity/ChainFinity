@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Base URL of the backend, e.g. http://localhost:8000. All endpoint paths
 // below include the backend's versioned prefix (/api/v1/...). The previous
-// version hit /api/auth/token and /api/blockchain/... — neither of which the
+// version hit /api/auth/token and /api/blockchain/... - neither of which the
 // backend serves (it exposes /api/v1/auth/login, /api/v1/auth/me, and
 // /api/v1/blockchain/...), so every real request 404'd and the app only
 // appeared to work via its demo-mode and mock-data fallbacks.

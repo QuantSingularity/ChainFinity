@@ -52,7 +52,7 @@ test.describe("Authentication", () => {
     )
       .toBeVisible({ timeout: 5000 })
       .catch(() => {
-        // Some SPAs redirect to home — just verify page loads
+        // Some SPAs redirect to home - just verify page loads
       });
   });
 });

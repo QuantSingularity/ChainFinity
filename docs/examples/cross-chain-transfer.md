@@ -392,12 +392,12 @@ try {
 
 ## Security Considerations
 
-1. **Never share private keys** — Store in environment variables
-2. **Verify contract addresses** — Double-check before use
-3. **Test on testnets first** — Use Sepolia/Mumbai for testing
-4. **Check gas prices** — Monitor network congestion
-5. **Verify recipient address** — Cross-chain transfers are irreversible
-6. **Monitor transaction status** — Ensure completion before proceeding
+1. **Never share private keys** - Store in environment variables
+2. **Verify contract addresses** - Double-check before use
+3. **Test on testnets first** - Use Sepolia/Mumbai for testing
+4. **Check gas prices** - Monitor network congestion
+5. **Verify recipient address** - Cross-chain transfers are irreversible
+6. **Monitor transaction status** - Ensure completion before proceeding
 
 ## Testing
 

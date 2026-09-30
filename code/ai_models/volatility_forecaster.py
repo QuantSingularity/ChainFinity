@@ -226,7 +226,7 @@ class VolatilityForecaster:
         dict with:
             predicted_vol    : float  (annualised)
             vol_bucket       : str    (low / medium / high / extreme)
-            confidence       : float  (placeholder — extend with MC-Dropout)
+            confidence       : float  (placeholder - extend with MC-Dropout)
             recent_realized  : float  (last 14-day realized vol for comparison)
         """
         if not self._is_fitted or self.model is None:

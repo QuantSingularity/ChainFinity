@@ -427,8 +427,8 @@ List user transactions.
 | `page_size` | integer | 20      | Items per page          |
 | `type`      | enum    | all     | Transaction type filter |
 | `status`    | enum    | all     | Status filter           |
-| `from_date` | string  | —       | Start date (ISO 8601)   |
-| `to_date`   | string  | —       | End date (ISO 8601)     |
+| `from_date` | string  | -       | Start date (ISO 8601)   |
+| `to_date`   | string  | -       | End date (ISO 8601)     |
 
 **Response:**
 

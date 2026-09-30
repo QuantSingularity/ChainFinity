@@ -11,7 +11,7 @@ been removed from `main.tf` entirely.
 
 ### EKS Node Group
 
-- Removed `instance_types`, `ami_type`, and `disk_size` from `aws_eks_node_group` — all three
+- Removed `instance_types`, `ami_type`, and `disk_size` from `aws_eks_node_group` - all three
   are invalid when a `launch_template` is specified (AWS API error).
 - `instance_type` is now set only in the launch template.
 

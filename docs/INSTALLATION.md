@@ -70,9 +70,9 @@ npm install
 
 **Blockchain Dependencies:**
 
-- Hardhat 3.0+ — Ethereum development environment
-- OpenZeppelin Contracts 5.4+ — Secure smart contract library
-- Chainlink CCIP — Cross-chain interoperability
+- Hardhat 3.0+ - Ethereum development environment
+- OpenZeppelin Contracts 5.4+ - Secure smart contract library
+- Chainlink CCIP - Cross-chain interoperability
 
 #### Step 3: Install Backend Dependencies
 
@@ -85,10 +85,10 @@ pip install -r requirements.txt
 
 **Backend Dependencies:**
 
-- FastAPI 0.104.1 — High-performance web framework
-- SQLAlchemy 2.0.23 — Database ORM
-- Web3.py 6.11.1 — Blockchain interaction
-- TensorFlow 2.x (optional) — AI models
+- FastAPI 0.104.1 - High-performance web framework
+- SQLAlchemy 2.0.23 - Database ORM
+- Web3.py 6.11.1 - Blockchain interaction
+- TensorFlow 2.x (optional) - AI models
 
 #### Step 4: Install Frontend Dependencies
 
@@ -134,11 +134,11 @@ nano .env  # Configure API endpoints
 
 **Critical Environment Variables:**
 
-- `DATABASE_URL` — PostgreSQL connection string
-- `REDIS_URL` — Redis connection string
-- `SECRET_KEY` — JWT signing key (generate with `openssl rand -hex 32`)
-- `ETH_RPC_URL` — Ethereum node RPC endpoint
-- `ETHERSCAN_API_KEY` — Block explorer API key
+- `DATABASE_URL` - PostgreSQL connection string
+- `REDIS_URL` - Redis connection string
+- `SECRET_KEY` - JWT signing key (generate with `openssl rand -hex 32`)
+- `ETH_RPC_URL` - Ethereum node RPC endpoint
+- `ETHERSCAN_API_KEY` - Block explorer API key
 
 #### Step 7: Start Services
 
@@ -181,10 +181,10 @@ docker-compose -f code/backend/docker-compose.yml ps
 
 **Docker Services:**
 
-- `api` — FastAPI backend (port 8000)
-- `postgres` — PostgreSQL database (port 5432)
-- `redis` — Redis cache (port 6379)
-- `nginx` — Reverse proxy (port 80/443)
+- `api` - FastAPI backend (port 8000)
+- `postgres` - PostgreSQL database (port 5432)
+- `redis` - Redis cache (port 6379)
+- `nginx` - Reverse proxy (port 80/443)
 
 ### Option 4: Kubernetes Deployment
 
@@ -335,11 +335,11 @@ python data_preprocessing.py
 
 After successful installation:
 
-1. **Configure your setup** — Review [Configuration Guide](./CONFIGURATION.md)
-2. **Explore the API** — Check [API Reference](./API.md)
-3. **Run examples** — Try [example workflows](./examples/)
-4. **Deploy contracts** — See blockchain deployment guide
-5. **Set up monitoring** — Configure monitoring with `./scripts/monitor_chainfinity.sh`
+1. **Configure your setup** - Review [Configuration Guide](./CONFIGURATION.md)
+2. **Explore the API** - Check [API Reference](./API.md)
+3. **Run examples** - Try [example workflows](./examples/)
+4. **Deploy contracts** - See blockchain deployment guide
+5. **Set up monitoring** - Configure monitoring with `./scripts/monitor_chainfinity.sh`
 
 ## Uninstallation
 

@@ -159,9 +159,9 @@ bash security/vault/init-vault.sh
 
 ## Security Notes
 
-- All secrets must be injected via environment variables or Vault — never hardcoded.
+- All secrets must be injected via environment variables or Vault - never hardcoded.
 - `terraform.tfvars` must never contain real passwords. Use `TF_VAR_*` env vars.
-- `kubernetes/secret.example.yaml` is a template only — generated `secret.yaml` must not be committed.
+- `kubernetes/secret.example.yaml` is a template only - generated `secret.yaml` must not be committed.
 - Network policies default-deny all traffic; only explicitly allowed paths are open.
 - All pods run as non-root with `readOnlyRootFilesystem` where possible.
 - EKS nodes use IMDSv2 (required, hop limit 2).

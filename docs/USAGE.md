@@ -567,19 +567,19 @@ ws.send(
 
 ### Security
 
-1. **Never commit credentials** — Use environment variables
-2. **Rotate API keys** — Regularly update access tokens
-3. **Use HTTPS** — Always in production
-4. **Validate input** — On both client and server
-5. **Rate limiting** — Implement backoff strategies
+1. **Never commit credentials** - Use environment variables
+2. **Rotate API keys** - Regularly update access tokens
+3. **Use HTTPS** - Always in production
+4. **Validate input** - On both client and server
+5. **Rate limiting** - Implement backoff strategies
 
 ### Performance
 
-1. **Cache responses** — Use Redis or local cache
-2. **Paginate large datasets** — Don't fetch all at once
-3. **Batch requests** — Combine related API calls
-4. **Use WebSockets** — For real-time data
-5. **Optimize queries** — Add appropriate filters
+1. **Cache responses** - Use Redis or local cache
+2. **Paginate large datasets** - Don't fetch all at once
+3. **Batch requests** - Combine related API calls
+4. **Use WebSockets** - For real-time data
+5. **Optimize queries** - Add appropriate filters
 
 ### Error Handling
 

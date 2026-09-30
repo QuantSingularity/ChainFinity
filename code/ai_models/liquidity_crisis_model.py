@@ -2,11 +2,11 @@
 Liquidity Crisis Alert System
 Early-warning system for DeFi liquidity crises using a multi-signal
 ensemble approach:
-  1. TVL Velocity Monitor  — detects rapid TVL drain (bank-run signature)
-  2. Bid-Ask Spread Model  — widens before illiquidity events
-  3. Depeg Detector        — stablecoin / LST depeg probability
-  4. Contagion Scorer      — cross-protocol correlation spike detection
-  5. Ensemble aggregator   — weighted combination with configurable weights
+  1. TVL Velocity Monitor  - detects rapid TVL drain (bank-run signature)
+  2. Bid-Ask Spread Model  - widens before illiquidity events
+  3. Depeg Detector        - stablecoin / LST depeg probability
+  4. Contagion Scorer      - cross-protocol correlation spike detection
+  5. Ensemble aggregator   - weighted combination with configurable weights
 """
 
 import logging
@@ -121,7 +121,7 @@ class DepegDetector:
         deviation = (price_series - self.peg_value).abs()
         # Normalise: warning_band → 0, 10× warning_band → 1
         risk = np.clip(deviation / (10 * self.warning_band), 0, 1)
-        # Weight by rate of change — fast depeg is worse
+        # Weight by rate of change - fast depeg is worse
         rate_of_change = deviation.diff().abs().fillna(0)
         roc_weight = np.clip(rate_of_change / self.warning_band, 0, 1)
         combined = 0.7 * risk + 0.3 * roc_weight

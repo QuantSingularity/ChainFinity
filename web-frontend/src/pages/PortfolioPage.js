@@ -144,7 +144,7 @@ const PortfolioPage = () => {
       <Container maxWidth="lg" sx={{ pb: 8 }}>
         {error && (
           <Alert severity="warning" sx={{ mb: 3 }}>
-            {error?.message ?? "Unable to reach server — showing demo data."}
+            {error?.message ?? "Unable to reach server - showing demo data."}
           </Alert>
         )}
 

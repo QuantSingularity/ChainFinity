@@ -44,10 +44,10 @@ Automates the complete environment setup for ChainFinity development.
 | `--project-dir`    | `DIR`     | Current directory | Set project directory                              |
 | `--node-version`   | `VERSION` | 18                | Set Node.js version                                |
 | `--python-version` | `VERSION` | 3.11              | Set Python version                                 |
-| `--skip-docker`    | —         | false             | Skip Docker installation                           |
-| `--skip-databases` | —         | false             | Skip database setup                                |
+| `--skip-docker`    | -         | false             | Skip Docker installation                           |
+| `--skip-databases` | -         | false             | Skip database setup                                |
 | `--environment`    | `ENV`     | development       | Set environment (development, staging, production) |
-| `--help`           | —         | —                 | Show help message                                  |
+| `--help`           | -         | -                 | Show help message                                  |
 
 **Examples:**
 
@@ -103,16 +103,16 @@ Orchestrates deployment to different environments with backup and rollback capab
 | `--env-file`    | `FILE`   | `.env`                | Environment file                |
 | `--environment` | `ENV`    | development           | Deployment environment          |
 | `--backup-dir`  | `DIR`    | `./backups/TIMESTAMP` | Backup directory                |
-| `--dry-run`     | —        | false                 | Perform dry run without changes |
+| `--dry-run`     | -        | false                 | Perform dry run without changes |
 | `--component`   | `NAME`   | all                   | Deploy specific component       |
-| `--help`        | —        | —                     | Show help message               |
+| `--help`        | -        | -                     | Show help message               |
 
 **Components:**
 
-- `blockchain` — Smart contracts only
-- `backend` — Backend API only
-- `frontend` — Web frontend only
-- `all` — All components (default)
+- `blockchain` - Smart contracts only
+- `backend` - Backend API only
+- `frontend` - Web frontend only
+- `all` - All components (default)
 
 **Examples:**
 
@@ -172,10 +172,10 @@ Runs comprehensive test suites across all components.
 | `--log-dir`            | `DIR`    | `./logs`          | Log directory             |
 | `--report-dir`         | `DIR`    | `./test-reports`  | Test report directory     |
 | `--timeout`            | `SEC`    | 300               | Test timeout in seconds   |
-| `--no-parallel`        | —        | false             | Disable parallel testing  |
+| `--no-parallel`        | -        | false             | Disable parallel testing  |
 | `--coverage-threshold` | `NUM`    | 80                | Minimum code coverage (%) |
 | `--component`          | `NAME`   | all               | Test specific component   |
-| `--help`               | —        | —                 | Show help message         |
+| `--help`               | -        | -                 | Show help message         |
 
 **Examples:**
 
@@ -228,9 +228,9 @@ Comprehensive monitoring for ChainFinity platform health and performance.
 | `--alert-threshold` | `NUM`     | 80                    | Alert threshold percentage          |
 | `--check-interval`  | `SEC`     | 300                   | Check interval in seconds           |
 | `--report-interval` | `SEC`     | 86400                 | Report interval in seconds          |
-| `--slack-webhook`   | `URL`     | —                     | Slack webhook URL for notifications |
-| `--email`           | `ADDRESS` | —                     | Email address for notifications     |
-| `--help`            | —         | —                     | Show help message                   |
+| `--slack-webhook`   | `URL`     | -                     | Slack webhook URL for notifications |
+| `--email`           | `ADDRESS` | -                     | Email address for notifications     |
+| `--help`            | -         | -                     | Show help message                   |
 
 **Examples:**
 
@@ -306,9 +306,9 @@ Clean up temporary files, build artifacts, and stop services.
 
 **Options:**
 
-- `--full` — Full cleanup including node_modules and venv
-- `--logs` — Clean up log files
-- `--cache` — Clear cache files
+- `--full` - Full cleanup including node_modules and venv
+- `--logs` - Clean up log files
+- `--cache` - Clear cache files
 
 **Examples:**
 

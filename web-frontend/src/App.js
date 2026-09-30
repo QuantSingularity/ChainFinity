@@ -18,7 +18,7 @@ import Transactions from "./pages/Transactions";
 function App() {
   const { isAuthenticated, loading } = useApp();
 
-  // Wait for auth state to resolve before rendering routes — prevents
+  // Wait for auth state to resolve before rendering routes - prevents
   // redirect flicker and ensures the correct page is shown on first load.
   if (loading) {
     return (
@@ -49,7 +49,7 @@ function App() {
       <Navbar />
       <Box component="main" sx={{ flexGrow: 1 }}>
         <Routes>
-          {/* Public routes — redirect to /dashboard if already logged in */}
+          {/* Public routes - redirect to /dashboard if already logged in */}
           <Route path="/" element={<PublicRoute element={<Home />} />} />
           <Route path="/login" element={<PublicRoute element={<Login />} />} />
           <Route

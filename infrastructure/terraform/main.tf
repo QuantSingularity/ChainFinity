@@ -920,7 +920,7 @@ resource "aws_eks_node_group" "chainfinity" {
   node_role_arn   = aws_iam_role.eks_nodes.arn
   subnet_ids      = aws_subnet.private[*].id
 
-  # Instance configuration — type/AMI/disk controlled by launch_template
+  # Instance configuration - type/AMI/disk controlled by launch_template
   capacity_type = var.node_capacity_type
 
   # Scaling configuration
