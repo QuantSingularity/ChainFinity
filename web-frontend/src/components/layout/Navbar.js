@@ -7,6 +7,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonIcon from "@mui/icons-material/Person";
 import PortfolioIcon from "@mui/icons-material/PieChart";
+import RiskIcon from "@mui/icons-material/Security";
 import SettingsIcon from "@mui/icons-material/Settings";
 import SwapIcon from "@mui/icons-material/SwapHoriz";
 import {
@@ -78,6 +79,11 @@ const AUTH_NAV_ITEMS = [
     label: "Portfolio",
     to: "/portfolio",
     icon: <PortfolioIcon fontSize="small" />,
+  },
+  {
+    label: "Risk",
+    to: "/risk",
+    icon: <RiskIcon fontSize="small" />,
   },
   {
     label: "Transactions",
