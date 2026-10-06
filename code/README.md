@@ -7,7 +7,7 @@ This directory contains the core application code for ChainFinity, a blockchain-
 ```
 code/
 ├── backend/           # FastAPI backend services and API layer
-├── ai_models/         # Machine learning models for crypto financial intelligence
+├── ai_models/         # Layered ML package: core, preprocessing, models, cli, tests
 └── blockchain/        # Solidity smart contracts and blockchain tooling
 ```
 
@@ -77,41 +77,49 @@ For full backend documentation, see [backend/README.md](backend/README.md).
 
 ## AI Models
 
-The `ai_models/` directory contains the machine learning stack that powers ChainFinity's predictive analytics and intelligent risk detection for cryptocurrency markets. Models are built with Python data science libraries and trained on historical on-chain and market data.
+The `ai_models/` package contains the machine learning stack behind ChainFinity's predictive analytics and risk detection. It is imported as `ai_models` and integrated with the backend through `backend/services/ai`. See [ai_models/README.md](ai_models/README.md) for the full package guide.
 
-### Key Components
+### Layout
 
-| Module                       | Purpose                                                                                                                  |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `exploit_detection_model.py` | Detects smart contract exploits and anomalous transaction patterns that may indicate security vulnerabilities or attacks |
-| `liquidity_crisis_model.py`  | Predicts liquidity crises in pools and protocols by analyzing depth, volume, and withdrawal patterns                     |
-| `smart_money_tracker.py`     | Identifies and tracks "smart money" wallet movements to surface institutional-level trading signals                      |
-| `volatility_forecaster.py`   | Forecasts price volatility across assets using historical price data and on-chain metrics                                |
-| `train_correlation_model.py` | Trains correlation models that capture relationships between assets, protocols, and market events                        |
-| `data_preprocessing.py`      | Shared data cleaning, feature engineering, and normalization pipeline for all models                                     |
+| Path                            | Purpose                                                                                 |
+| ------------------------------- | --------------------------------------------------------------------------------------- |
+| `ai_models/core/`               | Lazy TensorFlow loading, versioned and checksummed artifact persistence, model registry |
+| `ai_models/preprocessing/`      | OHLCV validation, imputation, outlier handling, technical features, sequences, scaling  |
+| `ai_models/models/volatility/`  | LSTM volatility forecaster with Monte Carlo intervals and an EWMA fallback              |
+| `ai_models/models/correlation/` | LSTM correlation predictor with a Ledoit-Wolf shrinkage fallback                        |
+| `ai_models/models/exploit/`     | Isolation forest and LSTM autoencoder exploit detector                                  |
+| `ai_models/models/liquidity/`   | Rule-based liquidity crisis detector (TVL drain, spreads, depeg, contagion)             |
+| `ai_models/models/smart_money/` | Wallet clustering, scoring, PageRank centrality and movement signals                    |
+| `ai_models/cli.py`              | `python -m ai_models train <model>` and `python -m ai_models inspect`                   |
+| `ai_models/tests/`              | Unit tests that run without a GPU or network access                                     |
 
-### Technology Stack
+### Backend integration
 
-| Component           | Technology          |
-| ------------------- | ------------------- |
-| Languages           | Python 3.11+        |
-| ML Frameworks       | TensorFlow, PyTorch |
-| Data Processing     | Pandas, NumPy       |
-| Visualization       | Plotly, Matplotlib  |
-| Experiment Tracking | MLflow              |
+| Endpoint                                      | Description                                                     |
+| --------------------------------------------- | --------------------------------------------------------------- |
+| `GET  /api/v1/ai/status`                      | Which models are trained and which are running in fallback mode |
+| `POST /api/v1/ai/volatility`                  | Volatility forecast for a symbol or supplied prices             |
+| `POST /api/v1/ai/correlation`                 | Predicted correlation matrix                                    |
+| `POST /api/v1/ai/exploit-detection`           | Exploit risk scores and alerts for on-chain observations        |
+| `POST /api/v1/ai/liquidity`                   | Liquidity crisis scores and alerts                              |
+| `POST /api/v1/ai/smart-money`                 | Wallet profiles, signals and cross-chain flows                  |
+| `GET  /api/v1/ai/portfolio/{id}/insights`     | Volatility forecasts and correlations for a portfolio's assets  |
+| `POST /api/v1/ai/models/{name}/train` (admin) | Start a background training job                                 |
+| `GET  /api/v1/ai/jobs`, `/jobs/{id}` (admin)  | Training job status                                             |
+| `POST /api/v1/ai/models/reload` (admin)       | Reload artifacts from disk                                      |
 
-### Running the Models
+The risk service (`/api/v1/risk/assess`, `/metrics`, `/monitor`) uses the same models: forecast volatility feeds the overall risk score and recommendations, and predicted correlations drive the correlation matrix and drift alerts. Without trained artifacts every model degrades to its documented fallback, and responses report the model that produced them.
 
-Individual models can be executed directly for training or inference:
+### Training and deployment
 
 ```bash
-cd ai_models
-pip install -r requirements.txt
-python volatility_forecaster.py
-python exploit_detection_model.py
+cd code
+pip install -r ai_models/requirements-ml.txt
+python -m ai_models train volatility --data prices.csv --artifacts-dir backend/ai_artifacts
+python -m ai_models inspect --artifacts-dir backend/ai_artifacts
 ```
 
-The preprocessing pipeline in `data_preprocessing.py` is imported by all model scripts to ensure consistent feature engineering across the platform.
+The backend loads artifacts from `AI_ARTIFACTS_DIR` (default `ai_artifacts` inside the backend directory) at startup. Docker images are built from the `code/` directory so that `ai_models` is packaged with the backend; set `INSTALL_ML=false` to build without TensorFlow.
 
 ## Blockchain
 

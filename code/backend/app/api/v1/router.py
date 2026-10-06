@@ -5,6 +5,7 @@ Main API router for v1 endpoints
 from fastapi import APIRouter
 
 from .endpoints import (
+    ai,
     auth,
     blockchain,
     compliance,
@@ -26,3 +27,4 @@ api_router.include_router(
 api_router.include_router(compliance.router, prefix="/compliance", tags=["compliance"])
 api_router.include_router(risk.router, prefix="/risk", tags=["risk"])
 api_router.include_router(blockchain.router, prefix="/blockchain", tags=["blockchain"])
+api_router.include_router(ai.router, prefix="/ai", tags=["ai"])

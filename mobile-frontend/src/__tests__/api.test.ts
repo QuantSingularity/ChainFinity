@@ -42,5 +42,9 @@ describe("API endpoint paths", () => {
     expect(source).toContain("/api/v1/auth/register");
     expect(source).toContain("/api/v1/blockchain/portfolio");
     expect(source).not.toContain('"/api/auth/token"');
+    expect(source).toContain("/api/v1/portfolios/");
+    expect(source).toContain("/api/v1/risk/assess/");
+    expect(source).toContain("/api/v1/ai/status");
+    expect(source).toContain("/api/v1/ai/portfolio/");
   });
 });

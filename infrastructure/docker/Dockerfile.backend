@@ -16,12 +16,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY code/backend/requirements.txt .
+ARG INSTALL_ML=true
+
+COPY code/backend/requirements.txt code/backend/requirements-ml.txt ./
 # gunicorn is the production process manager invoked below but is not pinned
 # in requirements.txt, so install it explicitly alongside the app deps.
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir --user -r requirements.txt && \
-    pip install --no-cache-dir --user "gunicorn==21.2.0"
+    pip install --no-cache-dir --user "gunicorn==21.2.0" && \
+    if [ "$INSTALL_ML" = "true" ]; then pip install --no-cache-dir --user -r requirements-ml.txt; fi
 
 # ---- Production Stage ----
 FROM python:3.11-slim AS production
@@ -45,8 +48,12 @@ WORKDIR /app
 COPY --from=builder --chown=appuser:appgroup /root/.local /home/appuser/.local
 # Copy ONLY the backend application source (context is the repo root).
 COPY --chown=appuser:appgroup code/backend/ .
+COPY --chown=appuser:appgroup code/ai_models/ ./ai_models/
 
-RUN mkdir -p /app/logs /app/cache /app/uploads && \
+ENV TF_CPP_MIN_LOG_LEVEL=2 \
+    AI_ARTIFACTS_DIR=/app/ai_artifacts
+
+RUN mkdir -p /app/logs /app/cache /app/uploads /app/ai_artifacts && \
     chown -R appuser:appgroup /app
 
 USER 1001

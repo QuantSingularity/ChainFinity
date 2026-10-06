@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PortfolioPage from "./pages/PortfolioPage";
 import Register from "./pages/Register";
+import RiskInsights from "./pages/RiskInsights";
 import Settings from "./pages/Settings";
 import Transactions from "./pages/Transactions";
 
@@ -66,6 +67,10 @@ function App() {
           <Route
             path="/portfolio"
             element={<ProtectedRoute element={<PortfolioPage />} />}
+          />
+          <Route
+            path="/risk"
+            element={<ProtectedRoute element={<RiskInsights />} />}
           />
           <Route
             path="/transactions"

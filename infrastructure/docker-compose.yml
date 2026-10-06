@@ -145,12 +145,15 @@ services:
       ETH_RPC_URL: http://blockchain:8545
       ETH_CHAIN_ID: "31337"
       BLOCKCHAIN_DEPLOYMENT_FILE: /app/deployments/contracts.localhost.json
+      AI_MODELS_ENABLED: ${AI_MODELS_ENABLED:-true}
+      AI_ARTIFACTS_DIR: /app/ai_artifacts
     ports:
       - "127.0.0.1:8080:8080"
       - "127.0.0.1:9091:9090"
     volumes:
       - backend_uploads:/app/uploads
       - backend_logs:/app/logs
+      - backend_ai_artifacts:/app/ai_artifacts
       - blockchain_deployments:/app/deployments:ro
     networks:
       - backend
@@ -287,6 +290,7 @@ volumes:
   redis_data:
   backend_uploads:
   backend_logs:
+  backend_ai_artifacts:
   blockchain_deployments:
   prometheus_data:
   grafana_data:

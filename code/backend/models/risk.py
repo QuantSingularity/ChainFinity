@@ -10,7 +10,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Column,
-    DateTime,
     Enum,
     ForeignKey,
     Index,
@@ -22,7 +21,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from .base import AuditMixin, BaseModel, TimestampMixin
+from .base import AuditMixin, BaseModel, TimestampMixin, UTCDateTime, enum_values
 
 
 class RiskType(enum.Enum):
@@ -86,8 +85,12 @@ class RiskAssessment(BaseModel, TimestampMixin, AuditMixin):
 
     # Assessment Details
     assessment_type = Column(String(50), nullable=False, index=True)
-    risk_type = Column(Enum(RiskType), nullable=False, index=True)
-    risk_level = Column(Enum(RiskLevel), nullable=False, index=True)
+    risk_type = Column(
+        Enum(RiskType, values_callable=enum_values), nullable=False, index=True
+    )
+    risk_level = Column(
+        Enum(RiskLevel, values_callable=enum_values), nullable=False, index=True
+    )
 
     # Risk Scores
     overall_risk_score = Column(Numeric(5, 2), nullable=False)  # 0-100
@@ -107,14 +110,14 @@ class RiskAssessment(BaseModel, TimestampMixin, AuditMixin):
 
     # Validity
     valid_from = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+        UTCDateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
-    valid_until = Column(DateTime, nullable=True, index=True)
+    valid_until = Column(UTCDateTime, nullable=True, index=True)
     is_current = Column(Boolean, default=True, nullable=False, index=True)
 
     # Review Information
     reviewed_by = Column(Uuid(as_uuid=True), nullable=True)
-    reviewed_at = Column(DateTime, nullable=True)
+    reviewed_at = Column(UTCDateTime, nullable=True)
     review_notes = Column(Text, nullable=True)
 
     # Recommendations
@@ -180,10 +183,13 @@ class RiskMetrics(BaseModel, TimestampMixin):
     data_points_used = Column(Integer, nullable=True)
 
     # Time Period
-    period_start = Column(DateTime, nullable=True, index=True)
-    period_end = Column(DateTime, nullable=True, index=True)
+    period_start = Column(UTCDateTime, nullable=True, index=True)
+    period_end = Column(UTCDateTime, nullable=True, index=True)
     calculation_date = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True
+        UTCDateTime,
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True,
     )
 
     # Benchmarks and Thresholds
@@ -275,15 +281,17 @@ class AlertRule(BaseModel, TimestampMixin, AuditMixin):
 
     # Alert Settings
     severity = Column(
-        Enum(AlertSeverity), default=AlertSeverity.WARNING, nullable=False
+        Enum(AlertSeverity, values_callable=enum_values),
+        default=AlertSeverity.WARNING,
+        nullable=False,
     )
     notification_channels = Column(JSON, nullable=True)  # email, sms, webhook, etc.
 
     # Execution
     is_active = Column(Boolean, default=True, nullable=False, index=True)
     execution_frequency = Column(String(20), default="realtime", nullable=False)
-    last_executed = Column(DateTime, nullable=True)
-    next_execution = Column(DateTime, nullable=True)
+    last_executed = Column(UTCDateTime, nullable=True)
+    next_execution = Column(UTCDateTime, nullable=True)
 
     # Statistics
     total_executions = Column(Integer, default=0, nullable=False)
@@ -341,7 +349,9 @@ class RiskAlert(BaseModel, TimestampMixin, AuditMixin):
 
     # Alert Details
     alert_type = Column(String(50), nullable=False, index=True)
-    severity = Column(Enum(AlertSeverity), nullable=False, index=True)
+    severity = Column(
+        Enum(AlertSeverity, values_callable=enum_values), nullable=False, index=True
+    )
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
 
@@ -352,21 +362,24 @@ class RiskAlert(BaseModel, TimestampMixin, AuditMixin):
 
     # Status and Resolution
     status = Column(
-        Enum(AlertStatus), default=AlertStatus.OPEN, nullable=False, index=True
+        Enum(AlertStatus, values_callable=enum_values),
+        default=AlertStatus.OPEN,
+        nullable=False,
+        index=True,
     )
     assigned_to = Column(Uuid(as_uuid=True), nullable=True, index=True)
-    acknowledged_at = Column(DateTime, nullable=True)
-    resolved_at = Column(DateTime, nullable=True)
+    acknowledged_at = Column(UTCDateTime, nullable=True)
+    resolved_at = Column(UTCDateTime, nullable=True)
     resolution_notes = Column(Text, nullable=True)
 
     # Escalation
     escalation_level = Column(Integer, default=0, nullable=False)
-    escalated_at = Column(DateTime, nullable=True)
+    escalated_at = Column(UTCDateTime, nullable=True)
     escalation_reason = Column(Text, nullable=True)
 
     # Notification
     notifications_sent = Column(JSON, nullable=True)
-    last_notification_sent = Column(DateTime, nullable=True)
+    last_notification_sent = Column(UTCDateTime, nullable=True)
 
     # Relationships
     alert_rule = relationship("AlertRule")
@@ -447,14 +460,14 @@ class RiskLimit(BaseModel, TimestampMixin, AuditMixin):
 
     # Time Period
     period_type = Column(String(20), nullable=False)  # daily, weekly, monthly, absolute
-    period_start = Column(DateTime, nullable=True)
-    period_end = Column(DateTime, nullable=True)
+    period_start = Column(UTCDateTime, nullable=True)
+    period_end = Column(UTCDateTime, nullable=True)
 
     # Status
     is_active = Column(Boolean, default=True, nullable=False, index=True)
     is_breached = Column(Boolean, default=False, nullable=False, index=True)
     breach_count = Column(Integer, default=0, nullable=False)
-    last_breach_date = Column(DateTime, nullable=True)
+    last_breach_date = Column(UTCDateTime, nullable=True)
 
     # Actions
     breach_actions = Column(JSON, nullable=True)  # Actions to take on breach

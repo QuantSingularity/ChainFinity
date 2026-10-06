@@ -151,6 +151,17 @@ class Settings(BaseSettings):
     MIN_TRADE_VALUE: float = Field(default=10.0)
     MAX_TRADE_VALUE: float = Field(default=1000000.0)
 
+    AI_MODELS_ENABLED: bool = Field(default=True)
+    AI_MODELS_DIR: Optional[str] = None
+    AI_ARTIFACTS_DIR: str = Field(default="ai_artifacts")
+    AI_AUTOLOAD_ON_STARTUP: bool = Field(default=True)
+    AI_MAX_CONCURRENT_JOBS: int = Field(default=2, ge=1, le=16)
+    AI_INFERENCE_TIMEOUT_SECONDS: int = Field(default=60, ge=1, le=600)
+    AI_HISTORY_DAYS: int = Field(default=365, ge=30, le=2000)
+    AI_MIN_HISTORY_DAYS: int = Field(default=45, ge=15, le=365)
+    AI_MAX_INPUT_ROWS: int = Field(default=20000, ge=100, le=200000)
+    AI_MAX_ASSETS: int = Field(default=25, ge=2, le=100)
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: Any) -> List[str]:
@@ -367,6 +378,25 @@ class Settings(BaseSettings):
                 self.MAX_TRADE_VALUE = settings.MAX_TRADE_VALUE
 
         return PortfolioSettings(self)
+
+    @property
+    def ai(self) -> Any:
+        class AISettings:
+            def __init__(self, settings: Settings) -> None:
+                self.AI_MODELS_ENABLED = settings.AI_MODELS_ENABLED
+                self.AI_MODELS_DIR = settings.AI_MODELS_DIR
+                self.AI_ARTIFACTS_DIR = settings.AI_ARTIFACTS_DIR
+                self.AI_AUTOLOAD_ON_STARTUP = settings.AI_AUTOLOAD_ON_STARTUP
+                self.AI_MAX_CONCURRENT_JOBS = settings.AI_MAX_CONCURRENT_JOBS
+                self.AI_INFERENCE_TIMEOUT_SECONDS = (
+                    settings.AI_INFERENCE_TIMEOUT_SECONDS
+                )
+                self.AI_HISTORY_DAYS = settings.AI_HISTORY_DAYS
+                self.AI_MIN_HISTORY_DAYS = settings.AI_MIN_HISTORY_DAYS
+                self.AI_MAX_INPUT_ROWS = settings.AI_MAX_INPUT_ROWS
+                self.AI_MAX_ASSETS = settings.AI_MAX_ASSETS
+
+        return AISettings(self)
 
 
 @lru_cache()

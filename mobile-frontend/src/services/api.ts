@@ -82,6 +82,105 @@ export const blockchainAPI = {
   getDeployedContracts: () => api.get("/api/v1/blockchain/deployed-contracts"),
 };
 
+export interface PortfolioSummary {
+  id: string;
+  name: string;
+}
+
+export interface VolatilityForecast {
+  symbol?: string | null;
+  predicted_vol: number;
+  predicted_vol_std: number | null;
+  confidence_interval: number[] | null;
+  vol_bucket: "low" | "medium" | "high" | "extreme";
+  confidence: number | null;
+  recent_realized_vol: number;
+  forecast_horizon_days: number;
+  model: string;
+}
+
+export interface CorrelationResult {
+  assets: string[];
+  matrix: number[][];
+  model: string;
+}
+
+export interface PortfolioAIInsights {
+  portfolio_id: string;
+  generated_at: string;
+  assets: string[];
+  correlation: CorrelationResult | null;
+  volatility: Record<string, VolatilityForecast>;
+  warnings: string[];
+}
+
+export interface StressTestResult {
+  scenario_name: string;
+  status: string;
+  potential_loss_percent?: number;
+}
+
+export interface RiskAssessment {
+  id: string;
+  risk_score: number | string;
+  risk_level: string;
+  risk_grade?: string | null;
+  action_required: boolean;
+  recommendations: string[];
+  stress_tests: StressTestResult[];
+}
+
+export interface AIModelStatus {
+  loaded: boolean;
+  mode: string;
+  fallback: string | null;
+}
+
+export interface AIStatus {
+  enabled: boolean;
+  package_available: boolean;
+  tensorflow_available: boolean;
+  models: Record<string, AIModelStatus>;
+}
+
+export const portfolioAPI = {
+  list: (page = 1, size = 20) =>
+    api.get("/api/v1/portfolios/", { params: { page, size } }),
+};
+
+export const riskAPI = {
+  assess: (portfolioId: string) =>
+    api.post(`/api/v1/risk/assess/${portfolioId}`),
+  getMetrics: (portfolioId: string) =>
+    api.get(`/api/v1/risk/metrics/${portfolioId}`),
+  monitor: (portfolioId: string) =>
+    api.get(`/api/v1/risk/monitor/${portfolioId}`),
+  stressTest: (portfolioId: string, scenario = "Market Crash") =>
+    api.post(`/api/v1/risk/stress-test/${portfolioId}`, null, {
+      params: { scenario },
+    }),
+  listAssessments: (params: Record<string, unknown> = {}) =>
+    api.get("/api/v1/risk/assessments", { params }),
+};
+
+export const aiAPI = {
+  getStatus: () => api.get("/api/v1/ai/status"),
+  forecastVolatility: (payload: Record<string, unknown>) =>
+    api.post("/api/v1/ai/volatility", payload),
+  predictCorrelation: (payload: Record<string, unknown>) =>
+    api.post("/api/v1/ai/correlation", payload),
+  detectExploits: (payload: Record<string, unknown>) =>
+    api.post("/api/v1/ai/exploit-detection", payload),
+  assessLiquidity: (payload: Record<string, unknown>) =>
+    api.post("/api/v1/ai/liquidity", payload),
+  analyzeSmartMoney: (payload: Record<string, unknown>) =>
+    api.post("/api/v1/ai/smart-money", payload),
+  getPortfolioInsights: (portfolioId: string, horizonDays = 7) =>
+    api.get(`/api/v1/ai/portfolio/${portfolioId}/insights`, {
+      params: { horizon_days: horizonDays },
+    }),
+};
+
 export interface ApiErrorInfo {
   status: number;
   message: string;

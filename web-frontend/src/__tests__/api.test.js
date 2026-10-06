@@ -1,5 +1,12 @@
 import axios from "axios";
-import { authAPI, blockchainAPI, handleApiError } from "../services/api";
+import {
+  aiAPI,
+  authAPI,
+  blockchainAPI,
+  handleApiError,
+  portfolioAPI,
+  riskAPI,
+} from "../services/api";
 
 jest.mock("axios");
 
@@ -109,6 +116,55 @@ describe("API Services", () => {
       const walletAddress = "0x1234567890abcdef";
       const result = await blockchainAPI.getTransactions(walletAddress);
       expect(result.data).toEqual(mockData);
+    });
+  });
+
+  describe("risk and ai APIs", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test("portfolioAPI.list paginates", async () => {
+      await portfolioAPI.list(2, 10);
+      expect(axios.create().get).toHaveBeenCalledWith("/api/v1/portfolios/", {
+        params: { page: 2, size: 10 },
+      });
+    });
+
+    test("riskAPI.assess posts to the assessment endpoint", async () => {
+      await riskAPI.assess("abc");
+      expect(axios.create().post).toHaveBeenCalledWith(
+        "/api/v1/risk/assess/abc",
+      );
+    });
+
+    test("riskAPI.stressTest passes the scenario", async () => {
+      await riskAPI.stressTest("abc", "Crypto Winter");
+      expect(axios.create().post).toHaveBeenCalledWith(
+        "/api/v1/risk/stress-test/abc",
+        null,
+        { params: { scenario: "Crypto Winter" } },
+      );
+    });
+
+    test("aiAPI.getPortfolioInsights passes the horizon", async () => {
+      await aiAPI.getPortfolioInsights("abc", 14);
+      expect(axios.create().get).toHaveBeenCalledWith(
+        "/api/v1/ai/portfolio/abc/insights",
+        { params: { horizon_days: 14 } },
+      );
+    });
+
+    test("aiAPI posts model payloads", async () => {
+      await aiAPI.forecastVolatility({ symbol: "BTC" });
+      expect(axios.create().post).toHaveBeenCalledWith(
+        "/api/v1/ai/volatility",
+        {
+          symbol: "BTC",
+        },
+      );
+      await aiAPI.getStatus();
+      expect(axios.create().get).toHaveBeenCalledWith("/api/v1/ai/status");
     });
   });
 });

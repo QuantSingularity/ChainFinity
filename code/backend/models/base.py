@@ -5,8 +5,32 @@ from typing import Any, Dict, Optional
 from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String, Uuid
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import declarative_base
+from sqlalchemy.types import TypeDecorator
 
 Base = declarative_base()
+
+
+def enum_values(enum_class: Any) -> list:
+    return [member.value for member in enum_class]
+
+
+class UTCDateTime(TypeDecorator):
+    impl = DateTime
+    cache_ok = True
+
+    def process_bind_param(self, value: Any, dialect: Any) -> Any:
+        if value is None:
+            return None
+        if value.tzinfo is not None:
+            return value.astimezone(timezone.utc).replace(tzinfo=None)
+        return value
+
+    def process_result_value(self, value: Any, dialect: Any) -> Any:
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
 
 
 class BaseModel(Base):

@@ -11,7 +11,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Column,
-    DateTime,
     Enum,
     ForeignKey,
     Index,
@@ -23,7 +22,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from .base import AuditMixin, BaseModel, TimestampMixin
+from .base import AuditMixin, BaseModel, TimestampMixin, UTCDateTime, enum_values
 
 
 class AuditEventType(enum.Enum):
@@ -88,7 +87,9 @@ class AuditLog(BaseModel, TimestampMixin):
     __tablename__ = "audit_logs"
 
     # Event Details
-    event_type = Column(Enum(AuditEventType), nullable=False, index=True)
+    event_type = Column(
+        Enum(AuditEventType, values_callable=enum_values), nullable=False, index=True
+    )
     event_name = Column(String(100), nullable=False, index=True)
     event_description = Column(Text, nullable=True)
 
@@ -179,7 +180,9 @@ class ComplianceCheck(BaseModel, TimestampMixin, AuditMixin):
     entity_id = Column(String(255), nullable=True)
 
     # Check Results
-    status = Column(Enum(ComplianceStatus), nullable=False, index=True)
+    status = Column(
+        Enum(ComplianceStatus, values_callable=enum_values), nullable=False, index=True
+    )
     score = Column(Numeric(5, 2), nullable=True)  # 0-100 compliance score
 
     # Check Data
@@ -190,11 +193,11 @@ class ComplianceCheck(BaseModel, TimestampMixin, AuditMixin):
     # Review Information
     requires_manual_review = Column(Boolean, default=False, nullable=False, index=True)
     reviewed_by = Column(Uuid(as_uuid=True), nullable=True)
-    reviewed_at = Column(DateTime, nullable=True)
+    reviewed_at = Column(UTCDateTime, nullable=True)
     review_notes = Column(Text, nullable=True)
 
     # Expiry and Validity
-    valid_until = Column(DateTime, nullable=True, index=True)
+    valid_until = Column(UTCDateTime, nullable=True, index=True)
     is_expired = Column(Boolean, default=False, nullable=False)
 
     # External References
@@ -252,17 +255,22 @@ class RegulatoryReport(BaseModel, TimestampMixin, AuditMixin):
     __tablename__ = "regulatory_reports"
 
     # Report Details
-    report_type = Column(Enum(ReportType), nullable=False, index=True)
+    report_type = Column(
+        Enum(ReportType, values_callable=enum_values), nullable=False, index=True
+    )
     report_name = Column(String(100), nullable=False)
     report_description = Column(Text, nullable=True)
 
     # Reporting Period
-    period_start = Column(DateTime, nullable=False, index=True)
-    period_end = Column(DateTime, nullable=False, index=True)
+    period_start = Column(UTCDateTime, nullable=False, index=True)
+    period_end = Column(UTCDateTime, nullable=False, index=True)
 
     # Status and Workflow
     status = Column(
-        Enum(ReportStatus), default=ReportStatus.DRAFT, nullable=False, index=True
+        Enum(ReportStatus, values_callable=enum_values),
+        default=ReportStatus.DRAFT,
+        nullable=False,
+        index=True,
     )
 
     # Report Content
@@ -271,21 +279,21 @@ class RegulatoryReport(BaseModel, TimestampMixin, AuditMixin):
 
     # Generation Details
     generated_by = Column(Uuid(as_uuid=True), nullable=True)
-    generated_at = Column(DateTime, nullable=True)
+    generated_at = Column(UTCDateTime, nullable=True)
     generation_parameters = Column(JSON, nullable=True)
 
     # Review and Approval
     reviewed_by = Column(Uuid(as_uuid=True), nullable=True)
-    reviewed_at = Column(DateTime, nullable=True)
+    reviewed_at = Column(UTCDateTime, nullable=True)
     review_notes = Column(Text, nullable=True)
 
     approved_by = Column(Uuid(as_uuid=True), nullable=True)
-    approved_at = Column(DateTime, nullable=True)
+    approved_at = Column(UTCDateTime, nullable=True)
     approval_notes = Column(Text, nullable=True)
 
     # Submission Details
     submitted_by = Column(Uuid(as_uuid=True), nullable=True)
-    submitted_at = Column(DateTime, nullable=True)
+    submitted_at = Column(UTCDateTime, nullable=True)
     submission_reference = Column(String(255), nullable=True)
     submission_response = Column(JSON, nullable=True)
 
@@ -345,19 +353,19 @@ class SuspiciousActivityReport(BaseModel, TimestampMixin, AuditMixin):
     currency = Column(String(3), nullable=True)
     risk_score = Column(Numeric(5, 2), nullable=True)
     severity = Column(String(20), default="medium", nullable=True)
-    detected_at = Column(DateTime, nullable=True, index=True)
+    detected_at = Column(UTCDateTime, nullable=True, index=True)
 
     # Timeline
-    activity_start_date = Column(DateTime, nullable=True, index=True)
-    activity_end_date = Column(DateTime, nullable=True)
+    activity_start_date = Column(UTCDateTime, nullable=True, index=True)
+    activity_end_date = Column(UTCDateTime, nullable=True)
     detection_date = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+        UTCDateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
 
     # Filing Information
     filing_required = Column(Boolean, default=True, nullable=False)
-    filing_deadline = Column(DateTime, nullable=True)
-    filed_at = Column(DateTime, nullable=True)
+    filing_deadline = Column(UTCDateTime, nullable=True)
+    filed_at = Column(UTCDateTime, nullable=True)
     filing_reference = Column(String(255), nullable=True)
 
     # Investigation
@@ -368,7 +376,7 @@ class SuspiciousActivityReport(BaseModel, TimestampMixin, AuditMixin):
     # Status
     status = Column(String(20), default="open", nullable=False, index=True)
     resolution = Column(Text, nullable=True)
-    resolved_at = Column(DateTime, nullable=True)
+    resolved_at = Column(UTCDateTime, nullable=True)
 
     # Relationships
     user = relationship("User")
@@ -434,8 +442,8 @@ class ComplianceRule(BaseModel, TimestampMixin, AuditMixin):
 
     # Execution
     execution_frequency = Column(String(20), default="realtime", nullable=False)
-    last_executed = Column(DateTime, nullable=True)
-    next_execution = Column(DateTime, nullable=True)
+    last_executed = Column(UTCDateTime, nullable=True)
+    next_execution = Column(UTCDateTime, nullable=True)
 
     # Metadata
     tags = Column(JSON, nullable=True)

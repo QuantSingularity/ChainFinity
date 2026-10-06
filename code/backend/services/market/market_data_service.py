@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 
 import aiohttp
 from config.database import cache
+from config.settings import settings
 from services.external.price_feeds import PriceFeedAggregator
 
 logger = logging.getLogger(__name__)
@@ -421,34 +422,71 @@ class MarketDataService:
     async def _fetch_historical_data(
         self, symbol: str, start_date: datetime, end_date: datetime, interval: str
     ) -> List[HistoricalData]:
-        """Fetch historical data from external API"""
+        if interval != "1d":
+            logger.warning("Unsupported historical interval '%s'", interval)
+            return []
+        days = max((end_date.date() - start_date.date()).days + 1, 1)
+        days = min(days, 2000)
+        end_ts = int(
+            datetime(
+                end_date.year, end_date.month, end_date.day, tzinfo=timezone.utc
+            ).timestamp()
+        )
+        params = {
+            "fsym": symbol.upper(),
+            "tsym": "USD",
+            "limit": days - 1,
+            "toTs": end_ts,
+        }
+        headers: Dict[str, str] = {}
+        api_key = settings.external_apis.CRYPTOCOMPARE_API_KEY
+        if api_key:
+            headers["authorization"] = f"Apikey {api_key}"
+        url = "https://min-api.cryptocompare.com/data/v2/histoday"
+        owns_session = self.session is None
+        session = self.session or aiohttp.ClientSession()
         try:
-            data = []
-            current_date = start_date
-            base_price = Decimal("45000.00")
-            while current_date <= end_date:
-                open_price = base_price
-                high_price = open_price * Decimal("1.02")
-                low_price = open_price * Decimal("0.98")
-                close_price = open_price * Decimal("1.001")
-                volume = Decimal("1000000")
-                data.append(
-                    HistoricalData(
-                        symbol=symbol,
-                        timestamp=current_date,
-                        open_price=open_price,
-                        high_price=high_price,
-                        low_price=low_price,
-                        close_price=close_price,
-                        volume=volume,
+            async with session.get(
+                url,
+                params=params,
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as response:
+                if response.status != 200:
+                    logger.warning(
+                        "Historical data request for %s returned HTTP %s",
+                        symbol,
+                        response.status,
                     )
-                )
-                current_date += timedelta(days=1)
-                base_price = close_price
-            return data
+                    return []
+                payload = await response.json()
         except Exception as e:
             logger.error(f"Error fetching historical data for {symbol}: {e}")
             return []
+        finally:
+            if owns_session:
+                await session.close()
+        rows = ((payload or {}).get("Data") or {}).get("Data") or []
+        data: List[HistoricalData] = []
+        for row in rows:
+            try:
+                close = Decimal(str(row["close"]))
+                if close <= 0:
+                    continue
+                data.append(
+                    HistoricalData(
+                        symbol=symbol.upper(),
+                        timestamp=datetime.fromtimestamp(row["time"], tz=timezone.utc),
+                        open_price=Decimal(str(row["open"])),
+                        high_price=Decimal(str(row["high"])),
+                        low_price=Decimal(str(row["low"])),
+                        close_price=close,
+                        volume=Decimal(str(row.get("volumeto", 0))),
+                    )
+                )
+            except (KeyError, ValueError, ArithmeticError):
+                continue
+        return data
 
     async def _calculate_technical_indicators(
         self, symbol: str

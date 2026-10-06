@@ -10,7 +10,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Column,
-    DateTime,
     Enum,
     ForeignKey,
     Index,
@@ -22,13 +21,21 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from .base import AuditMixin, BaseModel, EncryptedMixin, SoftDeleteMixin, TimestampMixin
+from .base import (
+    AuditMixin,
+    BaseModel,
+    EncryptedMixin,
+    SoftDeleteMixin,
+    TimestampMixin,
+    UTCDateTime,
+    enum_values,
+)
 
 
 def _as_aware(dt):
-    """Treat naive datetimes (as loaded from non-tz DateTime columns) as UTC.
+    """Treat naive datetimes (as loaded from non-tz UTCDateTime columns) as UTC.
 
-    Columns declared as plain DateTime round-trip as naive datetimes even
+    Columns declared as plain UTCDateTime round-trip as naive datetimes even
     though we always write UTC values; comparing them directly against
     datetime.now(timezone.utc) raises TypeError at runtime.
     """
@@ -79,15 +86,15 @@ class User(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
     # Basic Information
     email = Column(String(255), unique=True, nullable=False, index=True)
     email_verified = Column(Boolean, default=False, nullable=False)
-    email_verified_at = Column(DateTime, nullable=True)
+    email_verified_at = Column(UTCDateTime, nullable=True)
 
     # Authentication
     hashed_password = Column(String(255), nullable=False)
     password_changed_at = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+        UTCDateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
     failed_login_attempts = Column(Integer, default=0, nullable=False)
-    locked_until = Column(DateTime, nullable=True)
+    locked_until = Column(UTCDateTime, nullable=True)
 
     # Authorization
     is_admin = Column(Boolean, default=False, nullable=False, index=True)
@@ -99,24 +106,27 @@ class User(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
 
     # Account Status
     status = Column(
-        Enum(UserStatus), default=UserStatus.PENDING, nullable=False, index=True
+        Enum(UserStatus, values_callable=enum_values),
+        default=UserStatus.PENDING,
+        nullable=False,
+        index=True,
     )
     status_reason = Column(Text, nullable=True)
     status_changed_at = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+        UTCDateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
 
     # Blockchain
     primary_wallet_address = Column(String(42), nullable=True, index=True)
 
     # Activity Tracking
-    last_login_at = Column(DateTime, nullable=True)
-    last_activity_at = Column(DateTime, nullable=True)
+    last_login_at = Column(UTCDateTime, nullable=True)
+    last_activity_at = Column(UTCDateTime, nullable=True)
     login_count = Column(Integer, default=0, nullable=False)
 
     # Terms and Privacy
-    terms_accepted_at = Column(DateTime, nullable=True)
-    privacy_accepted_at = Column(DateTime, nullable=True)
+    terms_accepted_at = Column(UTCDateTime, nullable=True)
+    privacy_accepted_at = Column(UTCDateTime, nullable=True)
     marketing_consent = Column(Boolean, default=False, nullable=False)
 
     # Convenience / compatibility fields
@@ -224,12 +234,12 @@ class UserProfile(BaseModel, TimestampMixin, AuditMixin, EncryptedMixin):
     first_name = Column(String(100), nullable=True)
     last_name = Column(String(100), nullable=True)
     middle_name = Column(String(100), nullable=True)
-    date_of_birth = Column(DateTime, nullable=True)
+    date_of_birth = Column(UTCDateTime, nullable=True)
 
     # Contact Information (encrypted)
     phone_number = Column(String(20), nullable=True)
     phone_verified = Column(Boolean, default=False, nullable=False)
-    phone_verified_at = Column(DateTime, nullable=True)
+    phone_verified_at = Column(UTCDateTime, nullable=True)
 
     # Address Information (encrypted)
     address_line1 = Column(String(255), nullable=True)
@@ -248,7 +258,7 @@ class UserProfile(BaseModel, TimestampMixin, AuditMixin, EncryptedMixin):
     # Investment Experience
     investment_experience_years = Column(Integer, nullable=True)
     crypto_experience_years = Column(Integer, nullable=True)
-    risk_tolerance = Column(Enum(RiskLevel), nullable=True)
+    risk_tolerance = Column(Enum(RiskLevel, values_callable=enum_values), nullable=True)
 
     # Preferences
     preferred_language = Column(String(5), default="en", nullable=False)
@@ -276,11 +286,14 @@ class UserKYC(BaseModel, TimestampMixin, AuditMixin, EncryptedMixin):
 
     # KYC Status
     status = Column(
-        Enum(KYCStatus), default=KYCStatus.NOT_STARTED, nullable=False, index=True
+        Enum(KYCStatus, values_callable=enum_values),
+        default=KYCStatus.NOT_STARTED,
+        nullable=False,
+        index=True,
     )
     status_reason = Column(Text, nullable=True)
     status_changed_at = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+        UTCDateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
 
     # Verification Provider
@@ -291,38 +304,38 @@ class UserKYC(BaseModel, TimestampMixin, AuditMixin, EncryptedMixin):
     document_type = Column(String(50), nullable=True)  # passport, drivers_license, etc.
     document_number = Column(String(100), nullable=True)
     document_country = Column(String(2), nullable=True)
-    document_expiry_date = Column(DateTime, nullable=True)
+    document_expiry_date = Column(UTCDateTime, nullable=True)
     document_verified = Column(Boolean, default=False, nullable=False)
-    document_verified_at = Column(DateTime, nullable=True)
+    document_verified_at = Column(UTCDateTime, nullable=True)
 
     # Identity Verification
     identity_verified = Column(Boolean, default=False, nullable=False)
-    identity_verified_at = Column(DateTime, nullable=True)
+    identity_verified_at = Column(UTCDateTime, nullable=True)
     identity_score = Column(Numeric(5, 2), nullable=True)  # 0-100 confidence score
 
     # Address Verification
     address_verified = Column(Boolean, default=False, nullable=False)
-    address_verified_at = Column(DateTime, nullable=True)
+    address_verified_at = Column(UTCDateTime, nullable=True)
 
     # Biometric Verification
     biometric_verified = Column(Boolean, default=False, nullable=False)
-    biometric_verified_at = Column(DateTime, nullable=True)
+    biometric_verified_at = Column(UTCDateTime, nullable=True)
 
     # Sanctions and PEP Screening
     sanctions_checked = Column(Boolean, default=False, nullable=False)
-    sanctions_checked_at = Column(DateTime, nullable=True)
+    sanctions_checked_at = Column(UTCDateTime, nullable=True)
     sanctions_match = Column(Boolean, default=False, nullable=False)
     pep_checked = Column(Boolean, default=False, nullable=False)
-    pep_checked_at = Column(DateTime, nullable=True)
+    pep_checked_at = Column(UTCDateTime, nullable=True)
     pep_match = Column(Boolean, default=False, nullable=False)
 
     # Review Information
     reviewed_by = Column(Uuid(as_uuid=True), nullable=True)
-    reviewed_at = Column(DateTime, nullable=True)
+    reviewed_at = Column(UTCDateTime, nullable=True)
     review_notes = Column(Text, nullable=True)
 
     # Expiry and Renewal
-    expires_at = Column(DateTime, nullable=True)
+    expires_at = Column(UTCDateTime, nullable=True)
     renewal_required = Column(Boolean, default=False, nullable=False)
 
     # Verification Data (encrypted JSON)
@@ -371,14 +384,17 @@ class UserRiskProfile(BaseModel, TimestampMixin, AuditMixin):
 
     # Risk Assessment
     risk_level = Column(
-        Enum(RiskLevel), default=RiskLevel.MEDIUM, nullable=False, index=True
+        Enum(RiskLevel, values_callable=enum_values),
+        default=RiskLevel.MEDIUM,
+        nullable=False,
+        index=True,
     )
     risk_score = Column(Numeric(5, 2), nullable=True)  # 0-100 risk score
     risk_factors = Column(JSON, nullable=True)  # List of risk factors
 
     # Assessment Details
     assessment_date = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+        UTCDateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
     assessment_method = Column(String(50), nullable=True)  # manual, automated, hybrid
     assessed_by = Column(Uuid(as_uuid=True), nullable=True)
@@ -391,11 +407,11 @@ class UserRiskProfile(BaseModel, TimestampMixin, AuditMixin):
     # Monitoring
     enhanced_monitoring = Column(Boolean, default=False, nullable=False)
     monitoring_reason = Column(Text, nullable=True)
-    monitoring_start_date = Column(DateTime, nullable=True)
-    monitoring_end_date = Column(DateTime, nullable=True)
+    monitoring_start_date = Column(UTCDateTime, nullable=True)
+    monitoring_end_date = Column(UTCDateTime, nullable=True)
 
     # Review Schedule
-    next_review_date = Column(DateTime, nullable=True)
+    next_review_date = Column(UTCDateTime, nullable=True)
     review_frequency_days = Column(
         Integer, default=365, nullable=False
     )  # Annual by default

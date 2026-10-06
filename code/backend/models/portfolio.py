@@ -12,7 +12,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Column,
-    DateTime,
     Enum,
     ForeignKey,
     Index,
@@ -24,7 +23,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from .base import AuditMixin, BaseModel, TimestampMixin
+from .base import AuditMixin, BaseModel, TimestampMixin, UTCDateTime, enum_values
 
 
 class PortfolioType(enum.Enum):
@@ -83,7 +82,10 @@ class Portfolio(BaseModel, TimestampMixin, AuditMixin):
     name = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
     portfolio_type = Column(
-        Enum(PortfolioType), default=PortfolioType.MAIN, nullable=False, index=True
+        Enum(PortfolioType, values_callable=enum_values),
+        default=PortfolioType.MAIN,
+        nullable=False,
+        index=True,
     )
 
     # Wallet Association
@@ -96,12 +98,16 @@ class Portfolio(BaseModel, TimestampMixin, AuditMixin):
     is_public = Column(Boolean, default=False, nullable=False)
     auto_rebalance = Column(Boolean, default=False, nullable=False)
     rebalance_frequency = Column(
-        Enum(RebalanceFrequency), default=RebalanceFrequency.MANUAL, nullable=False
+        Enum(RebalanceFrequency, values_callable=enum_values),
+        default=RebalanceFrequency.MANUAL,
+        nullable=False,
     )
 
     # Allocation Strategy
     allocation_strategy = Column(
-        Enum(AllocationStrategy), default=AllocationStrategy.CUSTOM, nullable=False
+        Enum(AllocationStrategy, values_callable=enum_values),
+        default=AllocationStrategy.CUSTOM,
+        nullable=False,
     )
     target_allocations = Column(JSON, nullable=True)  # Target allocation percentages
 
@@ -129,10 +135,10 @@ class Portfolio(BaseModel, TimestampMixin, AuditMixin):
 
     # Last Update
     last_updated = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+        UTCDateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
-    last_rebalanced = Column(DateTime, nullable=True)
-    next_rebalance = Column(DateTime, nullable=True)
+    last_rebalanced = Column(UTCDateTime, nullable=True)
+    next_rebalance = Column(UTCDateTime, nullable=True)
 
     # Metadata
     extra_metadata = Column(JSON, nullable=True)
@@ -216,7 +222,10 @@ class PortfolioAsset(BaseModel, TimestampMixin, AuditMixin):
     asset_symbol = Column(String(20), nullable=False, index=True)
     asset_name = Column(String(100), nullable=True)
     asset_type = Column(
-        Enum(AssetType), default=AssetType.CRYPTOCURRENCY, nullable=False, index=True
+        Enum(AssetType, values_callable=enum_values),
+        default=AssetType.CRYPTOCURRENCY,
+        nullable=False,
+        index=True,
     )
     contract_address = Column(String(42), nullable=True, index=True)
 
@@ -249,8 +258,8 @@ class PortfolioAsset(BaseModel, TimestampMixin, AuditMixin):
     defi_position_id = Column(String(100), nullable=True)
 
     # Last Update
-    last_price_update = Column(DateTime, nullable=True)
-    last_quantity_update = Column(DateTime, nullable=True)
+    last_price_update = Column(UTCDateTime, nullable=True)
+    last_quantity_update = Column(UTCDateTime, nullable=True)
 
     # Metadata
     extra_metadata = Column(JSON, nullable=True)
@@ -337,7 +346,7 @@ class AssetAllocation(BaseModel, TimestampMixin, AuditMixin):
 
     # Asset Details
     asset_symbol = Column(String(20), nullable=False, index=True)
-    asset_type = Column(Enum(AssetType), nullable=False)
+    asset_type = Column(Enum(AssetType, values_callable=enum_values), nullable=False)
 
     # Allocation
     target_percentage = Column(Numeric(5, 2), nullable=False)  # 0-100
@@ -373,7 +382,7 @@ class PortfolioSnapshot(BaseModel, TimestampMixin):
     )
 
     # Snapshot Data
-    snapshot_date = Column(DateTime, nullable=False, index=True)
+    snapshot_date = Column(UTCDateTime, nullable=False, index=True)
     total_value_usd = Column(Numeric(20, 8), nullable=False)
     total_cost_basis = Column(Numeric(20, 8), nullable=False)
 
@@ -410,8 +419,8 @@ class PortfolioPerformance(BaseModel, TimestampMixin):
     )
 
     # Time Period
-    period_start = Column(DateTime, nullable=False, index=True)
-    period_end = Column(DateTime, nullable=False, index=True)
+    period_start = Column(UTCDateTime, nullable=False, index=True)
+    period_end = Column(UTCDateTime, nullable=False, index=True)
     period_type = Column(
         String(20), nullable=False, index=True
     )  # daily, weekly, monthly, yearly

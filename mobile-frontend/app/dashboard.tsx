@@ -30,9 +30,10 @@ import { radius, spacing } from "../src/theme/theme";
 import { formatCurrency } from "../src/utils/helpers";
 
 const QUICK_ACTIONS = [
-  { label: "Portfolio", route: "/portfolio", icon: "\uD83D\uDCCA" },
+  { label: "Portfolio", route: "/portfolio", icon: "\u25D4" },
+  { label: "Risk", route: "/risk", icon: "\u25B2" },
   { label: "Transactions", route: "/transactions", icon: "\u21C4" },
-  { label: "Governance", route: "/governance", icon: "\uD83D\uDDF3" },
+  { label: "Governance", route: "/governance", icon: "\u00A7" },
   { label: "Settings", route: "/settings", icon: "\u2699" },
 ] as const;
 

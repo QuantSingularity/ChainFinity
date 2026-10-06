@@ -3,6 +3,7 @@ Alembic environment configuration for ChainFinity backend
 """
 
 import asyncio
+import os
 from logging.config import fileConfig
 
 import models.blockchain  # noqa: F401
@@ -22,6 +23,20 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+
+def _database_url() -> str:
+    url = os.environ.get("DATABASE_URL")
+    if not url:
+        from config.settings import settings
+
+        url = settings.DATABASE_URL
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    return url
+
+
+config.set_main_option("sqlalchemy.url", _database_url().replace("%", "%%"))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

@@ -10,7 +10,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Column,
-    DateTime,
     Enum,
     ForeignKey,
     Index,
@@ -23,7 +22,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
-from .base import AuditMixin, BaseModel, TimestampMixin
+from .base import AuditMixin, BaseModel, TimestampMixin, UTCDateTime, enum_values
 
 
 class NetworkStatus(enum.Enum):
@@ -102,7 +101,10 @@ class BlockchainNetwork(BaseModel, TimestampMixin, AuditMixin):
 
     # Status and Monitoring
     status = Column(
-        Enum(NetworkStatus), default=NetworkStatus.ACTIVE, nullable=False, index=True
+        Enum(NetworkStatus, values_callable=enum_values),
+        default=NetworkStatus.ACTIVE,
+        nullable=False,
+        index=True,
     )
     is_supported = Column(Boolean, default=True, nullable=False)
 
@@ -116,12 +118,12 @@ class BlockchainNetwork(BaseModel, TimestampMixin, AuditMixin):
         return cls.status == NetworkStatus.ACTIVE
 
     last_block_number = Column(Integer, nullable=True)
-    last_block_timestamp = Column(DateTime, nullable=True)
+    last_block_timestamp = Column(UTCDateTime, nullable=True)
 
     # Performance Metrics
     avg_response_time_ms = Column(Integer, nullable=True)
     success_rate = Column(Numeric(5, 2), nullable=True)  # 0-100
-    last_health_check = Column(DateTime, nullable=True)
+    last_health_check = Column(UTCDateTime, nullable=True)
 
     # Configuration
     confirmation_blocks = Column(Integer, default=12, nullable=False)
@@ -181,7 +183,9 @@ class SmartContract(BaseModel, TimestampMixin, AuditMixin):
     address = Column(String(42), nullable=False, index=True)
     name = Column(String(100), nullable=False)
     symbol = Column(String(20), nullable=True)
-    contract_type = Column(Enum(ContractType), nullable=False, index=True)
+    contract_type = Column(
+        Enum(ContractType, values_callable=enum_values), nullable=False, index=True
+    )
 
     # Contract Metadata
     description = Column(Text, nullable=True)
@@ -196,7 +200,7 @@ class SmartContract(BaseModel, TimestampMixin, AuditMixin):
     # Verification
     is_verified = Column(Boolean, default=False, nullable=False, index=True)
     verification_source = Column(String(50), nullable=True)  # etherscan, sourcify, etc.
-    verified_at = Column(DateTime, nullable=True)
+    verified_at = Column(UTCDateTime, nullable=True)
 
     # Token Information (for token contracts)
     decimals = Column(Integer, nullable=True)
@@ -206,7 +210,7 @@ class SmartContract(BaseModel, TimestampMixin, AuditMixin):
     is_active = Column(Boolean, default=True, nullable=False, index=True)
     is_monitored = Column(Boolean, default=False, nullable=False)
     last_activity_block = Column(Integer, nullable=True)
-    last_activity_timestamp = Column(DateTime, nullable=True)
+    last_activity_timestamp = Column(UTCDateTime, nullable=True)
 
     # Security
     is_proxy = Column(Boolean, default=False, nullable=False)
@@ -272,7 +276,9 @@ class ContractEvent(BaseModel, TimestampMixin):
 
     # Event Details
     event_name = Column(String(100), nullable=False, index=True)
-    event_type = Column(Enum(EventType), nullable=False, index=True)
+    event_type = Column(
+        Enum(EventType, values_callable=enum_values), nullable=False, index=True
+    )
     event_signature = Column(String(66), nullable=False)  # Event signature hash
 
     # Blockchain Details
@@ -296,11 +302,11 @@ class ContractEvent(BaseModel, TimestampMixin):
     token_id = Column(String(100), nullable=True)  # For NFTs
 
     # Timestamp
-    block_timestamp = Column(DateTime, nullable=False, index=True)
+    block_timestamp = Column(UTCDateTime, nullable=False, index=True)
 
     # Processing Status
     is_processed = Column(Boolean, default=False, nullable=False, index=True)
-    processed_at = Column(DateTime, nullable=True)
+    processed_at = Column(UTCDateTime, nullable=True)
     processing_error = Column(Text, nullable=True)
 
     # Metadata
@@ -365,10 +371,10 @@ class BlockchainSync(BaseModel, TimestampMixin):
 
     # Timing
     started_at = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+        UTCDateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
-    completed_at = Column(DateTime, nullable=True)
-    estimated_completion = Column(DateTime, nullable=True)
+    completed_at = Column(UTCDateTime, nullable=True)
+    estimated_completion = Column(UTCDateTime, nullable=True)
 
     # Performance
     blocks_per_second = Column(Numeric(10, 2), nullable=True)
@@ -377,7 +383,7 @@ class BlockchainSync(BaseModel, TimestampMixin):
     # Error Handling
     error_count = Column(Integer, default=0, nullable=False)
     last_error = Column(Text, nullable=True)
-    last_error_at = Column(DateTime, nullable=True)
+    last_error_at = Column(UTCDateTime, nullable=True)
 
     # Metadata
     contract_metadata = Column(JSON, nullable=True)
@@ -442,7 +448,10 @@ class GasTracker(BaseModel, TimestampMixin):
 
     # Timing
     timestamp = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True
+        UTCDateTime,
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True,
     )
 
     # Source

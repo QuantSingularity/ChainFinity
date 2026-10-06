@@ -3,6 +3,7 @@ Comprehensive Exception Handling System for ChainFinity
 Provides structured error handling with detailed error codes and messages
 """
 
+import re
 import traceback
 from datetime import datetime, timezone
 from enum import Enum
@@ -42,7 +43,7 @@ class BaseChainFinityException(Exception):
     def __init__(
         self,
         message: str,
-        error_code: str,
+        error_code: Optional[str] = None,
         category: ErrorCategory = ErrorCategory.SYSTEM,
         severity: ErrorSeverity = ErrorSeverity.MEDIUM,
         details: Optional[Dict[str, Any]] = None,
@@ -52,7 +53,14 @@ class BaseChainFinityException(Exception):
     ) -> None:
         super().__init__(message)
         self.message = message
-        self.error_code = error_code
+        self.error_code = (
+            error_code
+            or re.sub(
+                r"(?<!^)(?=[A-Z])",
+                "_",
+                self.__class__.__name__.replace("Exception", ""),
+            ).upper()
+        )
         self.category = category
         self.severity = severity
         self.details = details or {}

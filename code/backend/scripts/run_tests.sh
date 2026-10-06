@@ -4,7 +4,7 @@
 
 set -e
 
-echo "🧪 Running ChainFinity Backend Tests"
+echo " Running ChainFinity Backend Tests"
 echo "===================================="
 
 # Colors for output
@@ -96,12 +96,12 @@ else
     print_warning "bandit not installed, skipping security checks"
 fi
 
-print_status "All tests completed successfully! ✅"
+print_status "All tests completed successfully! "
 echo ""
-echo "📊 Test Results Summary:"
-echo "- Unit tests: ✅"
-echo "- Integration tests: ✅"
+echo " Test Results Summary:"
+echo "- Unit tests: "
+echo "- Integration tests: "
 echo "- Coverage report: htmlcov/index.html"
 echo "- Security report: security_report.json"
 echo ""
-echo "🚀 Ready for deployment!"
+echo " Ready for deployment!"

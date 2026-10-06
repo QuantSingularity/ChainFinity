@@ -8,11 +8,9 @@ import sys
 from typing import Any, AsyncGenerator, Generator
 
 # Make the AI models importable from tests
-_AI_MODELS_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "ai_models")
-)
-if _AI_MODELS_DIR not in sys.path:
-    sys.path.insert(0, _AI_MODELS_DIR)
+_CODE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _CODE_DIR not in sys.path:
+    sys.path.insert(0, _CODE_DIR)
 
 import pytest
 import pytest_asyncio

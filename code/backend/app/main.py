@@ -55,7 +55,23 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         logger.error(f"Failed to initialize database: {e}")
         raise
 
+    try:
+        from services.ai import get_ai_service
+
+        ai_load = await get_ai_service().startup()
+        if ai_load:
+            logger.info(f"AI models: {ai_load}")
+    except Exception as e:
+        logger.error(f"AI model startup failed (continuing with fallbacks): {e}")
+
     yield
+
+    try:
+        from services.ai import get_ai_service
+
+        await get_ai_service().shutdown()
+    except Exception as e:
+        logger.error(f"Error shutting down AI service: {e}")
 
     # Shutdown
     logger.info("Shutting down ChainFinity API...")
@@ -167,6 +183,9 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 def _status_for_domain_exception(exc: BaseChainFinityException) -> int:
+    explicit = getattr(exc, "http_status", None)
+    if isinstance(explicit, int):
+        return explicit
     """Map structured domain exceptions to HTTP status codes.
 
     Previously these exceptions fell through to the generic Exception handler
@@ -264,11 +283,25 @@ async def health_check() -> dict:
         "healthy" if all(s == "healthy" for s in services.values()) else "unhealthy"
     )
 
+    from services.ai import get_ai_service
+
+    ai_status = get_ai_service().status()
+    ai_info = {
+        "enabled": ai_status["enabled"],
+        "package_available": ai_status["package_available"],
+        "trained_models": [
+            name
+            for name, info in ai_status["models"].items()
+            if info["loaded"] and info["mode"] == "trained"
+        ],
+    }
+
     return {
         "status": overall_status,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "version": settings.app.APP_VERSION,
         "services": services,
+        "ai": ai_info,
         "uptime_seconds": int(_time.time() - _app_start_time),
     }
 

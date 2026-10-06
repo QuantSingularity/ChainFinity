@@ -11,7 +11,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Column,
-    DateTime,
     Enum,
     ForeignKey,
     Index,
@@ -23,7 +22,14 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship, synonym
 
-from .base import AuditMixin, BaseModel, SoftDeleteMixin, TimestampMixin
+from .base import (
+    AuditMixin,
+    BaseModel,
+    SoftDeleteMixin,
+    TimestampMixin,
+    UTCDateTime,
+    enum_values,
+)
 
 
 class TransactionType(enum.Enum):
@@ -95,14 +101,20 @@ class Transaction(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
     network = Column(String(50), nullable=True, default="ethereum", index=True)
 
     # Transaction Details
-    transaction_type = Column(Enum(TransactionType), nullable=True, index=True)
+    transaction_type = Column(
+        Enum(TransactionType, values_callable=enum_values), nullable=True, index=True
+    )
     status = Column(
-        Enum(TransactionStatus),
+        Enum(TransactionStatus, values_callable=enum_values),
         default=TransactionStatus.PENDING,
         nullable=False,
         index=True,
     )
-    direction = Column(Enum(TransactionDirection), nullable=True, index=True)
+    direction = Column(
+        Enum(TransactionDirection, values_callable=enum_values),
+        nullable=True,
+        index=True,
+    )
 
     # Addresses
     from_address = Column(String(42), nullable=True, index=True)
@@ -128,12 +140,15 @@ class Transaction(BaseModel, TimestampMixin, SoftDeleteMixin, AuditMixin):
     gas_fee_usd = Column(Numeric(20, 8), nullable=True)
 
     # Timing
-    timestamp = Column(DateTime, nullable=True, index=True, default=None)
-    confirmed_at = Column(DateTime, nullable=True)
+    timestamp = Column(UTCDateTime, nullable=True, index=True, default=None)
+    confirmed_at = Column(UTCDateTime, nullable=True)
 
     # Risk and Compliance
     risk_level = Column(
-        Enum(RiskLevel), default=RiskLevel.LOW, nullable=False, index=True
+        Enum(RiskLevel, values_callable=enum_values),
+        default=RiskLevel.LOW,
+        nullable=False,
+        index=True,
     )
     risk_score = Column(Numeric(5, 2), nullable=True)  # 0-100
     is_suspicious = Column(Boolean, default=False, nullable=False, index=True)
@@ -246,7 +261,9 @@ class TransactionAlert(BaseModel, TimestampMixin, AuditMixin):
 
     # Alert Details
     alert_type = Column(String(50), nullable=False, index=True)
-    severity = Column(Enum(RiskLevel), nullable=False, index=True)
+    severity = Column(
+        Enum(RiskLevel, values_callable=enum_values), nullable=False, index=True
+    )
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
 
@@ -255,7 +272,7 @@ class TransactionAlert(BaseModel, TimestampMixin, AuditMixin):
         String(20), default="open", nullable=False, index=True
     )  # open, investigating, resolved, false_positive
     assigned_to = Column(Uuid(as_uuid=True), nullable=True)
-    resolved_at = Column(DateTime, nullable=True)
+    resolved_at = Column(UTCDateTime, nullable=True)
     resolution_notes = Column(Text, nullable=True)
 
     # Alert Data
@@ -302,10 +319,10 @@ class TransactionPattern(BaseModel, TimestampMixin):
 
     # Detection
     first_detected = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+        UTCDateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
     last_detected = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+        UTCDateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
     detection_count = Column(Integer, default=1, nullable=False)
 
@@ -341,8 +358,8 @@ class TransactionBatch(BaseModel, TimestampMixin, AuditMixin):
     failed_transactions = Column(Integer, default=0, nullable=False)
 
     # Timing
-    started_at = Column(DateTime, nullable=True)
-    completed_at = Column(DateTime, nullable=True)
+    started_at = Column(UTCDateTime, nullable=True)
+    completed_at = Column(UTCDateTime, nullable=True)
 
     # Results
     processing_results = Column(JSON, nullable=True)

@@ -31,6 +31,7 @@ function ThemedStack() {
         />
         <Stack.Screen name="dashboard" options={{ title: "Dashboard" }} />
         <Stack.Screen name="portfolio" options={{ title: "Portfolio" }} />
+        <Stack.Screen name="risk" options={{ title: "Risk Intelligence" }} />
         <Stack.Screen name="transactions" options={{ title: "Transactions" }} />
         <Stack.Screen name="governance" options={{ title: "Governance" }} />
         <Stack.Screen name="settings" options={{ title: "Settings" }} />

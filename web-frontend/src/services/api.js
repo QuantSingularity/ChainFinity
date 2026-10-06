@@ -73,6 +73,37 @@ export const blockchainAPI = {
   getDeployedContracts: () => api.get("/api/v1/blockchain/deployed-contracts"),
 };
 
+export const portfolioAPI = {
+  list: (page = 1, size = 20) =>
+    api.get("/api/v1/portfolios/", { params: { page, size } }),
+};
+
+export const riskAPI = {
+  assess: (portfolioId) => api.post(`/api/v1/risk/assess/${portfolioId}`),
+  getMetrics: (portfolioId) => api.get(`/api/v1/risk/metrics/${portfolioId}`),
+  monitor: (portfolioId) => api.get(`/api/v1/risk/monitor/${portfolioId}`),
+  stressTest: (portfolioId, scenario = "Market Crash") =>
+    api.post(`/api/v1/risk/stress-test/${portfolioId}`, null, {
+      params: { scenario },
+    }),
+  listAssessments: (params = {}) =>
+    api.get("/api/v1/risk/assessments", { params }),
+};
+
+export const aiAPI = {
+  getStatus: () => api.get("/api/v1/ai/status"),
+  forecastVolatility: (payload) => api.post("/api/v1/ai/volatility", payload),
+  predictCorrelation: (payload) => api.post("/api/v1/ai/correlation", payload),
+  detectExploits: (payload) =>
+    api.post("/api/v1/ai/exploit-detection", payload),
+  assessLiquidity: (payload) => api.post("/api/v1/ai/liquidity", payload),
+  analyzeSmartMoney: (payload) => api.post("/api/v1/ai/smart-money", payload),
+  getPortfolioInsights: (portfolioId, horizonDays = 7) =>
+    api.get(`/api/v1/ai/portfolio/${portfolioId}/insights`, {
+      params: { horizon_days: horizonDays },
+    }),
+};
+
 // Helper function to handle API errors
 export const handleApiError = (error) => {
   if (error.response) {
