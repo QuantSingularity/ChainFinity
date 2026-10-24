@@ -189,7 +189,7 @@ jobs:
           PY
 
   # ============================================================
-  # Job 4 -- Web Frontend Build
+  # Job 3 -- Web Frontend Test & Build
   # ============================================================
   web-frontend_test_and_build:
     name: Web-Frontend Test & Build
