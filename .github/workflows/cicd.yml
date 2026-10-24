@@ -267,4 +267,3 @@ jobs:
           name: mobile-web-dist
           path: mobile-frontend/dist/
           retention-days: 7
-
