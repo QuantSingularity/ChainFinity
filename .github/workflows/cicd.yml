@@ -89,11 +89,11 @@ jobs:
       - name: Run contract test suite
         run: npm test
 
-  # ============================================================
-  # Job 3 -- Backend Tests (Python / Pytest)
-  # ============================================================
-  backend_tests:
-    name: Backend Tests
+  # =====================================================================
+  # Job 3 -- Backend Test & Build (Pytest + Docker images + smoke test)
+  # =====================================================================
+  backend_test_build:
+    name: Backend Test & Build
     runs-on: ubuntu-latest
     needs: code_quality
 
@@ -138,24 +138,10 @@ jobs:
           path: code/backend/coverage.xml
           retention-days: 30
 
-  backend_build:
-    name: Backend Docker Build (ML=${{ matrix.install_ml }})
-    runs-on: ubuntu-latest
-    needs: backend_tests
-
-    strategy:
-      fail-fast: false
-      matrix:
-        install_ml: ["false", "true"]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build backend image
+      - name: Build backend image (ML=false)
         uses: docker/build-push-action@v6
         with:
           context: code
@@ -163,19 +149,30 @@ jobs:
           target: runtime
           push: false
           load: true
-          tags: chainfinity-backend:ci-${{ matrix.install_ml }}
+          tags: chainfinity-backend:ci-false
           build-args: |
-            INSTALL_ML=${{ matrix.install_ml }}
-          cache-from: type=gha,scope=backend-ml-${{ matrix.install_ml }}
-          cache-to: type=gha,mode=max,scope=backend-ml-${{ matrix.install_ml }}
+            INSTALL_ML=false
+          cache-from: type=gha,scope=backend-ml-false
+          cache-to: type=gha,mode=max,scope=backend-ml-false
+
+      - name: Build backend image (ML=true)
+        uses: docker/build-push-action@v6
+        with:
+          context: code
+          file: code/backend/Dockerfile
+          target: runtime
+          push: false
+          load: true
+          tags: chainfinity-backend:ci-true
+          build-args: |
+            INSTALL_ML=true
+          cache-from: type=gha,scope=backend-ml-true
+          cache-to: type=gha,mode=max,scope=backend-ml-true
 
       - name: Smoke test image contents
         run: |
           set -euo pipefail
-          docker run --rm -i \
-            -e EXPECT_TF="${{ matrix.install_ml }}" \
-            --entrypoint python \
-            chainfinity-backend:ci-${{ matrix.install_ml }} - <<'PY'
+          cat > /tmp/smoke_test.py <<'PY'
           import os
 
           import app.main
@@ -188,8 +185,21 @@ jobs:
           print("backend image OK:", status["tensorflow_available"])
           PY
 
+          failed=0
+          for ml in false true; do
+            echo "=== Smoke testing image (ML=${ml}) ==="
+            if ! docker run --rm -i \
+              -e EXPECT_TF="${ml}" \
+              --entrypoint python \
+              "chainfinity-backend:ci-${ml}" - < /tmp/smoke_test.py; then
+              echo "Smoke test failed for ML=${ml}" >&2
+              failed=1
+            fi
+          done
+          exit "${failed}"
+
   # ============================================================
-  # Job 3 -- Web Frontend Test & Build
+  # Job 4 -- Web Frontend Test & Build
   # ============================================================
   web-frontend_test_and_build:
     name: Web-Frontend Test & Build
@@ -229,7 +239,7 @@ jobs:
           retention-days: 7
 
   # ============================================================
-  # Job 4 -- Mobile Frontend (Expo) Test & Build
+  # Job 5 -- Mobile Frontend (Expo) Test & Build
   # ============================================================
   mobile_frontend:
     name: Mobile-Frontend Test & Build
