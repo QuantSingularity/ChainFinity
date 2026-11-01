@@ -32,7 +32,7 @@ ChainFinity demonstrates a cross-chain DeFi risk workflow across a real, runnabl
 
 ## Project Structure
 
-```
+```text
 ChainFinity/
 ├── code/
 │   ├── backend/             # FastAPI service: API, auth, services, DB, infra
@@ -110,7 +110,7 @@ These modules are part of the codebase, unit-tested, and can be imported and run
 
 ChainFinity is organized in tiers rather than a sprawl of microservices:
 
-```
+```text
 Clients
   ├── web-frontend (React)               ── HTTP/JSON ──┐
   └── mobile-frontend (React Native)     ── HTTP/JSON ──┤
@@ -222,15 +222,19 @@ The backend suite includes unit tests for auth and the web3 client, integration 
 
 ## CI/CD Pipeline
 
-GitHub Actions (`.github/workflows/cicd.yml`) runs five jobs on push, pull request, and manual dispatch:
+GitHub Actions (`.github/workflows/cicd.yml`) runs nine jobs on push, pull request, and manual dispatch:
 
-| Job                          | Depends on          | What it does                                                                       |
-| :--------------------------- | :------------------ | :--------------------------------------------------------------------------------- |
-| Code Quality Checks          | -                   | Python formatter checks and a repository-wide Prettier check                       |
-| Blockchain Compile & Test    | Code Quality Checks | Installs dependencies, compiles the Solidity contracts, and runs the Hardhat suite |
-| Backend Tests                | Code Quality Checks | Runs the pytest suite with coverage and uploads the coverage report as an artifact |
-| Web-Frontend Test & Build    | Code Quality Checks | Runs the frontend test suite and produces the production web build                 |
-| Mobile-Frontend Test & Build | Code Quality Checks | Runs the Jest suite and produces the Expo web export                               |
+| Job                          | Depends on          | What it does                                                                                                                     |
+| :--------------------------- | :------------------ | :------------------------------------------------------------------------------------------------------------------------------- |
+| Code Quality Checks          | -                   | Python formatter checks and a repository-wide Prettier check                                                                     |
+| Blockchain Compile & Test    | Code Quality Checks | Installs dependencies, compiles the Solidity contracts, and runs the Hardhat suite                                               |
+| Backend Test & Build         | Code Quality Checks | Runs the pytest suite with coverage and uploads the coverage report as an artifact                                               |
+| AI Models Test & Validation  | Code Quality Checks | Runs the AI model tests with coverage                                                                                            |
+| Web-Frontend Test & Build    | Code Quality Checks | Runs the frontend test suite and produces the production web build                                                               |
+| Mobile-Frontend Test & Build | Code Quality Checks | Runs the Jest suite and produces the Expo web export                                                                             |
+| Docs Validation              | Code Quality Checks | Lints the Markdown docs, checks links, validates code samples, and checks `docs/CLI.md` against `scripts/`                       |
+| Infrastructure Validation    | Code Quality Checks | Terraform, Kubernetes manifests, Ansible and nginx, Prometheus/Alertmanager/SQL/Vault configs, Docker images, and a secrets scan |
+| Scripts Validation           | Code Quality Checks | ShellCheck, syntax, shebang and executable-bit checks on every shell script, plus a `--help` smoke test                          |
 
 ## Documentation
 

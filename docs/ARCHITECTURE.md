@@ -126,7 +126,7 @@ graph TB
 
 **File Structure:**
 
-```
+```text
 web-frontend/
 ├── src/
 │   ├── components/      # Reusable UI components
@@ -168,7 +168,7 @@ web-frontend/
 
 **File Structure:**
 
-```
+```text
 code/backend/
 ├── app/
 │   ├── api/
@@ -222,11 +222,11 @@ code/backend/
 
 #### Smart Contracts (`code/blockchain/contracts/`)
 
-**Solidity 0.8.19, OpenZeppelin libraries**
+Solidity 0.8.19, OpenZeppelin libraries
 
 **Contract Architecture:**
 
-```
+```text
 contracts/
 ├── CrossChainManager.sol       # Cross-chain transfer management
 ├── AssetVault.sol              # Secure asset storage
@@ -546,5 +546,5 @@ sequenceDiagram
 
 - Review [API Reference](./API.md) for endpoint details
 - Check [Configuration Guide](./CONFIGURATION.md) for system configuration
-- See [Deployment Guide](./deployment.md) for production deployment
-- Explore [Security Best Practices](./security.md) for security guidelines
+- See [Deployment Guide](../infrastructure/README.md) for production deployment
+- Explore the [Infrastructure Security Notes](../infrastructure/README.md#security-notes) for security guidelines

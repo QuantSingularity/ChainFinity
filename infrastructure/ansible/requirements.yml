@@ -1,0 +1,8 @@
+---
+# Collections used by playbook.yml. Install with:
+#   ansible-galaxy collection install -r requirements.yml
+collections:
+  - name: community.general
+    version: ">=8.0.0"
+  - name: community.docker
+    version: ">=3.6.0" # docker_compose_v2 was added in 3.6.0

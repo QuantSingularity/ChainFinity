@@ -36,7 +36,7 @@ Get started with ChainFinity in three simple steps:
 
 - [Contributing Guide](./CONTRIBUTING.md) - How to contribute code, documentation, and tests
 - [Troubleshooting](./TROUBLESHOOTING.md) - Common issues and their solutions
-- [Testing Guide](./TESTING.md) - Running tests, test coverage, and writing new tests
+- [Testing Guide](./CONTRIBUTING.md#testing-requirements) - Running tests, test coverage, and writing new tests
 
 ## Project Overview
 

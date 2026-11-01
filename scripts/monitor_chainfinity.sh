@@ -28,7 +28,8 @@ EMAIL_RECIPIENT=""
 log() {
   local level="$1"
   local message="$2"
-  local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  local timestamp
+  timestamp=$(date +"%Y-%m-%d %H:%M:%S")
 
   case $level in
     "INFO")
@@ -99,19 +100,24 @@ check_system_resources() {
 
   # Check CPU usage (using 'top' is unreliable for a single snapshot, using 'mpstat' or 'iostat' is better, but 'top' is common)
   # Using awk to get the idle percentage and calculating usage
-  local cpu_idle=$(top -bn1 | grep "Cpu(s)" | awk '{print $8}' | cut -d ',' -f 1)
-  local cpu_usage=$(echo "100 - $cpu_idle" | bc)
+  local cpu_idle
+  cpu_idle=$(top -bn1 | grep "Cpu(s)" | awk '{print $8}' | cut -d ',' -f 1)
+  local cpu_usage
+  cpu_usage=$(echo "100 - $cpu_idle" | bc)
 
   if (( $(echo "$cpu_usage > $ALERT_THRESHOLD" | bc -l) )); then
     send_alert "High CPU Usage" "CPU usage is at ${cpu_usage}%" "warning"
   fi
 
   # Check memory usage
-  local mem_total=$(free -m | awk '/Mem:/ {print $2}')
-  local mem_used=$(free -m | awk '/Mem:/ {print $3}')
+  local mem_total
+  mem_total=$(free -m | awk '/Mem:/ {print $2}')
+  local mem_used
+  mem_used=$(free -m | awk '/Mem:/ {print $3}')
   # Avoid division by zero
   if [ "$mem_total" -gt 0 ]; then
-    local mem_usage=$(echo "scale=2; $mem_used * 100 / $mem_total" | bc)
+    local mem_usage
+    mem_usage=$(echo "scale=2; $mem_used * 100 / $mem_total" | bc)
 
     if (( $(echo "$mem_usage > $ALERT_THRESHOLD" | bc -l) )); then
       send_alert "High Memory Usage" "Memory usage is at ${mem_usage}%" "warning"
@@ -119,7 +125,8 @@ check_system_resources() {
   fi
 
   # Check disk usage
-  local disk_usage=$(df -h / | awk 'NR==2 {print $5}' | tr -d '%')
+  local disk_usage
+  disk_usage=$(df -h / | awk 'NR==2 {print $5}' | tr -d '%')
   if [ -n "$disk_usage" ] && [ "$disk_usage" -gt "$ALERT_THRESHOLD" ]; then
     send_alert "High Disk Usage" "Disk usage is at ${disk_usage}%" "warning"
   fi
@@ -137,11 +144,14 @@ check_docker_containers() {
   fi
 
   # Get all running containers
-  local containers=$(docker ps --format "{{.Names}}")
+  local containers
+  containers=$(docker ps --format "{{.Names}}")
 
   for container in $containers; do
-    local status=$(docker inspect --format='{{.State.Status}}' "$container")
-    local health=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}N/A{{end}}' "$container")
+    local status
+    status=$(docker inspect --format='{{.State.Status}}' "$container")
+    local health
+    health=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}N/A{{end}}' "$container")
 
     if [ "$status" != "running" ]; then
       send_alert "Container Not Running" "Container $container is $status" "critical"
@@ -151,10 +161,13 @@ check_docker_containers() {
 
     # Check container resource usage (docker stats is interactive, better to use a single shot command)
     # Using 'docker stats --no-stream' is the correct approach for a script
-    local stats=$(docker stats --no-stream --format "{{.CPUPerc}}\t{{.MemPerc}}" "$container" 2>/dev/null)
+    local stats
+    stats=$(docker stats --no-stream --format "{{.CPUPerc}}\t{{.MemPerc}}" "$container" 2>/dev/null)
     if [ -n "$stats" ]; then
-      local cpu_perc=$(echo "$stats" | awk '{print $1}' | tr -d '%')
-      local mem_perc=$(echo "$stats" | awk '{print $2}' | tr -d '%')
+      local cpu_perc
+      cpu_perc=$(echo "$stats" | awk '{print $1}' | tr -d '%')
+      local mem_perc
+      mem_perc=$(echo "$stats" | awk '{print $2}' | tr -d '%')
 
       if (( $(echo "$cpu_perc > $ALERT_THRESHOLD" | bc -l) )); then
         send_alert "High Container CPU Usage" "Container $container CPU usage is at ${cpu_perc}%" "warning"
@@ -260,8 +273,10 @@ check_blockchain_nodes() {
           if ! echo "$response" | jq -e '.result' > /dev/null; then
             send_alert "Blockchain Node Down" "$type node $name ($url) is not responding correctly" "critical"
           else
-            local block_number=$(echo "$response" | jq -r '.result' | sed 's/0x//')
-            local block_decimal=$((16#$block_number))
+            local block_number
+            block_number=$(echo "$response" | jq -r '.result' | sed 's/0x//')
+            local block_decimal
+            block_decimal=$((16#$block_number))
             log "INFO" "$type node $name is at block $block_decimal"
           fi
           ;;
@@ -282,8 +297,22 @@ check_blockchain_nodes() {
 generate_report() {
   log "INFO" "Generating monitoring report..."
 
-  local report_file="$LOG_DIR/report_$(date +%Y%m%d).html"
-  local temp_report=$(mktemp)
+  local report_file
+
+  report_file="$LOG_DIR/report_$(date +%Y%m%d).html"
+  local temp_report
+  temp_report=$(mktemp)
+
+  # Memory usage for the report (computed here: it is used in several places below)
+  local mem_pct mem_state mem_label
+  mem_pct=$(free -m | awk '/Mem:/ {printf "%.2f", $3 * 100 / $2}')
+  if (($(echo "$mem_pct > $ALERT_THRESHOLD" | bc -l))); then
+    mem_state="warning"
+    mem_label="HIGH"
+  else
+    mem_state="success"
+    mem_label="OK"
+  fi
 
   # Use a temporary file for the report content to avoid issues with EOF
   cat > "$temp_report" << EOF
@@ -325,9 +354,9 @@ generate_report() {
       </tr>
       <tr>
         <td>Memory Usage</td>
-        <td>$(echo "scale=2; $(free -m | awk '/Mem:/ {print $3}') * 100 / $(free -m | awk '/Mem:/ {print $2}')" | bc)%</td>
-        <td class="$(if (( $(echo "scale=2; $(free -m | awk '/Mem:/ {print $3}') * 100 / $(free -m | awk '/Mem:/ {print $2}')" | bc) > $ALERT_THRESHOLD" | bc -l) )); then echo "warning"; else echo "success"; fi)">
-          $(if (( $(echo "scale=2; $(free -m | awk '/Mem:/ {print $3}') * 100 / $(free -m | awk '/Mem:/ {print $2}')" | bc) > $ALERT_THRESHOLD" | bc -l) )); then echo "HIGH"; else echo "OK"; fi)
+        <td>${mem_pct}%</td>
+        <td class="${mem_state}">
+          ${mem_label}
         </td>
       </tr>
       <tr>
@@ -354,14 +383,20 @@ EOF
 
   # Add Docker container data
   if command_exists docker; then
-    local containers=$(docker ps -a --format "{{.Names}}")
+    local containers
+    containers=$(docker ps -a --format "{{.Names}}")
 
     for container in $containers; do
-      local status=$(docker inspect --format='{{.State.Status}}' "$container" 2>/dev/null || echo "N/A")
-      local health=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}N/A{{end}}' "$container" 2>/dev/null || echo "N/A")
-      local stats=$(docker stats --no-stream --format "{{.CPUPerc}}\t{{.MemPerc}}" "$container" 2>/dev/null || echo "N/A\tN/A")
-      local cpu_usage=$(echo "$stats" | awk '{print $1}')
-      local mem_usage=$(echo "$stats" | awk '{print $2}')
+      local status
+      status=$(docker inspect --format='{{.State.Status}}' "$container" 2>/dev/null || echo "N/A")
+      local health
+      health=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}N/A{{end}}' "$container" 2>/dev/null || echo "N/A")
+      local stats
+      stats=$(docker stats --no-stream --format "{{.CPUPerc}}\t{{.MemPerc}}" "$container" 2>/dev/null || echo "N/A\tN/A")
+      local cpu_usage
+      cpu_usage=$(echo "$stats" | awk '{print $1}')
+      local mem_usage
+      mem_usage=$(echo "$stats" | awk '{print $2}')
 
       cat >> "$temp_report" << EOF
       <tr>

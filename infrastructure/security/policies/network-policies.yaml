@@ -620,19 +620,24 @@ spec:
       source:
         selector: country in {'US', 'CA', 'UK', 'DE', 'JP'}
   egress:
-    # Block access to known malicious domains
-    - action: Deny
-      destination:
-        domains:
-          - "*.malicious-domain.com"
-          - "*.suspicious-site.net"
+    # Domain-based deny rules (destination.domains) need Calico Enterprise and are not
+    # available in open-source Calico. Use a DNS-aware firewall (for example AWS Network
+    # Firewall) for domain filtering.
     # Allow only necessary external services
     - action: Allow
+      protocol: UDP
       destination:
         nets:
           - 0.0.0.0/0
-      ports:
-        - 53 # DNS
-        - 80 # HTTP
-        - 443 # HTTPS
-        - 587 # SMTP TLS
+        ports:
+          - 53 # DNS
+    - action: Allow
+      protocol: TCP
+      destination:
+        nets:
+          - 0.0.0.0/0
+        ports:
+          - 53 # DNS over TCP
+          - 80 # HTTP
+          - 443 # HTTPS
+          - 587 # SMTP TLS

@@ -187,7 +187,7 @@ configure_database_secrets() {
         connection_url="postgresql://{{username}}:{{password}}@postgres.chainfinity.internal:5432/chainfinity?sslmode=require" \
         allowed_roles="readonly,readwrite,admin" \
         username="vault" \
-        password="vault-db-password" || true
+        password="${VAULT_DB_PASSWORD:?Set VAULT_DB_PASSWORD to the password of the PostgreSQL role Vault connects as}" || true
 
     vault write database/roles/readonly \
         db_name=postgresql \

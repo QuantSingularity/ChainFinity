@@ -8,6 +8,9 @@ kind: Namespace
 metadata:
   name: chainfinity
   labels:
+    pod-security.kubernetes.io/enforce: "restricted"
+    pod-security.kubernetes.io/audit: "restricted"
+    pod-security.kubernetes.io/warn: "restricted"
     name: chainfinity
     security.compliance/level: "high"
     security.compliance/pci-dss: "required"
@@ -26,6 +29,9 @@ kind: Namespace
 metadata:
   name: chainfinity-monitoring
   labels:
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
     name: chainfinity-monitoring
     security.compliance/level: "high"
     app.kubernetes.io/name: monitoring
@@ -40,6 +46,9 @@ kind: Namespace
 metadata:
   name: chainfinity-security
   labels:
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
     name: chainfinity-security
     security.compliance/level: "critical"
     app.kubernetes.io/name: security
@@ -230,9 +239,6 @@ rules:
   - apiGroups: ["security.istio.io"]
     resources: ["*"]
     verbs: ["get", "list"]
-  - apiGroups: ["policy"]
-    resources: ["podsecuritypolicies"]
-    verbs: ["get", "list"]
 
 ---
 # ClusterRole for Admin Operations (emergency access)
@@ -344,84 +350,4 @@ subjects:
 roleRef:
   kind: ClusterRole
   name: chainfinity-admin-role
-  apiGroup: rbac.authorization.k8s.io
-
----
-# Pod Security Policy for ChainFinity
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  name: chainfinity-psp
-  labels:
-    app.kubernetes.io/name: chainfinity
-    security.compliance/level: "high"
-  annotations:
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: "runtime/default"
-    seccomp.security.alpha.kubernetes.io/defaultProfileName: "runtime/default"
-    apparmor.security.beta.kubernetes.io/allowedProfileNames: "runtime/default"
-    apparmor.security.beta.kubernetes.io/defaultProfileName: "runtime/default"
-spec:
-  privileged: false
-  allowPrivilegeEscalation: false
-  requiredDropCapabilities:
-    - ALL
-  volumes:
-    - "configMap"
-    - "emptyDir"
-    - "projected"
-    - "secret"
-    - "downwardAPI"
-    - "persistentVolumeClaim"
-  hostNetwork: false
-  hostIPC: false
-  hostPID: false
-  runAsUser:
-    rule: "MustRunAsNonRoot"
-  supplementalGroups:
-    rule: "MustRunAs"
-    ranges:
-      - min: 1
-        max: 65535
-  fsGroup:
-    rule: "MustRunAs"
-    ranges:
-      - min: 1
-        max: 65535
-  readOnlyRootFilesystem: true
-  seLinux:
-    rule: "RunAsAny"
-
----
-# ClusterRole for Pod Security Policy
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: chainfinity-psp-role
-  labels:
-    app.kubernetes.io/name: chainfinity
-rules:
-  - apiGroups: ["policy"]
-    resources: ["podsecuritypolicies"]
-    verbs: ["use"]
-    resourceNames: ["chainfinity-psp"]
-
----
-# RoleBinding for Pod Security Policy
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: chainfinity-psp-binding
-  namespace: chainfinity
-  labels:
-    app.kubernetes.io/name: chainfinity
-subjects:
-  - kind: ServiceAccount
-    name: chainfinity-app
-    namespace: chainfinity
-  - kind: ServiceAccount
-    name: chainfinity-db
-    namespace: chainfinity
-roleRef:
-  kind: ClusterRole
-  name: chainfinity-psp-role
   apiGroup: rbac.authorization.k8s.io

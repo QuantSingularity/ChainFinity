@@ -19,7 +19,7 @@ Common issues and their solutions for ChainFinity platform.
 
 **Error:**
 
-```
+```text
 Error: listen EADDRINUSE: address already in use :::8000
 ```
 
@@ -41,7 +41,7 @@ uvicorn app.main:app --port 8001
 
 **Error:**
 
-```
+```text
 npm ERR! code ERESOLVE
 npm ERR! ERESOLVE unable to resolve dependency tree
 ```
@@ -67,7 +67,7 @@ npm install
 
 **Error:**
 
-```
+```text
 ERROR: pip's dependency resolver does not currently take into account all the packages that are installed
 ```
 
@@ -95,7 +95,7 @@ pip install -r requirements.txt
 
 **Error:**
 
-```
+```text
 permission denied while trying to connect to the Docker daemon socket
 ```
 
@@ -118,7 +118,7 @@ docker ps
 
 **Error:**
 
-```
+```text
 asyncpg.exceptions.ConnectionDoesNotExistError: connection is closed
 ```
 
@@ -170,7 +170,7 @@ psql -h localhost -U postgres -d chainfinity
 
 **Error:**
 
-```
+```text
 asyncpg.exceptions.InvalidCatalogNameError: database "chainfinity" does not exist
 ```
 
@@ -189,7 +189,7 @@ alembic upgrade head
 
 **Error:**
 
-```
+```text
 redis.exceptions.ConnectionError: Error connecting to Redis
 ```
 
@@ -238,8 +238,8 @@ sudo journalctl -u redis
 
 **Error:**
 
-```
-{"detail":"Could not validate credentials"}
+```json
+{ "detail": "Could not validate credentials" }
 ```
 
 **Solutions:**
@@ -317,8 +317,8 @@ curl -X POST http://localhost:8000/api/v1/auth/reset-password \
 
 **Error:**
 
-```
-{"detail":"Rate limit exceeded. Try again later."}
+```json
+{ "detail": "Rate limit exceeded. Try again later." }
 ```
 
 **Solutions:**
@@ -365,7 +365,7 @@ session.mount('https://', adapter)
 
 **Error:**
 
-```
+```text
 Access to XMLHttpRequest at 'http://localhost:8000/api/v1/...' from origin 'http://localhost:3000' has been blocked by CORS policy
 ```
 
@@ -426,7 +426,7 @@ Ensure request body matches API schema requirements. Check [API documentation](.
 
 **Error:**
 
-```
+```text
 Error: transaction reverted without a reason string
 ```
 
@@ -459,7 +459,7 @@ await hardhat.network.provider.send("hardhat_setLoggingEnabled", [true]);
 
 **Error:**
 
-```
+```text
 Error: insufficient funds for gas * price + value
 ```
 
@@ -485,7 +485,7 @@ const tx = await contract.someFunction({
 
 **Error:**
 
-```
+```text
 Error: contract not deployed
 ```
 
@@ -503,7 +503,7 @@ npx hardhat run scripts/deploy.js --network localhost
 
 **Error:**
 
-```
+```text
 Error: network mismatch (chainId 1337, expected 1)
 ```
 
@@ -527,7 +527,7 @@ await window.ethereum.request({
 
 **Error:**
 
-```
+```text
 Module not found: Can't resolve 'react-router-dom'
 ```
 
@@ -578,7 +578,7 @@ npm start
 
 **Error:**
 
-```
+```text
 No Ethereum provider found. Install MetaMask.
 ```
 
@@ -586,7 +586,7 @@ No Ethereum provider found. Install MetaMask.
 
 **1. Install MetaMask:**
 
-- Download from https://metamask.io/
+- Download from <https://metamask.io/>
 
 **2. Detect provider correctly:**
 
@@ -706,7 +706,7 @@ redis-cli FLUSHDB
 
 **Error:**
 
-```
+```text
 ERROR [internal] load metadata for docker.io/library/python:3.11-slim
 ```
 
@@ -735,7 +735,7 @@ docker pull python:3.11-slim
 
 **Error:**
 
-```
+```text
 CrashLoopBackOff
 ```
 
@@ -782,7 +782,7 @@ resources:
 
 **Error:**
 
-```
+```text
 alembic.util.exc.CommandError: Can't locate revision identified by 'abc123'
 ```
 
@@ -839,7 +839,7 @@ If you can't find a solution here:
    ```
 
 3. **Search existing issues:**
-   - https://github.com/abrar2030/ChainFinity/issues
+   - <https://github.com/abrar2030/ChainFinity/issues>
 
 4. **Create a new issue:**
    - Include error messages

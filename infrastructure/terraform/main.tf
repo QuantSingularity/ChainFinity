@@ -51,7 +51,7 @@ terraform {
 
 # Local variables for consistent tagging and configuration
 locals {
-  common_tags = {
+  common_tags = merge({
     Project            = "ChainFinity"
     Environment        = var.environment
     Owner              = "DevOps Team"
@@ -63,7 +63,7 @@ locals {
     SecurityLevel      = "High"
     CreatedBy          = "Terraform"
     CreatedDate        = "managed-by-terraform"
-  }
+  }, var.additional_tags)
 
   # Network configuration
   vpc_cidr = "10.0.0.0/16"
@@ -74,7 +74,7 @@ locals {
 
   # Compliance settings
   backup_retention_days = 3653 # 7 years for financial compliance
-  log_retention_days    = 2555 # 7 years for financial compliance
+  log_retention_days    = var.log_retention_days
 }
 
 # Data sources
@@ -618,8 +618,8 @@ resource "aws_db_instance" "chainfinity_db" {
 
   # Backup configuration for compliance
   backup_retention_period = min(var.backup_retention_days, 35) # RDS max is 35 days; use AWS Backup for longer retention
-  backup_window           = "03:00-04:00"         # UTC
-  maintenance_window      = "sun:04:00-sun:05:00" # UTC
+  backup_window           = "03:00-04:00"                      # UTC
+  maintenance_window      = "sun:04:00-sun:05:00"              # UTC
 
   # Security features
   copy_tags_to_snapshot     = true
@@ -999,12 +999,10 @@ resource "aws_s3_bucket_versioning" "alb_logs" {
 resource "aws_s3_bucket_server_side_encryption_configuration" "alb_logs" {
   bucket = aws_s3_bucket.alb_logs.id
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        kms_master_key_id = aws_kms_key.chainfinity.arn
-        sse_algorithm     = "aws:kms"
-      }
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.chainfinity.arn
+      sse_algorithm     = "aws:kms"
     }
   }
 }
@@ -1323,8 +1321,6 @@ resource "aws_cloudwatch_dashboard" "main" {
       }
     ]
   })
-
-  tags = local.common_tags
 }
 
 # CloudWatch Alarms for critical metrics
@@ -1526,12 +1522,10 @@ resource "aws_s3_bucket_versioning" "backups" {
 resource "aws_s3_bucket_server_side_encryption_configuration" "backups" {
   bucket = aws_s3_bucket.backups.id
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        kms_master_key_id = aws_kms_key.chainfinity.arn
-        sse_algorithm     = "aws:kms"
-      }
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.chainfinity.arn
+      sse_algorithm     = "aws:kms"
     }
   }
 }

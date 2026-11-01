@@ -50,10 +50,8 @@ fi
 # Check for solc (Solidity compiler)
 if ! command_exists solc; then
   echo "Warning: solc is not installed. Solidity linting will be limited."
-  SOLC_AVAILABLE=false
 else
   echo "solc is installed."
-  SOLC_AVAILABLE=true
 fi
 
 # Check for terraform

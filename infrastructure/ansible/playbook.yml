@@ -71,7 +71,6 @@
         owner: root
         group: root
         mode: "0644"
-        validate: nginx -t -c %s
       notify: restart nginx
 
     - name: Enable Nginx site
@@ -86,6 +85,12 @@
         path: /etc/nginx/sites-enabled/default
         state: absent
       notify: restart nginx
+
+    # `nginx -t -c <file>` cannot validate a site fragment on its own, so check the full
+    # configuration once the site is enabled; a failure stops the play before the restart.
+    - name: Validate Nginx configuration
+      command: nginx -t
+      changed_when: false
 
     - name: Start application services with Docker Compose
       community.docker.docker_compose_v2:

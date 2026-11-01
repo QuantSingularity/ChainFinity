@@ -64,22 +64,22 @@ curl -X GET http://localhost:8000/api/v1/users/me \
 
 ### Success Response
 
-```json
+```jsonc
 {
   "success": true,
   "data": {/* response data */},
-  "message": "Optional success message"
+  "message": "Optional success message",
 }
 ```
 
 ### Error Response
 
-```json
+```jsonc
 {
   "success": false,
   "error": "Error description",
   "code": "ERROR_CODE",
-  "details": [/* optional error details */]
+  "details": [/* optional error details */],
 }
 ```
 
@@ -87,7 +87,7 @@ curl -X GET http://localhost:8000/api/v1/users/me \
 
 Paginated endpoints return:
 
-```json
+```jsonc
 {
   "success": true,
   "data": [/* array of items */],
@@ -95,8 +95,8 @@ Paginated endpoints return:
     "page": 1,
     "page_size": 20,
     "total": 150,
-    "pages": 8
-  }
+    "pages": 8,
+  },
 }
 ```
 
@@ -432,7 +432,7 @@ List user transactions.
 
 **Response:**
 
-```json
+```jsonc
 {
   "data": [
     {
@@ -443,10 +443,10 @@ List user transactions.
       "amount": "100.00",
       "token": "USDC",
       "chain": "ethereum",
-      "timestamp": "2025-01-08T12:00:00Z"
-    }
+      "timestamp": "2025-01-08T12:00:00Z",
+    },
   ],
-  "pagination": {/* ... */}
+  "pagination": {/* ... */},
 }
 ```
 

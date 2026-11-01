@@ -28,7 +28,8 @@ DEPLOY_COMPONENT="all"
 log() {
   local level="$1"
   local message="$2"
-  local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  local timestamp
+  timestamp=$(date +"%Y-%m-%d %H:%M:%S")
 
   case $level in
     "INFO")
@@ -82,6 +83,7 @@ load_env() {
     set -a
     # Use 'source' to load variables into the current shell
     # This is safer than 'set -a; . "$ENV_FILE"; set +a' as it handles errors better
+    # shellcheck source=/dev/null
     if ! source "$ENV_FILE"; then
         log "ERROR" "Failed to source environment file: $ENV_FILE"
         exit 1
@@ -207,8 +209,10 @@ deploy_backend() {
 
     if [ "$DRY_RUN" = false ]; then
       # Securely generate a secret key if not set in .env
-      local secret_key="${SECRET_KEY:-$(openssl rand -hex 32)}"
-      local encryption_key="${ENCRYPTION_KEY:-$(openssl rand -hex 32)}"
+      local secret_key
+      secret_key="${SECRET_KEY:-$(openssl rand -hex 32)}"
+      local encryption_key
+      encryption_key="${ENCRYPTION_KEY:-$(openssl rand -hex 32)}"
 
       # Resolve the same Hardhat network deploy_blockchain() just deployed
       # to (or will deploy to, if run in the same invocation), so the
@@ -391,7 +395,8 @@ EOF
       rsync -av "$frontend_dir/build/" "$deploy_dir/"
 
       # Create deployment info file
-      local version=$(jq -r '.version' package.json 2>/dev/null || echo "unknown")
+      local version
+      version=$(jq -r '.version' package.json 2>/dev/null || echo "unknown")
       cat > "$deploy_dir/deployment-info.json" << EOF
 {
   "environment": "$ENVIRONMENT",
@@ -451,7 +456,8 @@ EOF
         "$mobile_dir/" "$deploy_dir/"
 
       # Create deployment info file
-      local version=$(jq -r '.version' package.json 2>/dev/null || echo "unknown")
+      local version
+      version=$(jq -r '.version' package.json 2>/dev/null || echo "unknown")
       cat > "$deploy_dir/deployment-info.json" << EOF
 {
   "environment": "$ENVIRONMENT",
@@ -551,7 +557,8 @@ generate_deployment_report() {
   mkdir -p "$(dirname "$report_file")"
 
   # Use a temporary file for the report content to avoid issues with EOF
-  local temp_report=$(mktemp)
+  local temp_report
+  temp_report=$(mktemp)
 
   cat > "$temp_report" << EOF
 <!DOCTYPE html>

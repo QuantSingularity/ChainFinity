@@ -261,15 +261,15 @@ variable "enable_detailed_monitoring" {
 }
 
 variable "log_retention_days" {
-  description = "CloudWatch log retention period in days"
+  description = "CloudWatch log retention period in days (CloudWatch only accepts specific values)"
   type        = number
-  default     = 2555 # 7 years for financial compliance
+  default     = 2557 # 7 years for financial compliance
 
   validation {
     condition = contains([
-      1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 2555, 3653
+      0, 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653
     ], var.log_retention_days)
-    error_message = "Log retention days must be a valid CloudWatch retention period."
+    error_message = "Log retention days must be a retention period CloudWatch Logs supports (for example 365, 731, 2192, 2557 or 3653)."
   }
 }
 

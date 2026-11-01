@@ -149,6 +149,8 @@ kubectl rollout status deployment/chainfinity-backend  -n chainfinity
 ```bash
 export VAULT_ADDR=https://vault.chainfinity.internal:8200
 export VAULT_POLICIES_DIR=/opt/vault/policies
+# Password of the PostgreSQL role Vault connects as (create that role first)
+export VAULT_DB_PASSWORD="<password>"
 
 bash security/vault/init-vault.sh
 ```

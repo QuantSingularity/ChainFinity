@@ -1,3 +1,6 @@
+# Rate-limit zone: this file is included from the http block, where limit_req_zone is allowed.
+limit_req_zone $binary_remote_addr zone=chainfinity:10m rate=30r/s;
+
 server {
     listen 80;
     server_name {{ ansible_fqdn | default(ansible_hostname) }};
@@ -30,7 +33,6 @@ server {
 
     client_max_body_size 10m;
 
-    limit_req_zone $binary_remote_addr zone=chainfinity:10m rate=30r/s;
     limit_req zone=chainfinity burst=60 nodelay;
 
     location / {
@@ -48,7 +50,7 @@ server {
     }
 
     location /api {
-        proxy_pass         http://127.0.0.1:8000;
+        proxy_pass         http://127.0.0.1:8080;
         proxy_http_version 1.1;
         proxy_set_header   Upgrade           $http_upgrade;
         proxy_set_header   Connection        'upgrade';
@@ -63,7 +65,7 @@ server {
 
     location /health {
         access_log off;
-        proxy_pass http://127.0.0.1:8000/health;
+        proxy_pass http://127.0.0.1:8080/health;
     }
 
     location ~ /\. {

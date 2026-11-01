@@ -31,7 +31,8 @@ TEST_COMPONENT="all"
 log() {
   local level="$1"
   local message="$2"
-  local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  local timestamp
+  timestamp=$(date +"%Y-%m-%d %H:%M:%S")
 
   case $level in
     "INFO")
@@ -56,6 +57,16 @@ command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
+# Apply --timeout (TEST_TIMEOUT seconds) to a test command. `timeout` is not available on
+# every platform (for example stock macOS); without it the command simply runs unbounded.
+run_with_timeout() {
+  if command_exists timeout; then
+    timeout "$TEST_TIMEOUT" "$@"
+  else
+    "$@"
+  fi
+}
+
 # --- Testing Functions ---
 
 # Function to run blockchain tests
@@ -75,7 +86,7 @@ run_blockchain_tests() {
 
     # Run tests with coverage
     log "INFO" "Running Hardhat tests with coverage..."
-    if ! npm run test:coverage; then
+    if ! run_with_timeout npm run test:coverage; then
       log "ERROR" "Blockchain tests failed"
       return 1
     fi
@@ -84,7 +95,8 @@ run_blockchain_tests() {
     if command_exists jq; then
       local coverage_file="coverage/coverage-summary.json"
       if [ -f "$coverage_file" ]; then
-        local line_coverage=$(jq -r '.total.lines.pct' "$coverage_file")
+        local line_coverage
+        line_coverage=$(jq -r '.total.lines.pct' "$coverage_file")
         if [ "$(echo "$line_coverage < $COVERAGE_THRESHOLD" | bc -l)" = "1" ]; then
           log "WARNING" "Blockchain test coverage ($line_coverage%) is below threshold ($COVERAGE_THRESHOLD%)"
         else
@@ -130,14 +142,15 @@ run_backend_tests() {
 
     # Run tests with coverage
     log "INFO" "Running pytest with coverage..."
-    if ! python -m pytest --cov=. --cov-report=xml --cov-report=html; then
+    if ! run_with_timeout python -m pytest --cov=. --cov-report=xml --cov-report=html; then
       log "ERROR" "Backend tests failed"
       return 1
     fi
 
     # Check coverage threshold
     if command_exists coverage; then
-      local coverage_report=$(coverage report | grep TOTAL | awk '{print $NF}' | tr -d '%')
+      local coverage_report
+      coverage_report=$(coverage report | grep TOTAL | awk '{print $NF}' | tr -d '%')
       if [ "$(echo "$coverage_report < $COVERAGE_THRESHOLD" | bc -l)" = "1" ]; then
         log "WARNING" "Backend test coverage ($coverage_report%) is below threshold ($COVERAGE_THRESHOLD%)"
       else
@@ -172,14 +185,15 @@ run_frontend_tests() {
 
     # Run tests with coverage
     log "INFO" "Running Jest tests with coverage..."
-    if ! npm test -- --coverage --watchAll=false; then
+    if ! run_with_timeout npm test -- --coverage --watchAll=false; then
       log "ERROR" "Frontend tests failed"
       return 1
     fi
 
     # Check coverage threshold
     if [ -f "coverage/coverage-summary.json" ] && command_exists jq; then
-      local line_coverage=$(jq -r '.total.lines.pct' coverage/coverage-summary.json)
+      local line_coverage
+      line_coverage=$(jq -r '.total.lines.pct' coverage/coverage-summary.json)
       if [ "$(echo "$line_coverage < $COVERAGE_THRESHOLD" | bc -l)" = "1" ]; then
         log "WARNING" "Frontend test coverage ($line_coverage%) is below threshold ($COVERAGE_THRESHOLD%)"
       else
@@ -213,14 +227,15 @@ run_mobile_frontend_tests() {
 
     # Run tests with coverage
     log "INFO" "Running Jest tests with coverage..."
-    if ! npm test -- --coverage --watchAll=false; then
+    if ! run_with_timeout npm test -- --coverage --watchAll=false; then
       log "ERROR" "Mobile frontend tests failed"
       return 1
     fi
 
     # Check coverage threshold
     if [ -f "coverage/coverage-summary.json" ] && command_exists jq; then
-      local line_coverage=$(jq -r '.total.lines.pct' coverage/coverage-summary.json)
+      local line_coverage
+      line_coverage=$(jq -r '.total.lines.pct' coverage/coverage-summary.json)
       if [ "$(echo "$line_coverage < $COVERAGE_THRESHOLD" | bc -l)" = "1" ]; then
         log "WARNING" "Mobile frontend test coverage ($line_coverage%) is below threshold ($COVERAGE_THRESHOLD%)"
       else
@@ -254,7 +269,7 @@ run_integration_tests() {
 
     # Run integration tests
     log "INFO" "Running integration tests..."
-    if ! npm test; then
+    if ! run_with_timeout npm test; then
       log "ERROR" "Integration tests failed"
       return 1
     fi
@@ -275,7 +290,8 @@ generate_test_report() {
   log "INFO" "Generating combined test report..."
 
   local report_file="$REPORT_DIR/test-report.html"
-  local temp_report=$(mktemp)
+  local temp_report
+  temp_report=$(mktemp)
 
   # Use a temporary file for the report content to avoid issues with EOF
   cat > "$temp_report" << EOF

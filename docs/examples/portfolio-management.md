@@ -454,7 +454,7 @@ if __name__ == "__main__":
 
 ## Expected Output
 
-```
+```text
 === ChainFinity Portfolio Management Example ===
 
 Step 1: Authenticating...

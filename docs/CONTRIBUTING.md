@@ -10,8 +10,6 @@ Thank you for considering contributing to ChainFinity! This document provides gu
 - [Testing Requirements](#testing-requirements)
 - [Documentation Guidelines](#documentation-guidelines)
 - [Pull Request Process](#pull-request-process)
-- [Issue Guidelines](#issue-guidelines)
-- [Community Guidelines](#community-guidelines)
 
 ## Getting Started
 
@@ -126,7 +124,7 @@ git commit -m "feat: add new risk assessment algorithm"
 
 **Commit Message Format:**
 
-```
+```text
 <type>(<scope>): <subject>
 
 <body>
@@ -146,7 +144,7 @@ git commit -m "feat: add new risk assessment algorithm"
 
 **Examples:**
 
-```
+```text
 feat(api): add portfolio export endpoint
 
 Implement CSV and JSON export for portfolio data
@@ -155,7 +153,7 @@ with pagination and filtering support.
 Closes #123
 ```
 
-```
+```text
 fix(contract): prevent reentrancy in withdraw function
 
 Add ReentrancyGuard to AssetVault withdraw function
@@ -239,6 +237,7 @@ mypy code/backend/
    ```
 
 4. **Async/Await:** Use async functions for I/O operations
+
    ```python
    async def get_user(db: AsyncSession, user_id: str) -> User:
        result = await db.execute(
@@ -305,6 +304,7 @@ npm run lint:fix
    ```
 
 3. **Async/Await:**
+
    ```javascript
    const fetchPortfolios = async () => {
      try {

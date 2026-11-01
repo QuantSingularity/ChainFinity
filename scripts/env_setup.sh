@@ -33,7 +33,8 @@ DEFAULT_ENVIRONMENT="development"
 log() {
   local level="$1"
   local message="$2"
-  local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  local timestamp
+  timestamp=$(date +"%Y-%m-%d %H:%M:%S")
 
   case $level in
     "$INFO")
@@ -74,7 +75,8 @@ handle_error() {
 backup_config() {
   local file="$1"
   if [ -f "$file" ]; then
-    local backup_file="${file}.bak.$(date +%Y%m%d_%H%M%S)"
+    local backup_file
+    backup_file="${file}.bak.$(date +%Y%m%d_%H%M%S)"
     cp "$file" "$backup_file"
     log "$INFO" "Created backup of $file at $backup_file"
   fi

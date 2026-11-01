@@ -296,7 +296,7 @@ main();
 
 ## Expected Output
 
-```
+```text
 === ChainFinity Cross-Chain Transfer ===
 
 Source: Ethereum

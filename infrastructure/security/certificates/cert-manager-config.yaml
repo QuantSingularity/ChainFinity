@@ -114,9 +114,10 @@ spec:
     - chainfinity-app.chainfinity.svc
   duration: 720h # 30 days
   renewBefore: 240h # 10 days
-  keySize: 4096
-  keyAlgorithm: rsa
-  keyEncoding: pkcs1
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 4096
   usages:
     - digital signature
     - key encipherment
@@ -145,8 +146,9 @@ spec:
     - chainfinity-db.chainfinity.svc
   duration: 720h
   renewBefore: 240h
-  keySize: 4096
-  keyAlgorithm: rsa
+  privateKey:
+    algorithm: RSA
+    size: 4096
   usages:
     - digital signature
     - key encipherment
@@ -178,8 +180,9 @@ spec:
     - 127.0.0.1
   duration: 8760h # 1 year
   renewBefore: 720h # 30 days
-  keySize: 4096
-  keyAlgorithm: rsa
+  privateKey:
+    algorithm: RSA
+    size: 4096
   usages:
     - digital signature
     - key encipherment
@@ -208,8 +211,9 @@ spec:
     - kibana.chainfinity.com
   duration: 2160h # 90 days
   renewBefore: 720h # 30 days
-  keySize: 2048
-  keyAlgorithm: rsa
+  privateKey:
+    algorithm: RSA
+    size: 2048
   usages:
     - digital signature
     - key encipherment

@@ -228,12 +228,12 @@ PRIVATE_KEY=your_private_key_without_0x_prefix
 
 File: `web-frontend/.env`
 
-| Option                  | Type    | Default                  | Description      | Where to set |
-| ----------------------- | ------- | ------------------------ | ---------------- | ------------ |
-| `REACT_APP_API_URL`     | string  | "http://localhost:8000"  | Backend API URL  | env file     |
-| `REACT_APP_WS_URL`      | string  | "ws://localhost:8000/ws" | WebSocket URL    | env file     |
-| `REACT_APP_CHAIN_ID`    | integer | 1                        | Default chain ID | env file     |
-| `REACT_APP_ENVIRONMENT` | string  | "development"            | Environment      | env file     |
+| Option                  | Type    | Default                   | Description      | Where to set |
+| ----------------------- | ------- | ------------------------- | ---------------- | ------------ |
+| `REACT_APP_API_URL`     | string  | `"http://localhost:8000"` | Backend API URL  | env file     |
+| `REACT_APP_WS_URL`      | string  | "ws://localhost:8000/ws"  | WebSocket URL    | env file     |
+| `REACT_APP_CHAIN_ID`    | integer | 1                         | Default chain ID | env file     |
+| `REACT_APP_ENVIRONMENT` | string  | "development"             | Environment      | env file     |
 
 ### Mobile Frontend
 
@@ -330,4 +330,4 @@ echo "DATABASE_URL=postgresql+asyncpg://localhost/mydb" >> .env
 
 - Review [API Reference](./API.md) to understand API endpoints
 - Check [Usage Guide](./USAGE.md) for common workflows
-- See [Deployment Guide](./deployment.md) for production deployment
+- See [Deployment Guide](../infrastructure/README.md) for production deployment
