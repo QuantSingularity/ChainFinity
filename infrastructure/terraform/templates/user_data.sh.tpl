@@ -493,6 +493,3 @@ aws logs put-log-events \
 
 log "ChainFinity EKS node bootstrap completed successfully!"
 log "Compliance report generated at: /var/log/chainfinity-compliance-report.json"
-
-# Signal completion
-/opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region} || true

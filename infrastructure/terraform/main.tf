@@ -1023,6 +1023,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "alb_logs" {
     id     = "log_retention"
     status = "Enabled"
 
+    filter {}
+
     expiration {
       days = local.log_retention_days
     }
@@ -1545,6 +1547,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "backups" {
   rule {
     id     = "backup_lifecycle"
     status = "Enabled"
+
+    filter {}
 
     transition {
       days          = 30
